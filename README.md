@@ -25,7 +25,7 @@ npx expo start
 
 ---
 
-### **🚀 3. Install Firebase & Required Dependencies**
+### **3. Install Firebase & Required Dependencies**
 Run the following commands **one by one** to install Firebase and other necessary libraries:
 
 ```sh
