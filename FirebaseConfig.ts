@@ -1,0 +1,24 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { initializeAuth } from 'firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from 'firebase/storage';
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC2xRl4T9TGRzHRB6VRVVmhP8laHHFLABQ",
+  authDomain: "rumble-swipeconnect.firebaseapp.com",
+  projectId: "rumble-swipeconnect",
+  storageBucket: "rumble-swipeconnect.firebasestorage.app",
+  messagingSenderId: "422725323894",
+  appId: "1:422725323894:web:0acf9ec44f7e0775472357",
+  measurementId: "G-4N259DXX23"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = initializeAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
