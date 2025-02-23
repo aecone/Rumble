@@ -31,3 +31,16 @@ Run the following commands **one by one** to install Firebase and other necessar
 ```sh
 npx install-expo-modules@latest && npx expo start && npm install firebase -g firebase-tools @react-native-async-storage/async-storage expo-image-picker expo-constants react-native-dotenv
 ```
+
+
+You'll need Python installed. If you don't have it, install Python (3.13 from Microsoft Store).
+
+Create a Virtual Environment
+Navigate to your project folder and run: python -m venv venv
+venv\Scripts\activate
+
+Install Flask and Dependencies
+Inside your virtual environment, install Flask and necessary libraries: pip install flask flask-cors firebase-admin
+flask: Core framework
+flask-cors: Handles cross-origin requests for your React Native app
+firebase-admin: Enables backend interaction with Firestore
