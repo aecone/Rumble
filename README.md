@@ -38,7 +38,7 @@ You'll need Python installed. If you don't have it, install Python (3.13 from Mi
 Create a Virtual Environment
 Navigate to your project folder and run: python -m venv venv
 
-Then run: venv\Scripts\activate
+Then run: venv\Scripts\activate (for Windows) or source venv/bin/activate (for Mac)
 
 Install Flask and Dependencies
 Inside your virtual environment, install Flask and necessary libraries: pip install flask flask-cors firebase-admin
