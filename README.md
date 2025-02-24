@@ -35,13 +35,16 @@ npx install-expo-modules@latest && npx expo start && npm install firebase -g fir
 
 You'll need Python installed. If you don't have it, install Python (3.13 from Microsoft Store).
 
-Create a Virtual Environment
+Create a Virtual Environment (venv)
 Navigate to your project folder and run: python -m venv venv
 
 Then run: venv\Scripts\activate (for Windows) or source venv/bin/activate (for Mac)
 
-Install Flask and Dependencies
-Inside your virtual environment, install Flask and necessary libraries: pip install flask flask-cors firebase-admin
-flask: Core framework
-flask-cors: Handles cross-origin requests for your React Native app
-firebase-admin: Enables backend interaction with Firestore
+Install Flask and Dependencies in your venv
+Inside your virtual environment, install Flask and necessary libraries: pip install -r requirements.txt
+We put all required packages inside requirements.txt so the above line will install them
+
+# Input Flask Backend Firebase Key (Service Account JSON)
+Create file named .env in root folder with
+FIREBASE_CREDENTIALS=C:/Users/crazy/Downloads/rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json (REPLACE STRING WITH LOCAL PATH TO PRIVATE FIREBASE KEY; no quotes, forward slashes for python string format)
+Our flask files rely on your local .env file keys so that you only have to write your key down once
