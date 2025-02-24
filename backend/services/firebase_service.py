@@ -5,7 +5,7 @@ from firebase_admin import credentials, firestore
 try:
     firebase_admin.get_app()
 except ValueError:
-    cred = credentials.Certificate(r"C:\Users\crazy\Downloads\rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json")  # Adjust path if needed
+    cred = credentials.Certificate(r"C:\Users\crazy\Downloads\rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json")  # Adjust path to your own
     firebase_admin.initialize_app(cred)
     
 db = firestore.client()

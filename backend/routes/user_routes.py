@@ -36,8 +36,12 @@ def edit_profile():
 
     updated = update_user_profile(user_id, data["bio"], data["profile_picture_url"])
     if updated:
-        print("Profile updated successfully!")
-        return jsonify({"message": "Profile updated successfully!"}), 200
-
+        updated_profile = get_user_profile(user_id)  # Fetch updated profile
+        print("Profile updated successfully:", updated_profile)  # Debugging log
+        return jsonify(updated_profile), 200  # Return updated profile data
+    
     print("Error: Profile update failed")
     return jsonify({"error": "Profile update failed"}), 500
+
+
+

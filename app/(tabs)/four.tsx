@@ -47,6 +47,34 @@ export default function TabFourScreen() {
     }, [user, refresh]) // ✅ Re-fetch when refresh state changes
   );
 
+  const updateProfilePicture = async (downloadURL: string) => {
+    if (!user) return;
+    try {
+        const token = await user.getIdToken();
+        const response = await fetch("http://127.0.0.1:5000/api/profile", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: token,
+            },
+            body: JSON.stringify({
+                bio: profile.bio,  // Keep the existing bio
+                profile_picture_url: downloadURL,
+            }),
+        });
+
+        if (response.ok) {
+            const updatedData = await response.json();
+            console.log("Profile updated successfully!", updatedData);
+            setProfile(updatedData);  // ✅ Ensure profile state updates correctly
+        } else {
+            console.error("Error updating profile:", await response.json());
+        }
+    } catch (error) {
+        console.error("Failed to update profile picture:", error);
+    }
+};
+
   // Fetch profile from Flask API (Firestore)
   const fetchProfile = async () => {
     if (!user) return;
@@ -134,7 +162,10 @@ export default function TabFourScreen() {
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log("Uploaded image URL:", downloadURL);  // Debugging log
           setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // ✅ Update immediately
+          // Call updateProfile to save it to Firestore
+          await updateProfilePicture(downloadURL);
           setRefresh((prev) => !prev); // ✅ Force tab refresh
           setLoading(false);
         }

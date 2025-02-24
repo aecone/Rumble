@@ -3,6 +3,11 @@ from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials
 from routes.user_routes import user_routes
+import logging
+
+log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
+
 
 app = Flask(__name__)
 CORS(app)  # Allow frontend to make requests

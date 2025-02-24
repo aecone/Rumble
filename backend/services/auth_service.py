@@ -6,10 +6,10 @@ def verify_token():
     token = request.headers.get("Authorization")
 
     if not token:
-        return None, jsonify({"error": "Authorization token missing"}), 401  # ✅ Return (None, error)
+        return None, (jsonify({"error": "Authorization token missing"}), 401)  # ✅ Return (None, error)
 
     try:
         decoded_token = auth.verify_id_token(token)
         return decoded_token, None  # ✅ Return (decoded_token, None) when valid
     except Exception as e:
-        return None, jsonify({"error": "Invalid or expired token"}), 403  # ✅ Return (None, error)
+        return None, (jsonify({"error": "Invalid or expired token"}), 403)  # ✅ Return (None, error)
