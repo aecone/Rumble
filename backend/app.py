@@ -4,10 +4,10 @@ import firebase_admin
 from firebase_admin import credentials
 from routes.user_routes import user_routes
 import logging
+from config import FIREBASE_CREDENTIALS  # Import from config.py
 
 log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
-
 
 app = Flask(__name__)
 CORS(app)  # Allow frontend to make requests
@@ -16,7 +16,7 @@ CORS(app)  # Allow frontend to make requests
 try:
     firebase_admin.get_app()  # Check if already initialized
 except ValueError:
-    cred = credentials.Certificate(r"C:\Users\crazy\Downloads\rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json")  # Replace with actual path
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS)  # Replace with actual path
     firebase_admin.initialize_app(cred)
 
 # Register routes
