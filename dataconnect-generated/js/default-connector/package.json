@@ -25,7 +25,10 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "firebase": "^11.3.0",
-    "@tanstack-query-firebase/react": "^1.0.5"
+    "@tanstack-query-firebase/react": "^1.0.5",
+    "firebase": "^11.3.0"
+  },
+  "dependencies": {
+    "@firebasegen/default-connector": "file:"
   }
 }

@@ -1,14 +1,16 @@
 import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native'
 import React, { useState } from 'react'
-import { auth } from '../FirebaseConfig'
+import { auth, db } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { router } from 'expo-router'
+import { doc, setDoc } from "firebase/firestore";
+
 
 
 const index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  
 
   const signIn = async () => {
     try {
@@ -24,6 +26,9 @@ const index = () => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password)
       if (user) router.replace('/(tabs)/home');
+      // After creating the user:
+      const userDocRef = doc(db, "users", user.user.uid);
+      await setDoc(userDocRef, { bio: "", profile_picture_url: "" });
     } catch (error: any) {
       console.log(error)
       alert('Sign in failed: ' + error.message);
