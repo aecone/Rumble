@@ -12,11 +12,12 @@ export default function CreateProfile() {
   const signUp = async () => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password)
-      if (user) router.replace('/(tabs)/home');
+      if (user) router.replace('/SignUpName');
     } catch (error: any) {
       console.log(error)
       alert('Sign in failed: ' + error.message);
     }
+    router.replace('/SignUpName');
   }
 
   return (

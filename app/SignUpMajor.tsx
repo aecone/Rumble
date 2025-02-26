@@ -14,6 +14,8 @@ const SignUpMajor = () => {
     });
   };
 
+  const isFormValid = major.trim() !== '';
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>What's your major?</Text>
@@ -23,7 +25,11 @@ const SignUpMajor = () => {
         value={major}
         onChangeText={setMajor}
       />
-      <TouchableOpacity style={styles.button} onPress={proceed}>
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: isFormValid ? '#5C6BC0' : '#B0BEC5' }]} // Change button color based on validity
+        onPress={proceed}
+        disabled={!isFormValid}
+      >
         <Text style={styles.text}>Next</Text>
       </TouchableOpacity>
     </View>
