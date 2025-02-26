@@ -22,6 +22,9 @@ const index = () => {
     }
   }
 
+  // Button to navigate to create a profile
+  const goToCreateProfile = () => {
+    router.push('/create-profile' as any);
   const signUp = async () => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password)
@@ -43,8 +46,8 @@ const index = () => {
       <TouchableOpacity style={styles.button} onPress={signIn}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={signUp}>
-        <Text style={styles.text}>Make Account</Text>
+      <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
+        <Text style={styles.text}>Create Account</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
