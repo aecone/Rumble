@@ -48,6 +48,8 @@ const index = () => {
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
         <Text style={styles.text}>Create Account</Text>
+      <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
+        <Text style={styles.text}>Create Account</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
