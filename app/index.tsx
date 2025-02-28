@@ -5,12 +5,9 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { router } from 'expo-router'
 import { doc, setDoc } from "firebase/firestore";
 
-
-
 const index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
 
   const signIn = async () => {
     try {
@@ -25,6 +22,8 @@ const index = () => {
   // Button to navigate to create a profile
   const goToCreateProfile = () => {
     router.push('/create-profile' as any);
+  };
+
   const signUp = async () => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password)
@@ -36,18 +35,16 @@ const index = () => {
       console.log(error)
       alert('Sign in failed: ' + error.message);
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Login</Text>
       <TextInput style={styles.textInput} placeholder="email" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.textInput} placeholder="password" value={password} onChangeText={setPassword} secureTextEntry/>
+      <TextInput style={styles.textInput} placeholder="password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={signIn}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
-        <Text style={styles.text}>Create Account</Text>
       <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
         <Text style={styles.text}>Create Account</Text>
       </TouchableOpacity>
