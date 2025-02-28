@@ -6,26 +6,24 @@ import { createUserWithEmailAndPassword } from 'firebase/auth'
 
 
 export default function CreateProfile() {
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const signUp = async () => {
-    try {
-      const user = await createUserWithEmailAndPassword(auth, email, password)
-      if (user) router.replace('/SignUpName');
-    } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
-    }
-    router.replace('/SignUpName');
-  }
+  const proceed = () => {
+    // Navigate to the next page (Email/Password entry)
+    router.push({
+      pathname: '/SignUpName',
+      params: { email, password }  // Pass name info to the next page
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Create an Account</Text>
       <TextInput style={styles.textInput} placeholder="email" value={email} onChangeText={setEmail} />
       <TextInput style={styles.textInput} placeholder="password" value={password} onChangeText={setPassword} secureTextEntry/>
-      <TouchableOpacity style={styles.button} onPress={signUp}>
+      <TouchableOpacity style={styles.button} onPress={proceed}>
         <Text style={styles.text}>Create</Text>
       </TouchableOpacity>
     </SafeAreaView>

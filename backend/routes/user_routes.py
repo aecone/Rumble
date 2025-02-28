@@ -45,3 +45,5 @@ def edit_profile():
 
 
 
+#email, password, first name, last name, bday, major, ethnicity, gender, pronouns 
+

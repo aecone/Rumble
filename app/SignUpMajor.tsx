@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const SignUpMajor = () => {
-    const { firstName, lastName, birthday} = useLocalSearchParams();
+    const { firstName, lastName, email, password, birthday} = useLocalSearchParams();
   const [major, setMajor] = useState('');
 
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
       pathname: '/SignUpEthnicity',
-      params: { firstName, lastName, birthday, major }  // Pass name info to the next page
+      params: { firstName, lastName, email, password, birthday, major }  // Pass name info to the next page
     });
   };
 

@@ -24,7 +24,7 @@ export default function TabFourScreen() {
   const [newBio, setNewBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
-  const [refresh, setRefresh] = useState(false); // ✅ Force refresh
+  const [refresh, setRefresh] = useState(false); // Force refresh
 
   // Track login/logout changes
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function TabFourScreen() {
   useFocusEffect(
     useCallback(() => {
       if (user) fetchProfile();
-    }, [user, refresh]) // ✅ Re-fetch when refresh state changes
+    }, [user, refresh]) // Re-fetch when refresh state changes
   );
 
   const updateProfilePicture = async (downloadURL: string) => {
@@ -66,7 +66,7 @@ export default function TabFourScreen() {
         if (response.ok) {
             const updatedData = await response.json();
             console.log("Profile updated successfully!", updatedData);
-            setProfile(updatedData);  // ✅ Ensure profile state updates correctly
+            setProfile(updatedData);  // Ensure profile state updates correctly
         } else {
             console.error("Error updating profile:", await response.json());
         }
@@ -117,9 +117,9 @@ export default function TabFourScreen() {
 
       if (response.ok) {
         const updatedData = await response.json();
-        setProfile(updatedData); // ✅ Update state immediately
+        setProfile(updatedData); // Update state immediately
         setIsEditing(false);
-        setRefresh((prev) => !prev); // ✅ Force refresh on tab switch
+        setRefresh((prev) => !prev); // Force refresh on tab switch
       } else {
         console.error("Error updating profile:", await response.json());
       }
@@ -163,10 +163,10 @@ export default function TabFourScreen() {
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log("Uploaded image URL:", downloadURL);  // Debugging log
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // ✅ Update immediately
+          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // Update immediately
           // Call updateProfile to save it to Firestore
           await updateProfilePicture(downloadURL);
-          setRefresh((prev) => !prev); // ✅ Force tab refresh
+          setRefresh((prev) => !prev); // Force tab refresh
           setLoading(false);
         }
       );

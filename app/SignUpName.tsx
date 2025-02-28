@@ -1,15 +1,17 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const SignUpName = () => {
+  const { email, password} = useLocalSearchParams();
+  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
   const proceed = () => {
     router.push({
       pathname: '/SignUpBirthday',
-      params: { firstName, lastName }  // Pass name info to the next page
+      params: { firstName, lastName, email, password }  // Pass name info to the next page
     });
   };
 
