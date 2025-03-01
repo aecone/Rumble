@@ -17,8 +17,15 @@ import { onAuthStateChanged } from "firebase/auth";
 
 export default function TabFourScreen() {
   const [profile, setProfile] = useState({
-    bio: "",
-    profile_picture_url: "",
+    firstName: "", 
+    lastName:  "",
+    birthday:  "",
+    major:  "",
+    ethnicity:  "",
+    gender:  "",
+    pronouns:  "",
+    bio: "", 
+    profile_picture_url: "" 
   });
   const [isEditing, setIsEditing] = useState(false);
   const [newBio, setNewBio] = useState("");
@@ -34,7 +41,15 @@ export default function TabFourScreen() {
         fetchProfile();
       } else {
         setUser(null);
-        setProfile({ bio: "", profile_picture_url: "" });
+        setProfile({    firstName: "", 
+          lastName:  "",
+          birthday:  "",
+          major:  "",
+          ethnicity:  "",
+          gender:  "",
+          pronouns:  "",
+          bio: "", 
+          profile_picture_url: ""  });
       }
     });
     return unsubscribe;
@@ -195,6 +210,7 @@ export default function TabFourScreen() {
         </TouchableOpacity>
 
         {/* Bio Section */}
+        <Text style={styles.label}>Bio:</Text>
         {isEditing ? (
           <TextInput
             style={styles.input}
@@ -204,9 +220,33 @@ export default function TabFourScreen() {
             placeholder="Enter your bio..."
           />
         ) : (
+          
           <Text style={styles.text}>{profile.bio || "No bio set"}</Text>
         )}
+      {/* Display All Profile Info */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.label}>First Name:</Text>
+        <Text style={styles.text}>{profile.firstName || "N/A"}</Text>
 
+        <Text style={styles.label}>Last Name:</Text>
+        <Text style={styles.text}>{profile.lastName || "N/A"}</Text>
+
+        <Text style={styles.label}>Birthday:</Text>
+        <Text style={styles.text}>{profile.birthday || "N/A"}</Text>
+
+        <Text style={styles.label}>Major:</Text>
+        <Text style={styles.text}>{profile.major || "N/A"}</Text>
+
+        <Text style={styles.label}>Ethnicity:</Text>
+        <Text style={styles.text}>{profile.ethnicity || "N/A"}</Text>
+
+        <Text style={styles.label}>Gender:</Text>
+        <Text style={styles.text}>{profile.gender || "N/A"}</Text>
+
+        <Text style={styles.label}>Pronouns:</Text>
+        <Text style={styles.text}>{profile.pronouns || "N/A"}</Text>
+
+      </View>
         {/* Buttons */}
         {isEditing ? (
           <TouchableOpacity style={styles.button} onPress={updateProfile}>
@@ -226,6 +266,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  infoContainer: {
+    alignSelf: "stretch",
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
   container: {
     flex: 1,
     alignItems: "center",
@@ -242,6 +287,12 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     marginBottom: 10,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 10,
+    color: "#5C6BC0",
   },
   imageText: {
     color: "gray",
