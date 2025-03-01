@@ -17,6 +17,7 @@ export default function CreateProfile() {
       console.log(error)
       alert('Sign in failed: ' + error.message);
     }
+    // Gets past authentication: remove when finalized!
     router.replace('/SignUpName');
   }
 
