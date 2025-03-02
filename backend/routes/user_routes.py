@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.firebase_service import get_user_profile, update_user_profile
+from services.firebase_service import get_user_profile, update_user_profile, delete_user_account
 from services.auth_service import verify_token
 
 user_routes = Blueprint("user_routes", __name__)
@@ -63,7 +63,19 @@ def edit_profile():
     print("Error: Profile update failed")
     return jsonify({"error": "Profile update failed"}), 500
 
+@user_routes.route("/delete_account", methods=["DELETE"])
+def delete_account():
+    """API endpoint to delete a user's account."""
+    decoded_token, error = verify_token()
+    if error:
+        print("Error verifying token:", error)
+        return error
 
+    user_id = decoded_token["uid"]  # Firebase UID
 
-#email, password, first name, last name, bday, major, ethnicity, gender, pronouns 
+    # Call the isolated function
+    result = delete_user_account(user_id)
 
+    if "error" in result:
+        return jsonify(result), 500
+    return jsonify(result), 200
