@@ -27,14 +27,34 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
+    print("Received data:", data)
 
     print("Received profile update request:", data)  # Debugging log
 
-    if "bio" not in data or "profile_picture_url" not in data:
-        print("Error: Missing required fields")
-        return jsonify({"error": "Missing required fields"}), 400
+    required_fields = [
+        "firstName", "lastName", "birthday", "major", 
+        "ethnicity", "gender", "pronouns", "bio", "profile_picture_url"
+    ]
 
-    updated = update_user_profile(user_id, data["bio"], data["profile_picture_url"])
+    # Ensure all required fields are present
+    if not all(field in data for field in required_fields):
+        missing_fields = [field for field in required_fields if field not in data]
+        print(f"Error: Missing required fields - {missing_fields}")
+        return jsonify({"error": f"Missing required fields: {missing_fields}"}), 400
+
+   
+    updated = update_user_profile(
+        user_id, 
+        data["firstName"], 
+        data["lastName"], 
+        data["birthday"], 
+        data["major"], 
+        data["ethnicity"], 
+        data["gender"], 
+        data["pronouns"], 
+        data["bio"], 
+        data["profile_picture_url"]
+    )
     if updated:
         updated_profile = get_user_profile(user_id)  # Fetch updated profile
         print("Profile updated successfully:", updated_profile)  # Debugging log
@@ -44,4 +64,6 @@ def edit_profile():
     return jsonify({"error": "Profile update failed"}), 500
 
 
+
+#email, password, first name, last name, bday, major, ethnicity, gender, pronouns 
 

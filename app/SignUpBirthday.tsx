@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const Birthday = () => {
-  const { firstName, lastName } = useLocalSearchParams(); // Retrieve passed params
+  const { firstName, lastName, email, password } = useLocalSearchParams(); // Retrieve passed params
   const [birthday, setBirthday] = useState('');
 
   // Function to check if the date is valid
@@ -28,7 +28,7 @@ const Birthday = () => {
   const proceed = () => {
     router.push({
       pathname: '/SignUpMajor', // Replace with your next screen
-      params: { firstName, lastName, birthday },
+      params: { firstName, lastName, email, password, birthday },
     });
   };
 
