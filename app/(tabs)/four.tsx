@@ -8,8 +8,11 @@ import {
   TextInput,
   Image,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { app, auth, storage } from "../../FirebaseConfig";
+import { auth, storage } from "../../FirebaseConfig";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
@@ -18,22 +21,20 @@ import { onAuthStateChanged } from "firebase/auth";
 export default function TabFourScreen() {
   const [profile, setProfile] = useState({
     firstName: "", 
-    lastName:  "",
-    birthday:  "",
-    major:  "",
-    ethnicity:  "",
-    gender:  "",
-    pronouns:  "",
+    lastName: "",
+    birthday: "",
+    major: "",
+    ethnicity: "",
+    gender: "",
+    pronouns: "",
     bio: "", 
     profile_picture_url: "" 
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [newBio, setNewBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
-  const [refresh, setRefresh] = useState(false); // Force refresh
+  const [refresh, setRefresh] = useState(false);
 
-  // Track login/logout changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -41,56 +42,28 @@ export default function TabFourScreen() {
         fetchProfile();
       } else {
         setUser(null);
-        setProfile({    firstName: "", 
-          lastName:  "",
-          birthday:  "",
-          major:  "",
-          ethnicity:  "",
-          gender:  "",
-          pronouns:  "",
+        setProfile({
+          firstName: "", 
+          lastName: "",
+          birthday: "",
+          major: "",
+          ethnicity: "",
+          gender: "",
+          pronouns: "",
           bio: "", 
-          profile_picture_url: ""  });
+          profile_picture_url: "" 
+        });
       }
     });
     return unsubscribe;
   }, []);
 
-  // Refetch profile when switching to TabFour
   useFocusEffect(
     useCallback(() => {
       if (user) fetchProfile();
-    }, [user, refresh]) // Re-fetch when refresh state changes
+    }, [user, refresh])
   );
 
-  const updateProfilePicture = async (downloadURL: string) => {
-    if (!user) return;
-    try {
-        const token = await user.getIdToken();
-        const response = await fetch("http://127.0.0.1:5000/api/profile", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: token,
-            },
-            body: JSON.stringify({
-                bio: profile.bio,  // Keep the existing bio
-                profile_picture_url: downloadURL,
-            }),
-        });
-
-        if (response.ok) {
-            const updatedData = await response.json();
-            console.log("Profile updated successfully!", updatedData);
-            setProfile(updatedData);  // Ensure profile state updates correctly
-        } else {
-            console.error("Error updating profile:", await response.json());
-        }
-    } catch (error) {
-        console.error("Failed to update profile picture:", error);
-    }
-};
-
-  // Fetch profile from Flask API (Firestore)
   const fetchProfile = async () => {
     if (!user) return;
     setLoading(true);
@@ -102,7 +75,6 @@ export default function TabFourScreen() {
       const data = await response.json();
       if (response.ok) {
         setProfile(data);
-        setNewBio(data.bio);
       } else {
         console.error("Error fetching profile:", data);
       }
@@ -112,7 +84,6 @@ export default function TabFourScreen() {
     setLoading(false);
   };
 
-  // Update profile in Firestore (via Flask)
   const updateProfile = async () => {
     if (!user) return;
     setLoading(true);
@@ -124,17 +95,14 @@ export default function TabFourScreen() {
           "Content-Type": "application/json",
           Authorization: token,
         },
-        body: JSON.stringify({
-          bio: newBio,
-          profile_picture_url: profile.profile_picture_url,
-        }),
+        body: JSON.stringify(profile),
       });
 
       if (response.ok) {
         const updatedData = await response.json();
-        setProfile(updatedData); // Update state immediately
+        setProfile(updatedData);
         setIsEditing(false);
-        setRefresh((prev) => !prev); // Force refresh on tab switch
+        setRefresh((prev) => !prev);
       } else {
         console.error("Error updating profile:", await response.json());
       }
@@ -144,23 +112,9 @@ export default function TabFourScreen() {
     setLoading(false);
   };
 
-  // Pick image from gallery & upload to Firebase Storage
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      uploadImage(result.assets[0].uri);
-    }
-  };
-
-  // Upload image to Firebase Storage
-  const uploadImage = async (uri: string) => {
-    if (!user) return;
+    // Upload image to Firebase Storage
+    const uploadImage = async (uri: string) => {
+      if (!user) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
@@ -178,10 +132,10 @@ export default function TabFourScreen() {
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log("Uploaded image URL:", downloadURL);  // Debugging log
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // Update immediately
+          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // ✅ Update immediately
           // Call updateProfile to save it to Firestore
-          await updateProfilePicture(downloadURL);
-          setRefresh((prev) => !prev); // Force tab refresh
+          await updateProfile();
+          setRefresh((prev) => !prev); // ✅ Force tab refresh
           setLoading(false);
         }
       );
@@ -193,78 +147,71 @@ export default function TabFourScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Edit Profile</Text>
-
-        {loading ? <ActivityIndicator size="large" color="#5C6BC0" /> : null}
-
-        {/* Profile Picture */}
-        <TouchableOpacity onPress={pickImage}>
-          <Image
-            source={{
-              uri: profile.profile_picture_url || "https://via.placeholder.com/150",
-            }}
-            style={styles.profileImage}
-          />
-          <Text style={styles.imageText}>Tap to Change</Text>
-        </TouchableOpacity>
-
-        {/* Bio Section */}
-        <Text style={styles.label}>Bio:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={newBio}
-            onChangeText={setNewBio}
-            multiline
-            placeholder="Enter your bio..."
-          />
-        ) : (
-          
-          <Text style={styles.text}>{profile.bio || "No bio set"}</Text>
-        )}
-      {/* Display All Profile Info */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>First Name:</Text>
-        <Text style={styles.text}>{profile.firstName || "N/A"}</Text>
-
-        <Text style={styles.label}>Last Name:</Text>
-        <Text style={styles.text}>{profile.lastName || "N/A"}</Text>
-
-        <Text style={styles.label}>Birthday:</Text>
-        <Text style={styles.text}>{profile.birthday || "N/A"}</Text>
-
-        <Text style={styles.label}>Major:</Text>
-        <Text style={styles.text}>{profile.major || "N/A"}</Text>
-
-        <Text style={styles.label}>Ethnicity:</Text>
-        <Text style={styles.text}>{profile.ethnicity || "N/A"}</Text>
-
-        <Text style={styles.label}>Gender:</Text>
-        <Text style={styles.text}>{profile.gender || "N/A"}</Text>
-
-        <Text style={styles.label}>Pronouns:</Text>
-        <Text style={styles.text}>{profile.pronouns || "N/A"}</Text>
-
-      </View>
-        {/* Buttons */}
-        {isEditing ? (
-          <TouchableOpacity style={styles.button} onPress={updateProfile}>
-            <Text style={styles.buttonText}>Save Profile</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={() => setIsEditing(true)}>
-            <Text style={styles.buttonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingView}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Edit Profile</Text>
+            {loading && <ActivityIndicator size="large" color="#5C6BC0" />}
+            <TouchableOpacity onPress={() => ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+              }).then(result => {
+                if (!result.canceled) uploadImage(result.assets[0].uri);
+              })}>
+              <Image
+                source={{ uri: profile.profile_picture_url || "https://via.placeholder.com/150" }}
+                style={styles.profileImage}
+              />
+              <Text style={styles.imageText}>Tap to Change</Text>
+            </TouchableOpacity>
+            {Object.keys(profile).filter(key => key !== "profile_picture_url").map((key) => (
+              <View key={key} style={styles.infoContainer}>
+                <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
+                {isEditing ? (
+                  <TextInput
+                    style={styles.input}
+                    value={profile[key]}
+                    onChangeText={(text) => setProfile((prev) => ({ ...prev, [key]: text }))}
+                    multiline
+                  />
+                ) : (
+                  <Text style={styles.text}>{profile[key] || "N/A"}</Text>
+                )}
+              </View>
+            ))}
+            {isEditing ? (
+              <TouchableOpacity style={styles.button} onPress={updateProfile}>
+                <Text style={styles.buttonText}>Save Profile</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.button} onPress={() => setIsEditing(true)}>
+                <Text style={styles.buttonText}>Edit Profile</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+   safeArea: {
     flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 40, // Prevents overlap with keyboard
   },
   infoContainer: {
     alignSelf: "stretch",
