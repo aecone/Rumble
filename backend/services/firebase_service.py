@@ -1,11 +1,9 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  # Import from config.py
 
 # Ensure Firebase is initialized
-try:
-    firebase_admin.get_app()
-except ValueError:
+if not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_CREDENTIALS)
     firebase_admin.initialize_app(cred)
     
@@ -30,3 +28,29 @@ def update_user_profile(user_id, firstName, lastName, birthday, major, ethnicity
 "profile_picture_url": profile_picture_url  
 }, merge=True)
     return True
+
+def delete_user_account(user_id):
+    try:
+        print(f"Attempting to delete user: {user_id}")  # Debugging
+
+        # Delete user from Firestore
+        user_ref = db.collection("users").document(user_id)
+        if user_ref.get().exists:
+            user_ref.delete()
+            print(f"Deleted Firestore user document: {user_id}")
+        else:
+            print(f"User {user_id} not found in Firestore")
+
+        # Delete user from Firebase Auth
+        auth.delete_user(user_id)
+        print(f"Deleted Firebase Auth user: {user_id}")
+
+        return {"message": "Account successfully deleted"}
+
+    except auth.UserNotFoundError:
+        print(f"User {user_id} not found in Firebase Auth")
+        return {"error": "User not found"}, 404
+
+    except Exception as e:
+        print(f"Error deleting user {user_id}: {str(e)}")
+        return {"error": "Failed to delete account"}, 500
