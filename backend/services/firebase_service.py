@@ -18,30 +18,31 @@ def update_user_profile(user_id, firstName, lastName, birthday, major, ethnicity
     """Update a user's profile."""
     user_ref = db.collection("users").document(user_id)
     user_ref.set({"firstName": firstName,  
-"lastName": lastName,  
-"birthday": birthday,  
-"major": major,  
-"ethnicity": ethnicity,  
-"gender": gender,  
-"pronouns": pronouns,  
-"bio": bio,  
-"profile_picture_url": profile_picture_url  
-}, merge=True)
+                "lastName": lastName,  
+                "birthday": birthday,  
+                "major": major,  
+                "ethnicity": ethnicity,  
+                "gender": gender,  
+                "pronouns": pronouns,  
+                "bio": bio,  
+                "profile_picture_url": profile_picture_url  
+                }, merge=True)
     return True
+
 
 def delete_user_account(user_id):
     try:
         print(f"Attempting to delete user: {user_id}")  # Debugging
 
-        # Delete user from Firestore
-        user_ref = db.collection("users").document(user_id)
+        # Delete user document from Firestore
+        user_ref = db.collection("users").document(user_id)  # Ensure correct indentation
         if user_ref.get().exists:
             user_ref.delete()
             print(f"Deleted Firestore user document: {user_id}")
         else:
             print(f"User {user_id} not found in Firestore")
 
-        # Delete user from Firebase Auth
+        # Delete user from Firebase Authentication
         auth.delete_user(user_id)
         print(f"Deleted Firebase Auth user: {user_id}")
 

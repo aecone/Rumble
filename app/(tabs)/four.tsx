@@ -9,7 +9,7 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView,Alert,
   Platform,
 } from "react-native";
 import { auth, storage } from "../../FirebaseConfig";
@@ -132,16 +132,38 @@ export default function TabFourScreen() {
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log("Uploaded image URL:", downloadURL);  // Debugging log
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // ✅ Update immediately
+          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // Update immediately
           // Call updateProfile to save it to Firestore
           await updateProfile();
-          setRefresh((prev) => !prev); // ✅ Force tab refresh
+          setRefresh((prev) => !prev); // Force tab refresh
           setLoading(false);
         }
       );
     } catch (error) {
       console.error("Error uploading image:", error);
       setLoading(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("http://127.0.0.1:5000/api/delete_account", {
+        method: "DELETE",
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+      } else {
+        Alert.alert("Error", data.error || "Failed to delete account.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not complete request.");
     }
   };
 
@@ -193,6 +215,9 @@ export default function TabFourScreen() {
                 <Text style={styles.buttonText}>Edit Profile</Text>
               </TouchableOpacity>
             )}
+            <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
+            <Text style={styles.buttonText}>Delete Account</Text>
+          </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
