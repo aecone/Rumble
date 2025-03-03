@@ -1,20 +1,81 @@
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TouchableOpacity, Text, View, Modal, TextInput } from 'react-native';
 import { auth } from '../../FirebaseConfig';
 import { router } from 'expo-router';
-import { getAuth } from 'firebase/auth';
+import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 
 export default function TabOneScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
+  // Redirect to login if user is not authenticated
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');
   });
 
+  const handleUpdateCredentials = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        // Update email if provided
+        if (newEmail !== '') {
+          await updateEmail(user, newEmail);
+        }
+        // Update password if provided
+        if (newPassword !== '') {
+          await updatePassword(user, newPassword);
+        }
+        alert('Credentials updated successfully');
+        // Reset input fields and close modal
+        setNewEmail('');
+        setNewPassword('');
+        setModalVisible(false);
+      } catch (error: any) {
+        console.error("Error updating credentials: ", error);
+        alert('Error updating credentials: ' + error.message);
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Out</Text>
+      <Text style={styles.title}>Account Settings</Text>
       <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
         <Text style={styles.text}>Sign Out</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.text}>Update Email & Password</Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update Credentials</Text>
+            <TextInput 
+              placeholder="New Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput 
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
+              <Text style={styles.text}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
+              <Text style={styles.text}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -24,37 +85,67 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA', // A softer white for a modern, minimalist background
+    backgroundColor: '#FAFAFA',
   },
   title: {
-    fontSize: 28, // A bit larger for a more striking appearance
-    fontWeight: '800', // Extra bold for emphasis
-    color: '#1A237E', // A deep indigo for a sophisticated, modern look
-    marginBottom: 40, // Increased space for a more airy, open feel
-  },
-  separator: {
-    marginVertical: 30,
-    height: 2, // Slightly thicker for a more pronounced separation
-    width: '80%',
-    backgroundColor: '#E8EAF6', // Using a light indigo to match the border of the textInput
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#1A237E',
+    marginBottom: 40,
   },
   button: {
     width: '90%',
-    backgroundColor: '#5C6BC0', // A lighter indigo to complement the title color
+    backgroundColor: '#5C6BC0',
     padding: 20,
-    borderRadius: 15, // Softly rounded corners for a modern, friendly touch
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#5C6BC0', // Shadow color to match the button for a cohesive look
+    shadowColor: '#5C6BC0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
-    elevation: 5, // Slightly elevated for a subtle 3D effect
-    marginTop: 15, // Adjusted to match the new style
+    elevation: 5,
+    marginTop: 15,
   },
   text: {
-    color: '#FFFFFF', // Maintained white for clear visibility
-    fontSize: 18, // Slightly larger for emphasis
-    fontWeight: '600', // Semi-bold for a balanced weight
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FAFAFA',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 15,
+    color: '#1A237E',
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: '#E8EAF6',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: '#5C6BC0',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 5,
   }
 });

@@ -11,6 +11,11 @@ export default function CreateProfile() {
   const [password, setPassword] = useState('');
 
   const proceed = () => {
+    // Check if the email contains "rutgers.edu"
+    if (!email.toLowerCase().includes("rutgers.edu")) {
+      alert("Please use a valid Rutgers email address.");
+      return;
+    }
     // Navigate to the next page (Email/Password entry)
     router.push({
       pathname: '/SignUpName',
