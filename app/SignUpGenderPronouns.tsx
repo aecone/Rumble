@@ -28,33 +28,35 @@ const SignUpGenderPronouns = () => {
         return;
       }
 
-      const user = await createUserWithEmailAndPassword(
-        auth,
-        emailString,
-        passwordString
-      );
-      if (user) router.replace("/(tabs)/two");
-      // After creating the user:
-      const userDocRef = doc(db, "users", user.user.uid);
-      await setDoc(userDocRef, { 
-        firstName: firstName, 
-        lastName: lastName, 
-        birthday: birthday, 
-        major: major, 
-        ethnicity: ethnicity, 
-        gender: gender, 
-        pronouns: pronouns,  // Missing comma was here
-        bio: "", 
-        profile_picture_url: "" 
+      const response = await fetch("http://127.0.0.1:5000/api/create_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailString,
+          password: passwordString,
+          firstName: firstName,
+          lastName: lastName,
+          birthday: birthday,
+          major: major,
+          ethnicity: ethnicity,
+          gender: gender,
+          pronouns: pronouns,
+        }),
       });
-      
-    } catch (error: any) {
+  
+      const data = await response.json();
+      if (response.ok) {
+        router.replace("/(tabs)/two"); // Navigate to next page
+      } else {
+        alert("Sign up failed: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
       console.log(error);
-      alert("Sign in failed: " + error.message);
+      alert("Sign up failed: " + error.message);
     }
-    router.replace("/(tabs)/two");
   };
-
   // Check if both fields are filled
   //const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
 

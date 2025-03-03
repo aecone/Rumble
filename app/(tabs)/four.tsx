@@ -177,20 +177,23 @@ export default function TabFourScreen() {
           <View style={styles.container}>
             <Text style={styles.title}>Edit Profile</Text>
             {loading && <ActivityIndicator size="large" color="#5C6BC0" />}
-            <TouchableOpacity onPress={() => ImagePicker.launchImageLibraryAsync({
+              <TouchableOpacity onPress={() => ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.8,
-              }).then(result => {
-                if (!result.canceled) uploadImage(result.assets[0].uri);
-              })}>
-              <Image
-                source={{ uri: profile.profile_picture_url || "https://via.placeholder.com/150" }}
-                style={styles.profileImage}
-              />
-              <Text style={styles.imageText}>Tap to Change</Text>
-            </TouchableOpacity>
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            }).then(result => {
+              if (!result.canceled) {
+  uploadImage(result.assets[0].uri);
+  setProfile((prev) => ({ ...prev, profile_picture_url: result.assets[0].uri }));
+}
+            })}>
+            <Image
+              source={{ uri: profile.profile_picture_url || "https://www.w3schools.com/howto/img_avatar.png" }}
+              style={styles.profileImage}
+            />
+            <Text style={styles.imageText}>Tap to Change</Text>
+          </TouchableOpacity>
             {Object.keys(profile).filter(key => key !== "profile_picture_url").map((key) => (
               <View key={key} style={styles.infoContainer}>
                 <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>

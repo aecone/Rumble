@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from services.firebase_service import get_user_profile, update_user_profile, delete_user_account
+from services.firebase_service import get_user_profile, update_user_profile, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
+
 
 user_routes = Blueprint("user_routes", __name__)
 
@@ -79,3 +80,39 @@ def delete_account():
     if "error" in result:
         return jsonify(result), 500
     return jsonify(result), 200
+
+@user_routes.route("/create_user", methods=["POST"])
+def create_user():
+    """
+    API endpoint to create a new user in Firebase Auth & Firestore.
+    """
+    try:
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return jsonify({"error": "Email and password are required"}), 400
+
+        user_data = {
+            "firstName": data.get("firstName", ""),
+            "lastName": data.get("lastName", ""),
+            "birthday": data.get("birthday", ""),
+            "major": data.get("major", ""),
+            "ethnicity": data.get("ethnicity", ""),
+            "gender": data.get("gender", ""),
+            "pronouns": data.get("pronouns", ""),
+            "bio": "",
+            "profile_picture_url": "",
+            "email": email,
+        }
+
+        result = create_user_in_firebase(email, password, user_data)
+        status_code = 201 if "user_id" in result else 500
+
+        return jsonify(result), status_code
+
+    except Exception as e:
+        print(f"Error processing request: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+

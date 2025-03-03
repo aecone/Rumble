@@ -55,3 +55,30 @@ def delete_user_account(user_id):
     except Exception as e:
         print(f"Error deleting user {user_id}: {str(e)}")
         return {"error": "Failed to delete account"}, 500
+
+def create_user_in_firebase(email, password, user_data):
+    """
+    Creates a new user in Firebase Authentication and Firestore.
+
+    Args:
+        email (str): User email.
+        password (str): User password.
+        user_data (dict): User profile data.
+
+    Returns:
+        dict: Success or error message.
+    """
+    try:
+        # Create user in Firebase Authentication
+        user = auth.create_user(email=email, password=password)
+        user_id = user.uid
+
+        # Store user details in Firestore
+        user_ref = db.collection("users").document(user_id)
+        user_ref.set(user_data)
+
+        return {"message": "User created successfully", "user_id": user_id}
+
+    except Exception as e:
+        print(f"Error creating user: {str(e)}")
+        return {"error": "Failed to create user"}
