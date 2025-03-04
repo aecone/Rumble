@@ -44,6 +44,8 @@ Install Flask and Dependencies in your venv
 Inside your virtual environment, install Flask and necessary libraries: pip install -r requirements.txt
 We put all required packages inside requirements.txt so the above line will install them
 
+Finally, run the file app.py (THIS WILL START YOUR LOCAL FLASK SERVER)
+
 # Input Flask Backend Firebase Key (Service Account JSON)
 Create file named .env in root folder with
 FIREBASE_CREDENTIALS=C:/Users/crazy/Downloads/rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json (REPLACE STRING WITH LOCAL PATH TO PRIVATE FIREBASE KEY; no quotes, forward slashes for python string format)
