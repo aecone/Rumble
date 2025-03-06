@@ -27,6 +27,11 @@ export default function CreateProfile() {
         alert("This email is already registered. Please sign in or use a different email.");
         return;
       }
+
+      if(password.length <= 6){
+        alert("Password length must be greater than 6 characters.");
+        return;
+      }
   
       if (!email.toLowerCase().endsWith("rutgers.edu")) {
         alert("Please use a valid Rutgers email address.");
