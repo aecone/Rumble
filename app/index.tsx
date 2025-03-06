@@ -12,7 +12,7 @@ const index = () => {
   const signIn = async () => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password)
-      if (user) router.replace('/(tabs)/home');
+      if (user) router.replace('/(tabs)/four');
     } catch (error: any) {
       console.log(error)
       alert('Sign in failed: ' + error.message);
@@ -33,8 +33,8 @@ const index = () => {
       <TouchableOpacity style={styles.button} onPress={signIn}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={goToCreateProfile}>
-        <Text style={styles.text}>Create Account</Text>
+      <TouchableOpacity onPress={goToCreateProfile}>
+        <Text style={styles.createAccountText}>Don't have an account? Sign up here</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -90,5 +90,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // Maintained white for clear visibility
     fontSize: 18, // Slightly larger for emphasis
     fontWeight: '600', // Semi-bold for a balanced weight
+  },
+  createAccountButton: {
+    
+  },
+  createAccountText: {
+    color: '#1A237E',
+    textDecorationLine: "underline",
   }
 });

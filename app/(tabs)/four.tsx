@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
+  Modal,
   KeyboardAvoidingView,Alert,
   Platform,
 } from "react-native";
@@ -18,8 +19,13 @@ import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
+import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
+
 
 export default function TabFourScreen() {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
   const [profile, setProfile] = useState({
     firstName: "", 
     lastName: "",
@@ -35,7 +41,42 @@ export default function TabFourScreen() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
   const [refresh, setRefresh] = useState(false);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  
+  const handleUpdateCredentials = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        // Check if email is provided and validate domain
+        if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
+          alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
+          return; // Stop execution if email is invalid
+        }
+  
+        // If the email is valid, update it
+        if (newEmail !== '') {
+          await updateEmail(user, newEmail);
+        }
+  
+        // Only update password if email validation passed
+        if (newPassword !== '') {
+          await updatePassword(user, newPassword);
+        }
+  
+        alert('Credentials updated successfully');
+  
+        // Reset input fields and close modal
+        setNewEmail('');
+        setNewPassword('');
+        setModalVisible(false);
+      } catch (error: any) {
+        console.error('Error updating credentials: ', error);
+        alert('Error updating credentials: ' + error.message);
+      }
+    }
+  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -252,7 +293,44 @@ useEffect(() => {
             <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
             <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.buttonText}>Update Email and Password</Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update Credentials</Text>
+            <TextInput 
+              placeholder="New Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput 
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
+              <Text style={styles.text}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
+              <Text style={styles.text}>Cancel</Text>
+            </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+          </View>
+      
+          
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -331,5 +409,34 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
+    justifyContent: "center",
+    alignItems: "center",
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FAFAFA',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 15,
+    color: '#1A237E',
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: '#5C6BC0',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 5,
+  }
 });

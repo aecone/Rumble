@@ -7,9 +7,6 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { auth, db } from "../FirebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 
 const SignUpGenderPronouns = () => {
   const { firstName, lastName, email, password, birthday, major, ethnicity } =
@@ -19,15 +16,14 @@ const SignUpGenderPronouns = () => {
 
   const signUp = async () => {
     try {
-      // Ensure email and password are strings (not arrays)
       const emailString = Array.isArray(email) ? email[0] : email;
       const passwordString = Array.isArray(password) ? password[0] : password;
-
+  
       if (!emailString || !passwordString) {
         alert("Invalid email or password.");
         return;
       }
-
+  
       const response = await fetch("http://127.0.0.1:5000/api/create_user", {
         method: "POST",
         headers: {
@@ -36,27 +32,31 @@ const SignUpGenderPronouns = () => {
         body: JSON.stringify({
           email: emailString,
           password: passwordString,
-          firstName: firstName,
-          lastName: lastName,
-          birthday: birthday,
-          major: major,
-          ethnicity: ethnicity,
-          gender: gender,
-          pronouns: pronouns,
+          firstName,
+          lastName,
+          birthday,
+          major,
+          ethnicity,
+          gender,
+          pronouns,
         }),
       });
   
       const data = await response.json();
+  
       if (response.ok) {
-        router.replace("/"); // Navigate to next page
+        router.replace("/"); // Navigate to the next page
+      } else if (response.status === 500) {
+        alert(data.error || "Something went wrong on our end. Please try again.");
       } else {
         alert("Sign up failed: " + (data.error || "Unknown error"));
       }
     } catch (error) {
       console.log(error);
-      alert("Sign up failed: " + error.message);
+      alert("Network error: Unable to connect to the server.");
     }
   };
+  
   // Check if both fields are filled
   //const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
 
