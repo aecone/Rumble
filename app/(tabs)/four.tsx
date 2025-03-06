@@ -88,6 +88,7 @@ export default function TabFourScreen() {
   const updateProfile = async () => {
     if (!user) return;
     setLoading(true);
+    console.log(profile);
     try {
       const token = await user.getIdToken();
       const response = await fetch("http://127.0.0.1:5000/api/profile", {
@@ -113,16 +114,17 @@ export default function TabFourScreen() {
     setLoading(false);
   };
 
-    // Upload image to Firebase Storage
-    const uploadImage = async (uri: string) => {
-      if (!user) return;
+  const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
+
+  const uploadImage = async (uri: string) => {
+    if (!user) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
       const storageRef = ref(storage, `profile_pictures/${user.uid}.jpg`);
       const uploadTask = uploadBytesResumable(storageRef, blob);
-
+  
       uploadTask.on(
         "state_changed",
         null,
@@ -132,11 +134,12 @@ export default function TabFourScreen() {
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log("Uploaded image URL:", downloadURL);  // Debugging log
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // Update immediately
-          // Call updateProfile to save it to Firestore
-          await updateProfile();
-          setRefresh((prev) => !prev); // Force tab refresh
+          console.log("Uploaded image URL:", downloadURL);
+  
+          // Update the profile state with the new URL
+          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL }));
+          // Set flag to trigger updateProfile after state change
+          setPendingImageUpdate(true);
           setLoading(false);
         }
       );
@@ -145,6 +148,15 @@ export default function TabFourScreen() {
       setLoading(false);
     }
   };
+
+  // useEffect to trigger updateProfile after profile_picture_url is updated
+useEffect(() => {
+  if (pendingImageUpdate) {
+    updateProfile();
+    // Reset the flag so it doesn't trigger again
+    setPendingImageUpdate(false);
+  }
+}, [profile.profile_picture_url, pendingImageUpdate]);
 
   const deleteAccount = async () => {
     if (!user) return;
