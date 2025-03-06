@@ -28,7 +28,7 @@ export default function CreateProfile() {
         return;
       }
   
-      if (!email.toLowerCase().includes("rutgers.edu")) {
+      if (!email.toLowerCase().endsWith("rutgers.edu")) {
         alert("Please use a valid Rutgers email address.");
         return;
       }

@@ -20,8 +20,8 @@ export default function TabOneScreen() {
     if (user) {
       try {
         // Check if email is provided and validate domain
-        if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
-          alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
+        if (newEmail !== '' && !newEmail.endsWith('rutgers.edu')) {
+          alert('Please enter a valid Rutgers email');
           return; // Stop execution if email is invalid
         }
   
