@@ -16,27 +16,39 @@ export default function TabOneScreen() {
 
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
+  
     if (user) {
       try {
-        // Update email if provided
+        // Check if email is provided and validate domain
+        if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
+          alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
+          return; // Stop execution if email is invalid
+        }
+  
+        // If the email is valid, update it
         if (newEmail !== '') {
           await updateEmail(user, newEmail);
         }
-        // Update password if provided
+  
+        // Only update password if email validation passed
         if (newPassword !== '') {
           await updatePassword(user, newPassword);
         }
+  
         alert('Credentials updated successfully');
+  
         // Reset input fields and close modal
         setNewEmail('');
         setNewPassword('');
         setModalVisible(false);
       } catch (error: any) {
-        console.error("Error updating credentials: ", error);
+        console.error('Error updating credentials: ', error);
         alert('Error updating credentials: ' + error.message);
       }
     }
   };
+  
+  
 
   return (
     <View style={styles.container}>
