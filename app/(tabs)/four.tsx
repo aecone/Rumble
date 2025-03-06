@@ -206,7 +206,9 @@ export default function TabFourScreen() {
 }
             })}>
             <Image
-              source={{ uri: profile.profile_picture_url || "https://www.w3schools.com/howto/img_avatar.png" }}
+              source={profile.profile_picture_url 
+                ? { uri: profile.profile_picture_url } 
+                : require('../../assets/images/profile.png')}              
               style={styles.profileImage}
             />
             <Text style={styles.imageText}>Tap to Change</Text>
