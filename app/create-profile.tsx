@@ -4,15 +4,15 @@ import { router } from 'expo-router'
 import { auth } from '../FirebaseConfig'
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 
-const checkEmailExists = async (email) => {
-  try {
-    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    return signInMethods.length > 0; 
-  } catch (error) {
-    console.error("Error checking email:", error);
-    return false;
-  }
-};
+const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      return signInMethods.length > 0; 
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
+    }
+  };
 
 export default function CreateProfile() {
 
