@@ -48,7 +48,7 @@ const SignUpGenderPronouns = () => {
   
       const data = await response.json();
       if (response.ok) {
-        router.replace("/(tabs)/two"); // Navigate to next page
+        router.replace("/"); // Navigate to next page
       } else {
         alert("Sign up failed: " + (data.error || "Unknown error"));
       }

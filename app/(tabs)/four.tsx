@@ -17,6 +17,7 @@ import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
+import { router } from 'expo-router'
 
 export default function TabFourScreen() {
   const [profile, setProfile] = useState({
@@ -156,16 +157,32 @@ export default function TabFourScreen() {
           Authorization: `${token}`,
         },
       });
+  
       const data = await response.json();
+      console.log(data);
       if (response.ok) {
-        Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+        if (response.ok) {
+          console.log("Account deleted, now signing out...");
+          await auth.signOut();
+          console.log("Successfully signed out, navigating...");
+          
+          router.dismissAll();
+          router.replace("/");
+        
+          Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+        }
+        
       } else {
         Alert.alert("Error", data.error || "Failed to delete account.");
       }
     } catch (error) {
+      console.log("error");
       Alert.alert("Error", "Could not complete request.");
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
