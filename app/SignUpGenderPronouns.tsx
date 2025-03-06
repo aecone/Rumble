@@ -7,9 +7,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { auth, db } from "../FirebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+
 
 const SignUpGenderPronouns = () => {
   const { firstName, lastName, email, password, birthday, major, ethnicity } =
@@ -17,45 +15,12 @@ const SignUpGenderPronouns = () => {
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
 
-  const signUp = async () => {
-    try {
-      // Ensure email and password are strings (not arrays)
-      const emailString = Array.isArray(email) ? email[0] : email;
-      const passwordString = Array.isArray(password) ? password[0] : password;
-
-      if (!emailString || !passwordString) {
-        alert("Invalid email or password.");
-        return;
-      }
-
-      const response = await fetch("http://127.0.0.1:5000/api/create_user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: emailString,
-          password: passwordString,
-          firstName: firstName,
-          lastName: lastName,
-          birthday: birthday,
-          major: major,
-          ethnicity: ethnicity,
-          gender: gender,
-          pronouns: pronouns,
-        }),
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        router.replace("/"); // Navigate to next page
-      } else {
-        alert("Sign up failed: " + (data.error || "Unknown error"));
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Sign up failed: " + error.message);
-    }
+  const proceed = () => {
+    // Navigate to the next page (Email/Password entry)
+    router.push({
+      pathname: '/MentorOrMentee',
+      params: { firstName, lastName, email, password, birthday, major, ethnicity, gender, pronouns }  // Pass name info to the next page
+    });
   };
   // Check if both fields are filled
   //const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
@@ -77,7 +42,7 @@ const SignUpGenderPronouns = () => {
       />
       <TouchableOpacity
         style={[styles.button]} // Change button color based on validity
-        onPress={signUp}
+        onPress={proceed}
         //disabled={!isFormValid}
       >
         <Text style={styles.text}>Next</Text>
