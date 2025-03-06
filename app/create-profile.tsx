@@ -2,26 +2,48 @@ import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'rea
 import { useState } from 'react';
 import { router } from 'expo-router'
 import { auth } from '../FirebaseConfig'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { fetchSignInMethodsForEmail } from "firebase/auth";
 
+const checkEmailExists = async (email) => {
+  try {
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    return signInMethods.length > 0; 
+  } catch (error) {
+    console.error("Error checking email:", error);
+    return false;
+  }
+};
 
 export default function CreateProfile() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const proceed = () => {
-    // Check if the email contains "rutgers.edu"
-    if (!email.toLowerCase().includes("rutgers.edu")) {
-      alert("Please use a valid Rutgers email address.");
-      return;
+  const proceed = async () => {
+    try {
+      const emailExists = await checkEmailExists(email); // Check if email exists
+  
+      if (emailExists) {
+        alert("This email is already registered. Please sign in or use a different email.");
+        return;
+      }
+  
+      if (!email.toLowerCase().includes("rutgers.edu")) {
+        alert("Please use a valid Rutgers email address.");
+        return;
+      }
+  
+      // Navigate to the next page (Email/Password entry)
+      router.push({
+        pathname: '/SignUpName',
+        params: { email, password }  // Pass name info to the next page
+      });
+    } catch (error) {
+      console.error("Error checking email:", error);
+      alert("An error occurred while checking the email. Please try again.");
     }
-    // Navigate to the next page (Email/Password entry)
-    router.push({
-      pathname: '/SignUpName',
-      params: { email, password }  // Pass name info to the next page
-    });
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
