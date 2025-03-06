@@ -52,8 +52,8 @@ export default function TabFourScreen() {
   
     try {
       // Validate Rutgers email
-      if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
-        alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
+      if (newEmail !== '' && !newEmail.toLowerCase().endsWith('rutgers.edu')) {
+        alert('Please enter a valid Rutgers email (must end with rutgers.edu)');
         return;
       }
   
