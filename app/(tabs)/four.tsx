@@ -35,7 +35,8 @@ export default function TabFourScreen() {
     gender: "",
     pronouns: "",
     bio: "", 
-    profile_picture_url: "" 
+    profile_picture_url: "" ,
+    email: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,36 +48,46 @@ export default function TabFourScreen() {
   
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
-    if (user) {
-      try {
-        // Check if email is provided and validate domain
-        if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
-          alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
-          return; // Stop execution if email is invalid
-        }
+    if (!user) return;
   
-        // If the email is valid, update it
-        if (newEmail !== '') {
-          await updateEmail(user, newEmail);
-        }
-  
-        // Only update password if email validation passed
-        if (newPassword !== '') {
-          await updatePassword(user, newPassword);
-        }
-  
-        alert('Credentials updated successfully');
-  
-        // Reset input fields and close modal
-        setNewEmail('');
-        setNewPassword('');
-        setModalVisible(false);
-      } catch (error: any) {
-        console.error('Error updating credentials: ', error);
-        alert('Error updating credentials: ' + error.message);
+    try {
+      // Validate Rutgers email
+      if (newEmail !== '' && !newEmail.includes('rutgers.edu')) {
+        alert('Please enter a valid Rutgers email (must contain rutgers.edu)');
+        return;
       }
+  
+      // Update email if provided
+      if (newEmail !== '') {
+        await updateEmail(user, newEmail);
+        setProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
+      }
+  
+      // Update password if provided
+      if (newPassword !== '') {
+        await updatePassword(user, newPassword);
+      }
+  
+      alert('Credentials updated successfully');
+  
+      // **Force user refresh**
+      await user.reload();  // <-- Ensures latest user data
+      setUser(auth.currentUser); // <-- Update state with latest user info
+  
+      // Fetch latest profile details
+      fetchProfile();
+  
+      // Reset inputs and close modal
+      setNewEmail('');
+      setNewPassword('');
+      setModalVisible(false);
+  
+    } catch (error: any) {
+      console.error('Error updating credentials: ', error);
+      alert('Error updating credentials: ' + error.message);
     }
   };
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -93,7 +104,8 @@ export default function TabFourScreen() {
           gender: "",
           pronouns: "",
           bio: "", 
-          profile_picture_url: "" 
+          profile_picture_url: "",
+          email: "",
         });
       }
     });
@@ -116,7 +128,7 @@ export default function TabFourScreen() {
       });
       const data = await response.json();
       if (response.ok) {
-        setProfile(data);
+        setProfile({ ...data, email: auth.currentUser?.email || "" });
       } else {
         console.error("Error fetching profile:", data);
       }
