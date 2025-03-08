@@ -3,18 +3,16 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const SignUpMajor = () => {
-    const { firstName, lastName, email, password, birthday} = useLocalSearchParams();
+    const { firstName, lastName, birthday} = useLocalSearchParams();
   const [major, setMajor] = useState('');
 
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
       pathname: '/SignUpEthnicity',
-      params: { firstName, lastName, email, password, birthday, major }  // Pass name info to the next page
+      params: { firstName, lastName, birthday, major }  // Pass name info to the next page
     });
   };
-
-  const isFormValid = major.trim() !== '';
 
   return (
     <View style={styles.container}>
@@ -25,11 +23,7 @@ const SignUpMajor = () => {
         value={major}
         onChangeText={setMajor}
       />
-      <TouchableOpacity 
-        style={[styles.button, { backgroundColor: isFormValid ? '#5C6BC0' : '#B0BEC5' }]} // Change button color based on validity
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
+      <TouchableOpacity style={styles.button} onPress={proceed}>
         <Text style={styles.text}>Next</Text>
       </TouchableOpacity>
     </View>

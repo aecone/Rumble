@@ -1,26 +1,21 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 
 const SignUpName = () => {
-  const { email, password} = useLocalSearchParams();
-  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
   const proceed = () => {
+    // Navigate to the next page (Ethnicity or bday entry)
     router.push({
       pathname: '/SignUpBirthday',
-      params: { firstName, lastName, email, password }  // Pass name info to the next page
+      params: { firstName, lastName }  // Pass name info to the next page
     });
   };
 
-  // Check if both fields are filled
-  const isFormValid = firstName.trim() !== '' && lastName.trim() !== '';
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>WELCOME TO SWIPE CONNECT!</Text>
       <Text style={styles.title}>What's your name?</Text>
       <TextInput
         style={styles.textInput}
@@ -34,11 +29,7 @@ const SignUpName = () => {
         value={lastName}
         onChangeText={setLastName}
       />
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: isFormValid ? '#5C6BC0' : '#B0BEC5' }]} // Change button color based on validity
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
+      <TouchableOpacity style={styles.button} onPress={proceed}>
         <Text style={styles.text}>Next</Text>
       </TouchableOpacity>
     </View>
@@ -55,7 +46,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 30,
     color: '#1A237E',
@@ -74,6 +65,7 @@ const styles = StyleSheet.create({
   button: {
     width: '90%',
     marginVertical: 20,
+    backgroundColor: '#5C6BC0',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
