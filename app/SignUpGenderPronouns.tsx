@@ -22,6 +22,7 @@ const SignUpGenderPronouns = () => {
       params: { firstName, lastName, email, password, birthday, major, ethnicity, gender, pronouns }  // Pass name info to the next page
     });
   };
+  
   // Check if both fields are filled
   //const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
 

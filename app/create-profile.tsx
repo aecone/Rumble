@@ -4,15 +4,15 @@ import { router } from 'expo-router'
 import { auth } from '../FirebaseConfig'
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 
-const checkEmailExists = async (email) => {
-  try {
-    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    return signInMethods.length > 0; 
-  } catch (error) {
-    console.error("Error checking email:", error);
-    return false;
-  }
-};
+const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      return signInMethods.length > 0; 
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
+    }
+  };
 
 export default function CreateProfile() {
 
@@ -27,8 +27,13 @@ export default function CreateProfile() {
         alert("This email is already registered. Please sign in or use a different email.");
         return;
       }
+
+      if(password.length <= 6){
+        alert("Password length must be greater than 6 characters.");
+        return;
+      }
   
-      if (!email.toLowerCase().includes("rutgers.edu")) {
+      if (!email.toLowerCase().endsWith("rutgers.edu")) {
         alert("Please use a valid Rutgers email address.");
         return;
       }

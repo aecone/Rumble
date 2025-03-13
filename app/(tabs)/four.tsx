@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
+  Modal,
   KeyboardAvoidingView,Alert,
   Platform,
 } from "react-native";
@@ -18,8 +19,13 @@ import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
+import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
+
 
 export default function TabFourScreen() {
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/');
+  });
   const [profile, setProfile] = useState({
     firstName: "", 
     lastName: "",
@@ -29,13 +35,59 @@ export default function TabFourScreen() {
     gender: "",
     pronouns: "",
     bio: "", 
-    profile_picture_url: "" 
+    profile_picture_url: "" ,
+    email: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
   const [refresh, setRefresh] = useState(false);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  
+  const handleUpdateCredentials = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+  
+    try {
+      // Validate Rutgers email
+      if (newEmail !== '' && !newEmail.toLowerCase().endsWith('rutgers.edu')) {
+        alert('Please enter a valid Rutgers email (must end with rutgers.edu)');
+        return;
+      }
+  
+      // Update email if provided
+      if (newEmail !== '') {
+        await updateEmail(user, newEmail);
+        setProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
+      }
+  
+      // Update password if provided
+      if (newPassword !== '') {
+        await updatePassword(user, newPassword);
+      }
+  
+      alert('Credentials updated successfully');
+  
+      // **Force user refresh**
+      await user.reload();  // <-- Ensures latest user data
+      setUser(auth.currentUser); // <-- Update state with latest user info
+  
+      // Fetch latest profile details
+      fetchProfile();
+  
+      // Reset inputs and close modal
+      setNewEmail('');
+      setNewPassword('');
+      setModalVisible(false);
+  
+    } catch (error: any) {
+      console.error('Error updating credentials: ', error);
+      alert('Error updating credentials: ' + error.message);
+    }
+  };
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -52,7 +104,8 @@ export default function TabFourScreen() {
           gender: "",
           pronouns: "",
           bio: "", 
-          profile_picture_url: "" 
+          profile_picture_url: "",
+          email: "",
         });
       }
     });
@@ -75,7 +128,7 @@ export default function TabFourScreen() {
       });
       const data = await response.json();
       if (response.ok) {
-        setProfile(data);
+        setProfile({ ...data, email: auth.currentUser?.email || "" });
       } else {
         console.error("Error fetching profile:", data);
       }
@@ -88,6 +141,7 @@ export default function TabFourScreen() {
   const updateProfile = async () => {
     if (!user) return;
     setLoading(true);
+    console.log(profile);
     try {
       const token = await user.getIdToken();
       const response = await fetch("http://127.0.0.1:5000/api/profile", {
@@ -113,16 +167,17 @@ export default function TabFourScreen() {
     setLoading(false);
   };
 
-    // Upload image to Firebase Storage
-    const uploadImage = async (uri: string) => {
-      if (!user) return;
+  const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
+
+  const uploadImage = async (uri: string) => {
+    if (!user) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
       const storageRef = ref(storage, `profile_pictures/${user.uid}.jpg`);
       const uploadTask = uploadBytesResumable(storageRef, blob);
-
+  
       uploadTask.on(
         "state_changed",
         null,
@@ -132,11 +187,12 @@ export default function TabFourScreen() {
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log("Uploaded image URL:", downloadURL);  // Debugging log
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL })); // Update immediately
-          // Call updateProfile to save it to Firestore
-          await updateProfile();
-          setRefresh((prev) => !prev); // Force tab refresh
+          console.log("Uploaded image URL:", downloadURL);
+  
+          // Update the profile state with the new URL
+          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL }));
+          // Set flag to trigger updateProfile after state change
+          setPendingImageUpdate(true);
           setLoading(false);
         }
       );
@@ -145,6 +201,15 @@ export default function TabFourScreen() {
       setLoading(false);
     }
   };
+
+  // useEffect to trigger updateProfile after profile_picture_url is updated
+useEffect(() => {
+  if (pendingImageUpdate) {
+    updateProfile();
+    // Reset the flag so it doesn't trigger again
+    setPendingImageUpdate(false);
+  }
+}, [profile.profile_picture_url, pendingImageUpdate]);
 
   const deleteAccount = async () => {
     if (!user) return;
@@ -206,7 +271,9 @@ export default function TabFourScreen() {
 }
             })}>
             <Image
-              source={{ uri: profile.profile_picture_url || "https://www.w3schools.com/howto/img_avatar.png" }}
+              source={profile.profile_picture_url 
+                ? { uri: profile.profile_picture_url } 
+                : require('../../assets/images/profile.png')}              
               style={styles.profileImage}
             />
             <Text style={styles.imageText}>Tap to Change</Text>
@@ -238,7 +305,44 @@ export default function TabFourScreen() {
             <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
             <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.buttonText}>Update Email and Password</Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update Credentials</Text>
+            <TextInput 
+              placeholder="New Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput 
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
+              <Text style={styles.text}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
+              <Text style={styles.text}>Cancel</Text>
+            </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+          </View>
+      
+          
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -317,5 +421,34 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
+    justifyContent: "center",
+    alignItems: "center",
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FAFAFA',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 15,
+    color: '#1A237E',
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: '#5C6BC0',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 5,
+  }
 });
