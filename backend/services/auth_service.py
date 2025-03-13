@@ -12,7 +12,6 @@ def verify_token():
 
     try:
         decoded_token = auth.verify_id_token(auth_header)
-        print(f"Decoded token: {decoded_token}")  # Debug: Print the decoded token
         return decoded_token, None
     except auth.ExpiredIdTokenError:
         return None, (jsonify({"error": "Expired token"}), 403)

@@ -14,19 +14,16 @@ def get_user_profile(user_id):
     user_ref = db.collection("users").document(user_id).get()
     return user_ref.to_dict() if user_ref.exists else None
 
-def update_user_profile(user_id, firstName, lastName, birthday, major, ethnicity, gender, pronouns, bio, profile_picture_url):
+def update_user_profile(user_id, profile_data):
     """Update a user's profile."""
     user_ref = db.collection("users").document(user_id)
-    user_ref.set({"firstName": firstName,  
-                "lastName": lastName,  
-                "birthday": birthday,  
-                "major": major,  
-                "ethnicity": ethnicity,  
-                "gender": gender,  
-                "pronouns": pronouns,  
-                "bio": bio,  
-                "profile_picture_url": profile_picture_url  
-                }, merge=True)
+    user_ref.set({"profile": profile_data}, merge=True)
+    return True
+
+def update_user_settings(user_id, settings_data):
+    """Update a user's settings."""
+    user_ref = db.collection("users").document(user_id)
+    user_ref.set({"settings": settings_data}, merge=True)
     return True
 
 
