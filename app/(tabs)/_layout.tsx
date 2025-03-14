@@ -29,7 +29,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Sign Out',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="circle" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -50,21 +50,21 @@ export default function TabLayout() {
         name="two"
         options={{
           title: 'Database',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="filter" color={color} />,
         }}
       />
       <Tabs.Screen
         name="three"
         options={{
           title: 'Storage',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="key" color={color} />,
         }}
       />
       <Tabs.Screen
         name="four"
         options={{
-          title: 'Functions',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <TabBarIcon name="image" color={color} />,
         }}
       />
     </Tabs>

@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+venv/
 
 # Private stuff 
 .env
@@ -42,3 +43,8 @@ yarn-error.*
 .expo
 dist/
 web-build/
+
+#__pycache__
+__pycache__/
+*.pyc
+*.pyo

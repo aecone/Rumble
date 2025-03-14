@@ -5,46 +5,36 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { router } from 'expo-router'
 import { doc, setDoc } from "firebase/firestore";
 
-
-
 const index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
 
   const signIn = async () => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password)
-      if (user) router.replace('/(tabs)/home');
+      if (user) router.replace('/(tabs)/four');
     } catch (error: any) {
       console.log(error)
       alert('Sign in failed: ' + error.message);
     }
   }
 
-  const signUp = async () => {
-    try {
-      const user = await createUserWithEmailAndPassword(auth, email, password)
-      if (user) router.replace('/(tabs)/home');
-      // After creating the user:
-      const userDocRef = doc(db, "users", user.user.uid);
-      await setDoc(userDocRef, { bio: "", profile_picture_url: "" });
-    } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
-    }
-  }
+  // Button to navigate to create a profile
+  const goToCreateProfile = () => {
+    router.push('/create-profile' as any);
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Login</Text>
       <TextInput style={styles.textInput} placeholder="email" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.textInput} placeholder="password" value={password} onChangeText={setPassword} secureTextEntry/>
+      <TextInput style={styles.textInput} placeholder="password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={signIn}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={signUp}>
-        <Text style={styles.text}>Make Account</Text>
+      <TouchableOpacity onPress={goToCreateProfile}>
+        <Text style={styles.createAccountText}>Don't have an account? Sign up here</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -100,5 +90,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // Maintained white for clear visibility
     fontSize: 18, // Slightly larger for emphasis
     fontWeight: '600', // Semi-bold for a balanced weight
+  },
+  createAccountButton: {
+    
+  },
+  createAccountText: {
+    color: '#1A237E',
+    textDecorationLine: "underline",
   }
 });

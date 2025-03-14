@@ -1,15 +1,25 @@
-from firebase_admin import auth
 from flask import request, jsonify
+from firebase_admin import auth
 
 def verify_token():
-    """Extract and verify Firebase ID token from request header."""
-    token = request.headers.get("Authorization")
-
-    if not token:
-        return None, (jsonify({"error": "Authorization token missing"}), 401)  # ✅ Return (None, error)
+    """Verifies Firebase ID token from Authorization header."""
+    
+    auth_header = request.headers.get("Authorization")
+    print(auth_header)
+    if not auth_header:
+        print("Missing Authorization header")  # Debugging log
+        return None, (jsonify({"error": "Missing Authorization header"}), 403)
 
     try:
-        decoded_token = auth.verify_id_token(token)
-        return decoded_token, None  # ✅ Return (decoded_token, None) when valid
+        decoded_token = auth.verify_id_token(auth_header)
+        print(f"Decoded token: {decoded_token}")  # Debug: Print the decoded token
+        return decoded_token, None
+    except auth.ExpiredIdTokenError:
+        return None, (jsonify({"error": "Expired token"}), 403)
+    except auth.InvalidIdTokenError:
+        return None, (jsonify({"error": "Invalid token"}), 403)
+    except auth.RevokedIdTokenError:
+        return None, (jsonify({"error": "Revoked token"}), 403)
     except Exception as e:
-        return None, (jsonify({"error": "Invalid or expired token"}), 403)  # ✅ Return (None, error)
+        print(f"Token verification failed: {e}")  # Debugging log
+        return None, (jsonify({"error": "Failed to verify token"}), 403)
