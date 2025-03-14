@@ -30,7 +30,7 @@ def edit_profile():
     user_id = decoded_token["uid"]
     data = request.json
     print("Received data:", data)
-    required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
+    required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
 
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
@@ -122,6 +122,7 @@ def create_user():
                 "major": data.get("major", ""),
                 "gradYear": data.get("gradYear", None),
                 "hobbies": data.get("hobbies", []),
+                "orgs": data.get("orgs", []),
                 "careerPath": data.get("careerPath", ""),
                 "interestedIndustries": data.get("interestedIndustries", []),
                 "userType": data.get("userType", "mentee"), 

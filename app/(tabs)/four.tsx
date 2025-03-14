@@ -26,18 +26,58 @@ export default function TabFourScreen() {
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');
   });
-  const [profile, setProfile] = useState({
-    firstName: "", 
-    lastName: "",
-    birthday: "",
-    major: "",
-    ethnicity: "",
-    gender: "",
-    pronouns: "",
-    bio: "", 
-    profile_picture_url: "" ,
-    email: "",
+  type Profile = {
+    bio: string;
+    profilePictureUrl: string;
+    major: string;
+    gradYear: number | null;
+    hobbies: string[];
+    orgs: string[];
+    careerPath: string;
+    interestedIndustries: string[];
+    userType: string;
+    mentorshipAreas: string[];
+  };
+  
+  type Settings = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    birthday: string;
+    ethnicity: string;
+    gender: string;
+    pronouns: string;
+  };
+  
+  type UserProfile = {
+    settings: Settings;
+    profile: Profile;
+  };
+  
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    settings: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      birthday: "",
+      ethnicity: "",
+      gender: "",
+      pronouns: "",
+    },
+    profile: {
+      bio: "",
+      profilePictureUrl: "",
+      major: "",
+      gradYear: null,
+      hobbies: [],
+      orgs: [],
+      careerPath: "",
+      interestedIndustries: [],
+      userType: "TBD",
+      mentorshipAreas: [],
+    },
   });
+  
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
@@ -60,7 +100,7 @@ export default function TabFourScreen() {
       // Update email if provided
       if (newEmail !== '') {
         await updateEmail(user, newEmail);
-        setProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
+        setUserProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
       }
   
       // Update password if provided
@@ -95,22 +135,35 @@ export default function TabFourScreen() {
         fetchProfile();
       } else {
         setUser(null);
-        setProfile({
-          firstName: "", 
-          lastName: "",
-          birthday: "",
-          major: "",
-          ethnicity: "",
-          gender: "",
-          pronouns: "",
-          bio: "", 
-          profile_picture_url: "",
-          email: "",
+        setUserProfile({
+          settings: {
+            firstName: "",
+            lastName: "",
+            email: "",
+            birthday: "",
+            ethnicity: "",
+            gender: "",
+            pronouns: "",
+          },
+          profile: {
+            bio: "",
+            profilePictureUrl: "",
+            major: "",
+            gradYear: null,
+            hobbies: [],
+            orgs: [],
+            careerPath: "",
+            interestedIndustries: [],
+            userType: "TBD",
+            mentorshipAreas: [],
+          },
         });
       }
     });
+  
     return unsubscribe;
   }, []);
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -128,7 +181,7 @@ export default function TabFourScreen() {
       });
       const data = await response.json();
       if (response.ok) {
-        setProfile({ ...data, email: auth.currentUser?.email || "" });
+        setUserProfile({ ...data, email: auth.currentUser?.email || "" });
       } else {
         console.error("Error fetching profile:", data);
       }
@@ -137,27 +190,22 @@ export default function TabFourScreen() {
     }
     setLoading(false);
   };
-
   const updateProfile = async () => {
     if (!user) return;
     setLoading(true);
-    console.log(profile);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/profile", {
+      const response = await fetch("http://127.0.0.1:5000/api/update_profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: token,
         },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(userProfile.profile),
       });
-
       if (response.ok) {
-        const updatedData = await response.json();
-        setProfile(updatedData);
-        setIsEditing(false);
         setRefresh((prev) => !prev);
+        setIsEditing(false);
       } else {
         console.error("Error updating profile:", await response.json());
       }
@@ -165,6 +213,29 @@ export default function TabFourScreen() {
       console.error("Failed to update profile:", error);
     }
     setLoading(false);
+  };
+
+  const updateSettings = async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("http://127.0.0.1:5000/api/update_settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify(userProfile.settings),
+      });
+      if (response.ok) {
+        setRefresh((prev) => !prev);
+        setIsEditing(false);
+      } else {
+        console.error("Error updating settings:", await response.json());
+      }
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+    }
   };
 
   const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
@@ -190,8 +261,11 @@ export default function TabFourScreen() {
           console.log("Uploaded image URL:", downloadURL);
   
           // Update the profile state with the new URL
-          setProfile((prev) => ({ ...prev, profile_picture_url: downloadURL }));
-          // Set flag to trigger updateProfile after state change
+          setUserProfile((prev) => ({
+            ...prev,
+            profile: { ...prev.profile, profilePictureUrl: downloadURL },
+          }));
+                    // Set flag to trigger updateProfile after state change
           setPendingImageUpdate(true);
           setLoading(false);
         }
@@ -202,14 +276,14 @@ export default function TabFourScreen() {
     }
   };
 
-  // useEffect to trigger updateProfile after profile_picture_url is updated
+  // useEffect to trigger updateProfile after profilePictureUrl is updated
 useEffect(() => {
   if (pendingImageUpdate) {
     updateProfile();
     // Reset the flag so it doesn't trigger again
     setPendingImageUpdate(false);
   }
-}, [profile.profile_picture_url, pendingImageUpdate]);
+}, [userProfile.profile.profilePictureUrl, pendingImageUpdate]);
 
   const deleteAccount = async () => {
     if (!user) return;
@@ -259,41 +333,95 @@ useEffect(() => {
           <View style={styles.container}>
             <Text style={styles.title}>Edit Profile</Text>
             {loading && <ActivityIndicator size="large" color="#5C6BC0" />}
-              <TouchableOpacity onPress={() => ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            }).then(result => {
-              if (!result.canceled) {
-  uploadImage(result.assets[0].uri);
-  setProfile((prev) => ({ ...prev, profile_picture_url: result.assets[0].uri }));
-}
-            })}>
-            <Image
-              source={profile.profile_picture_url 
-                ? { uri: profile.profile_picture_url } 
-                : require('../../assets/images/profile.png')}              
-              style={styles.profileImage}
-            />
-            <Text style={styles.imageText}>Tap to Change</Text>
-          </TouchableOpacity>
-            {Object.keys(profile).filter(key => key !== "profile_picture_url").map((key) => (
-              <View key={key} style={styles.infoContainer}>
-                <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={styles.input}
-                    value={profile[key]}
-                    onChangeText={(text) => setProfile((prev) => ({ ...prev, [key]: text }))}
-                    multiline
-                  />
-                ) : (
-                  <Text style={styles.text}>{profile[key] || "N/A"}</Text>
-                )}
-              </View>
-            ))}
+            <TouchableOpacity 
+  disabled={!isEditing} // Disable touch when not in edit mode
+  onPress={() => {
+    if (!isEditing) return; // Prevent action if not in edit mode
+
+    ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    }).then(result => {
+      if (!result.canceled) {
+        uploadImage(result.assets[0].uri);
+        setUserProfile((prev) => ({
+          ...prev,
+          profile: { ...prev.profile, profilePictureUrl: result.assets[0].uri },
+        }));
+      }
+    });
+  }}
+>
+  <Image
+    source={userProfile.profile.profilePictureUrl 
+      ? { uri: userProfile.profile.profilePictureUrl } 
+      : require('../../assets/images/profile.png')}
+    style={[
+      styles.profileImage, 
+    ]}
+  />
+  <Text style={styles.imageText}>
+    {isEditing ? "Tap to Change" : ""}
+  </Text>
+</TouchableOpacity>
+
+          {Object.keys(userProfile.settings).map((key) => {
+  const typedKey = key as keyof Settings;
+  return (
+    <View key={key} style={styles.infoContainer}>
+      <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
+      {isEditing ? (
+        <TextInput
+          style={styles.input}
+          value={userProfile.settings[typedKey]}
+          onChangeText={(text) =>
+            setUserProfile((prev) => ({
+              ...prev,
+              settings: { ...prev.settings, [typedKey]: text },
+            }))
+          }
+          multiline
+        />
+      ) : (
+        <Text style={styles.text}>{userProfile.settings[typedKey] || "N/A"}</Text>
+      )}
+    </View>
+  );
+})}
+{isEditing ? (<TouchableOpacity style={styles.button} onPress={updateSettings}>
+                  <Text style={styles.buttonText}>Save Settings</Text>
+                </TouchableOpacity>) : null}
+{Object.keys(userProfile.profile)
+  .filter((key) => key !== "profilePictureUrl") // Exclude profilePictureUrl
+  .map((key) => {
+    const typedKey = key as keyof Profile;
+
+    return (
+      <View key={key} style={styles.infoContainer}>
+        <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
+        {isEditing ? (
+          <TextInput
+            style={styles.input}
+            value={String(userProfile.profile[typedKey])} // Convert to string for safe rendering
+            onChangeText={(text) =>
+              setUserProfile((prev) => ({
+                ...prev,
+                profile: { ...prev.profile, [typedKey]: text },
+              }))
+            }
+            multiline
+          />
+        ) : (
+          <Text style={styles.text}>{String(userProfile.profile[typedKey]) || "N/A"}</Text>
+        )}
+      </View>
+    );
+  })};
+
             {isEditing ? (
+              
               <TouchableOpacity style={styles.button} onPress={updateProfile}>
                 <Text style={styles.buttonText}>Save Profile</Text>
               </TouchableOpacity>
@@ -301,6 +429,7 @@ useEffect(() => {
               <TouchableOpacity style={styles.button} onPress={() => setIsEditing(true)}>
                 <Text style={styles.buttonText}>Edit Profile</Text>
               </TouchableOpacity>
+    
             )}
             <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
             <Text style={styles.buttonText}>Delete Account</Text>
