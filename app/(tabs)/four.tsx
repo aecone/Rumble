@@ -20,8 +20,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
-
-
+import Config from 'react-native-config'; // Import Config to access env variables
+  const API_BASE_URL = Config.API_BASE_URL; // Get API URL from .env
 export default function TabFourScreen() {
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');
@@ -45,10 +45,12 @@ export default function TabFourScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  
+  console.log("API Base URL:", Config.API_BASE_URL);
+  const API_BASE_URL = Config.API_BASE_URL; // Get API URL from .env
+
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
   
     try {
       // Validate Rutgers email
@@ -119,11 +121,11 @@ export default function TabFourScreen() {
   );
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/profile", {
+      const response = await fetch("${API_BASE_URL}/profile", {
         headers: { Authorization: token },
       });
       const data = await response.json();
@@ -139,12 +141,12 @@ export default function TabFourScreen() {
   };
 
   const updateProfile = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     console.log(profile);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/profile", {
+      const response = await fetch("${API_BASE_URL}/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +172,7 @@ export default function TabFourScreen() {
   const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
 
   const uploadImage = async (uri: string) => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
@@ -212,11 +214,11 @@ useEffect(() => {
 }, [profile.profile_picture_url, pendingImageUpdate]);
 
   const deleteAccount = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/delete_account", {
+      const response = await fetch("${API_BASE_URL}/delete_account", {
         method: "DELETE",
         headers: {
           Authorization: `${token}`,

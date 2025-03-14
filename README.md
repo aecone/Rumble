@@ -35,7 +35,8 @@ npx expo start
 Run the following commands **one by one** to install Firebase and other necessary libraries:
 
 ```sh
-npx install-expo-modules@latest && npx expo start && npm install firebase -g firebase-tools @react-native-async-storage/async-storage expo-image-picker expo-constants react-native-dotenv
+npx install-expo-modules@latest && npx expo start && npm install firebase -g firebase-tools @react-native-async-storage/async-storage expo-image-picker expo-constants react-native-dotenv && npm install react-native-config
+
 ```
 
 You'll need Python installed. If you don't have it, install Python (3.13 from Microsoft Store).
