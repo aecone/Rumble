@@ -47,21 +47,30 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="swipeTab"
         options={{
-          title: 'Database',
+          title: 'Swipe',
           tabBarIcon: ({ color }) => <TabBarIcon name="filter" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="three"
+        name="matchesTab"
         options={{
-          title: 'Storage',
+          title: 'Matches',
           tabBarIcon: ({ color }) => <TabBarIcon name="key" color={color} />,
         }}
       />
+      {/* New Tab for Messages (five) */}
       <Tabs.Screen
-        name="four"
+        name="messagingTab"
+        options={{
+          title: 'Messages',
+          tabBarIcon: ({ color }) => <TabBarIcon name="envelope" color={color} />,
+        }}
+      />
+      {/* Moved Profile (four) after Messages (five) */}
+      <Tabs.Screen
+        name="profileTab"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="image" color={color} />,
