@@ -1,6 +1,10 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
-from config import FIREBASE_CREDENTIALS  # Import from config.py
+import sys
+import os
+
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Adds backend/ to Python path
+from config import FIREBASE_CREDENTIALS  
 
 # Ensure Firebase is initialized
 if not firebase_admin._apps:
@@ -79,3 +83,40 @@ def create_user_in_firebase(email, password, user_data):
     except Exception as e:
         print(f"Error creating user: {str(e)}")
         return {"error": "Failed to create user"}
+
+
+
+
+"""Extra firebase functions
+
+- To delete all users in Firebase Auth, you can use the following function:
+
+"""
+
+def delete_all_users():
+    batch_size = 1000  # Firebase allows max 1000 at a time
+    users_to_delete = []
+
+    # List all users
+    page = auth.list_users()
+    while page:
+        for user in page.users:
+            users_to_delete.append(user.uid)
+
+            # Delete in batches
+            if len(users_to_delete) >= batch_size:
+                auth.delete_users(users_to_delete)
+                print(f"Deleted {len(users_to_delete)} users")
+                users_to_delete = []
+
+        # Get next batch
+        page = page.next_page_token and auth.list_users(page_token=page.next_page_token)
+
+    # Delete remaining users
+    if users_to_delete:
+        auth.delete_users(users_to_delete)
+        print(f"Deleted {len(users_to_delete)} users")
+
+    print("All users deleted successfully.")
+
+# To delete all auth users, run function delete_all_users()
