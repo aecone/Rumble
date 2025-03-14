@@ -369,9 +369,13 @@ useEffect(() => {
 
           {Object.keys(userProfile.settings).map((key) => {
   const typedKey = key as keyof Settings;
+  const formattedKey = key
+  .replace(/([A-Z])/g, " $1") // Insert space before capital letters
+  .replace(/_/g, " ") // Replace underscores with spaces
+  .trim(); // Trim any leading space
   return (
     <View key={key} style={styles.infoContainer}>
-      <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
+      <Text style={styles.label}>{formattedKey.toUpperCase()}:</Text>
       {isEditing ? (
         <TextInput
           style={styles.input}
@@ -397,10 +401,14 @@ useEffect(() => {
   .filter((key) => key !== "profilePictureUrl") // Exclude profilePictureUrl
   .map((key) => {
     const typedKey = key as keyof Profile;
+    const formattedKey = key
+    .replace(/([A-Z])/g, " $1") // Insert space before capital letters
+    .replace(/_/g, " ") // Replace underscores with spaces
+    .trim(); // Trim any leading space
 
     return (
       <View key={key} style={styles.infoContainer}>
-        <Text style={styles.label}>{key.replace("_", " ").toUpperCase()}:</Text>
+        <Text style={styles.label}>{formattedKey.toUpperCase()}:</Text>
         {isEditing ? (
           <TextInput
             style={styles.input}
@@ -418,7 +426,7 @@ useEffect(() => {
         )}
       </View>
     );
-  })};
+  })}
 
             {isEditing ? (
               
