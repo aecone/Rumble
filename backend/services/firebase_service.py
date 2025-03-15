@@ -3,11 +3,11 @@ import json
 import base64
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
+from config import FIREBASE_CREDENTIALS  
 
 # Load Firebase credentials from environment variable
-firebase_credentials_b64 = os.getenv("FIREBASE_CREDENTIALS")
-if firebase_credentials_b64:
-    firebase_credentials_json = base64.b64decode(firebase_credentials_b64).decode("utf-8")
+if FIREBASE_CREDENTIALS:
+    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
     firebase_credentials = json.loads(firebase_credentials_json)
 
     # Ensure Firebase is initialized
