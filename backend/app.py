@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials
@@ -32,14 +32,30 @@ else:
 # Register routes
 app.register_blueprint(user_routes, url_prefix="/api")
 
-@app.route("/logs")
-def get_logs():
-    try:
-        with open("app.log", "r") as file:
-            logs = file.read()
-        return logs, 200
-    except Exception as e:
-        return str(e), 500
+# Store logs in `/tmp/` because it's writable in Render
+LOG_FILE = "/tmp/app.log"
+
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+)
+
+logger = logging.getLogger("FlaskApp")
+logger.info(" Flask App Started - Logging Initialized")
+
+@app.before_request
+def log_request():
+    logger.info(f"{request.method} {request.path} - IP: {request.remote_addr}")
+
+@app.after_request
+def log_response(response):
+    logger.info(f"{request.method} {request.path} - Status {response.status_code}")
+    return response
+
+@app.route("/")
+def home():
+    return "Hi! Default route"
 
 if __name__ == "__main__":
     app.run(debug=True)
