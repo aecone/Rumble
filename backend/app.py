@@ -57,14 +57,61 @@ def log_response(response):
 def home():
     return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
 
+
 @app.route("/logs")
 def get_logs():
     try:
-        with open("/tmp/app.log", "r") as file:
-            logs = file.read()
-        return logs, 200
+        with open(LOG_FILE, "r") as file:
+            log_lines = file.readlines()
+
+        # Convert log lines into structured data
+        log_entries = []
+        for line in log_lines:
+            parts = line.strip().split(" - ")  # Split by " - " separator
+            if len(parts) >= 4:
+                timestamp, level, name, message = parts[:4]  # Extract log details
+                log_entries.append({"timestamp": timestamp, "level": level, "message": message})
+
+        # Render logs as an HTML table
+        return render_template_string("""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Flask Logs</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+                    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); }
+                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background-color: #007bff; color: white; }
+                    .info { color: #007bff; }
+                    .warning { color: #ffa500; }
+                    .error { color: #dc3545; }
+                </style>
+            </head>
+            <body>
+                <h2>Flask Logs</h2>
+                <table>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Level</th>
+                        <th>Message</th>
+                    </tr>
+                    {% for entry in log_entries %}
+                    <tr>
+                        <td>{{ entry.timestamp }}</td>
+                        <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
+                        <td>{{ entry.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </body>
+            </html>
+        """, log_entries=log_entries)
+
     except Exception as e:
-        return str(e), 500
+        return f"<p>Error reading logs: {str(e)}</p>", 500
 
 
 if __name__ == "__main__":
