@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template_string
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials
@@ -69,7 +69,7 @@ def get_logs():
         for line in log_lines:
             parts = line.strip().split(" - ")  # Split by " - " separator
             if len(parts) >= 4:
-                timestamp, level, name, message = parts[:4]  # Extract log details
+                timestamp, level, _, message = parts[:4]  # Extract log details (ignore `name`)
                 log_entries.append({"timestamp": timestamp, "level": level, "message": message})
 
         # Render logs as an HTML table
@@ -112,7 +112,6 @@ def get_logs():
 
     except Exception as e:
         return f"<p>Error reading logs: {str(e)}</p>", 500
-
 
 if __name__ == "__main__":
     app.run(debug=True)
