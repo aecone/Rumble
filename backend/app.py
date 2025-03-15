@@ -32,5 +32,14 @@ else:
 # Register routes
 app.register_blueprint(user_routes, url_prefix="/api")
 
+@app.route("/logs")
+def get_logs():
+    try:
+        with open("app.log", "r") as file:
+            logs = file.read()
+        return logs, 200
+    except Exception as e:
+        return str(e), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
