@@ -7,13 +7,15 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import Config from 'react-native-config'; // Import Config to access env variables
 
 const SignUpGenderPronouns = () => {
   const { firstName, lastName, email, password, birthday, major, ethnicity } =
     useLocalSearchParams();
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
-
+  console.log("API Base URL:", Config.API_BASE_URL);
+  const API_BASE_URL = Config.API_BASE_URL; 
   const signUp = async () => {
     try {
       const emailString = Array.isArray(email) ? email[0] : email;
@@ -24,7 +26,7 @@ const SignUpGenderPronouns = () => {
         return;
       }
   
-      const response = await fetch("http://127.0.0.1:5000/api/create_user", {
+      const response = await fetch(`${API_BASE_URL}/create_user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -21,7 +21,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 import Config from 'react-native-config'; // Import Config to access env variables
-  const API_BASE_URL = Config.API_BASE_URL; // Get API URL from .env
+
 export default function TabFourScreen() {
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');
@@ -124,8 +124,9 @@ export default function TabFourScreen() {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
+
       const token = await user.getIdToken();
-      const response = await fetch("${API_BASE_URL}/profile", {
+      const response = await fetch(`https://rumble-xe2g.onrender.com/api/profile`, {
         headers: { Authorization: token },
       });
       const data = await response.json();
@@ -146,7 +147,7 @@ export default function TabFourScreen() {
     console.log(profile);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("${API_BASE_URL}/profile", {
+      const response = await fetch(`https://rumble-xe2g.onrender.com/api/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -218,7 +219,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const response = await fetch("${API_BASE_URL}/delete_account", {
+      const response = await fetch(`${API_BASE_URL}/delete_account`, {
         method: "DELETE",
         headers: {
           Authorization: `${token}`,
