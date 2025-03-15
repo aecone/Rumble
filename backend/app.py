@@ -57,7 +57,6 @@ def log_response(response):
 def home():
     return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
 
-
 @app.route("/logs")
 def get_logs():
     try:
@@ -69,10 +68,13 @@ def get_logs():
         for line in log_lines:
             parts = line.strip().split(" - ")  # Split by " - " separator
             if len(parts) >= 4:
-                timestamp, level, _, message = parts[:4]  # Extract log details (ignore `name`)
+                timestamp, level, _, message = parts[:4]  # Extract log details
                 log_entries.append({"timestamp": timestamp, "level": level, "message": message})
 
-        # Render logs as an HTML table
+        # **Reverse order (most recent logs at the top)**
+        log_entries.reverse()
+
+        # Render logs as an HTML table (recent logs first)
         return render_template_string("""
             <!DOCTYPE html>
             <html lang="en">
@@ -91,7 +93,7 @@ def get_logs():
                 </style>
             </head>
             <body>
-                <h2>Flask Logs</h2>
+                <h2>Flask Logs (Recent First)</h2>
                 <table>
                     <tr>
                         <th>Timestamp</th>
@@ -112,6 +114,7 @@ def get_logs():
 
     except Exception as e:
         return f"<p>Error reading logs: {str(e)}</p>", 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
