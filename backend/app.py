@@ -55,7 +55,17 @@ def log_response(response):
 
 @app.route("/")
 def home():
-    return "Hi! Default route"
+    return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
+
+@app.route("/logs")
+def get_logs():
+    try:
+        with open("/tmp/app.log", "r") as file:
+            logs = file.read()
+        return logs, 200
+    except Exception as e:
+        return str(e), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
