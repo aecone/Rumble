@@ -7,56 +7,20 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import Config from 'react-native-config'; // Import Config to access env variables
+
 
 const SignUpGenderPronouns = () => {
   const { firstName, lastName, email, password, birthday, major, ethnicity } =
     useLocalSearchParams();
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
-  console.log("API Base URL:", Config.API_BASE_URL);
-  const API_BASE_URL = Config.API_BASE_URL; 
-  const signUp = async () => {
-    try {
-      const emailString = Array.isArray(email) ? email[0] : email;
-      const passwordString = Array.isArray(password) ? password[0] : password;
-  
-      if (!emailString || !passwordString) {
-        alert("Invalid email or password.");
-        return;
-      }
-  
-      const response = await fetch(`${API_BASE_URL}/create_user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: emailString,
-          password: passwordString,
-          firstName,
-          lastName,
-          birthday,
-          major,
-          ethnicity,
-          gender,
-          pronouns,
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        router.replace("/"); // Navigate to the next page
-      } else if (response.status === 500) {
-        alert(data.error || "Something went wrong on our end. Please try again.");
-      } else {
-        alert("Sign up failed: " + (data.error || "Unknown error"));
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Network error: Unable to connect to the server.");
-    }
+
+  const proceed = () => {
+    // Navigate to the next page (Email/Password entry)
+    router.push({
+      pathname: '/MentorOrMentee',
+      params: { firstName, lastName, email, password, birthday, major, ethnicity, gender, pronouns }  // Pass name info to the next page
+    });
   };
   
   // Check if both fields are filled
@@ -79,7 +43,7 @@ const SignUpGenderPronouns = () => {
       />
       <TouchableOpacity
         style={[styles.button]} // Change button color based on validity
-        onPress={signUp}
+        onPress={proceed}
         //disabled={!isFormValid}
       >
         <Text style={styles.text}>Next</Text>
