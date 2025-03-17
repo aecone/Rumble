@@ -85,6 +85,9 @@ def delete_account():
 def create_user():
     """
     API endpoint to create a new user in Firebase Auth & Firestore.
+    - Stores profile information in Firestore.
+    - Initializes `liked_users` as an empty HashMap.
+    - Initializes `matched_users` as an empty List.
     """
     try:
         data = request.json
@@ -105,6 +108,8 @@ def create_user():
             "bio": "",
             "profile_picture_url": "",
             "email": email,
+            "liked_users": {},  # Initialize as an empty HashMap
+            "matched_users": []  # Initialize as an empty List
         }
 
         result = create_user_in_firebase(email, password, user_data)
