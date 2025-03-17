@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, Dimensions, Animated } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, Dimensions, Animated, Image } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { db } from '../../FirebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -59,22 +59,72 @@ export default function TabTwoScreen() {
       // If there are no cards, add some dummy cards for demonstration
       if (data.docs.length === 0) {
         setCards([
-          { id: '1', task: 'Card 1' },
-          { id: '2', task: 'Card 2' },
-          { id: '3', task: 'Card 3' },
-          { id: '4', task: 'Card 4' },
-          { id: '5', task: 'Card 5' },
+          { 
+            id: '1', 
+            name: 'John Doe', 
+            pronouns: 'He/Him',
+            major: 'Computer Science', 
+            year: '2024', 
+            bio: 'I love coding and building cool apps!', 
+            interests: ['AI', 'Web Development', 'Mobile Apps'], 
+            profilePhoto: 'https://via.placeholder.com/150',
+            ethnicity: 'Asian',
+            careerPath: 'Software Engineer',
+            hobbies: ['Reading', 'Hiking', 'Gaming'],
+            interestedIndustries: ['Tech', 'Finance', 'Healthcare'],
+            organizations: ['ACM', 'Google Developer Student Club']
+          },
+          { 
+            id: '2', 
+            name: 'Jane Smith', 
+            pronouns: 'She/Her',
+            major: 'Data Science', 
+            year: '2023', 
+            bio: 'Passionate about data and machine learning.', 
+            interests: ['Data Analysis', 'Machine Learning', 'Python'], 
+            profilePhoto: 'https://via.placeholder.com/150',
+            ethnicity: 'African American',
+            careerPath: 'Data Scientist',
+            hobbies: ['Cooking', 'Traveling', 'Photography'],
+            interestedIndustries: ['Data Science', 'AI', 'Consulting'],
+            organizations: ['Women in Tech', 'Data Science Club']
+          },
         ]);
       }
     } else {
       console.log("No user logged in");
       // Add some dummy cards for demonstration when no user is logged in
       setCards([
-        { id: '1', task: 'Card 1' },
-        { id: '2', task: 'Card 2' },
-        { id: '3', task: 'Card 3' },
-        { id: '4', task: 'Card 4' },
-        { id: '5', task: 'Card 5' },
+        { 
+          id: '1', 
+          name: 'John Doe', 
+          pronouns: 'He/Him',
+          major: 'Computer Science', 
+          year: '2024', 
+          bio: 'I love coding and building cool apps!', 
+          interests: ['AI', 'Web Development', 'Mobile Apps'], 
+          profilePhoto: 'https://via.placeholder.com/150',
+          ethnicity: 'Asian',
+          careerPath: 'Software Engineer',
+          hobbies: ['Reading', 'Hiking', 'Gaming'],
+          interestedIndustries: ['Tech', 'Finance', 'Healthcare'],
+          organizations: ['ACM', 'Google Developer Student Club']
+        },
+        { 
+          id: '2', 
+          name: 'Jane Smith', 
+          pronouns: 'She/Her',
+          major: 'Data Science', 
+          year: '2023', 
+          bio: 'Passionate about data and machine learning.', 
+          interests: ['Data Analysis', 'Machine Learning', 'Python'], 
+          profilePhoto: 'https://via.placeholder.com/150',
+          ethnicity: 'African American',
+          careerPath: 'Data Scientist',
+          hobbies: ['Cooking', 'Traveling', 'Photography'],
+          interestedIndustries: ['Data Science', 'AI', 'Consulting'],
+          organizations: ['Women in Tech', 'Data Science Club']
+        },
       ]);
     }
   };
@@ -179,7 +229,23 @@ export default function TabTwoScreen() {
               </Animated.View>
               
               <View style={styles.cardContent}>
-                <Text style={styles.cardText}>{item.task || 'Blank Card'}</Text>
+                < Image
+                  source={{ uri: item.profilePhoto }}
+                  style={styles.profilePhoto}
+                />
+                <Text style={styles.name}>{item.name} ({item.pronouns})</Text>
+                <Text style={styles.details}>{item.major} | {item.year}</Text>
+                <Text style={styles.bio}>{item.bio}</Text>
+                <Text style={styles.subtitle}>Ethnicity: {item.ethnicity}</Text>
+                <Text style={styles.subtitle}>Career Path: {item.careerPath}</Text>
+                <Text style={styles.subtitle}>Hobbies: {item.hobbies ? item.hobbies.join(', ') : 'N/A'}</Text>
+                <Text style={styles.subtitle}>Interested Industries: {item.interestedIndustries ? item.interestedIndustries.join(', ') : 'N/A'}</Text>
+                <Text style={styles.subtitle}>Organizations: {item.organizations ? item.organizations.join(', ') : 'N/A'}</Text>
+                <View style={styles.interestsContainer}>
+                  {item.interests.map((interest: string, i: number) => (
+                    <Text key={i} style={styles.interest}>{interest}</Text>
+                  ))}
+                </View>
               </View>
             </Animated.View>
           </PanGestureHandler>
@@ -200,7 +266,23 @@ export default function TabTwoScreen() {
             ]}
           >
             <View style={styles.cardContent}>
-              <Text style={styles.cardText}>{item.task || 'Blank Card'}</Text>
+              <Image
+                source={{ uri: item.profilePhoto }}
+                style={styles.profilePhoto}
+              />
+              <Text style={styles.name}>{item.name} ({item.pronouns})</Text>
+              <Text style={styles.details}>{item.major} | {item.year}</Text>
+              <Text style={styles.bio}>{item.bio}</Text>
+              <Text style={styles.subtitle}>Ethnicity: {item.ethnicity}</Text>
+              <Text style={styles.subtitle}>Career Path: {item.careerPath}</Text>
+              <Text style={styles.subtitle}>Hobbies: {item.hobbies.join(', ')}</Text>
+              <Text style={styles.subtitle}>Interested Industries: {item.interestedIndustries.join(', ')}</Text>
+              <Text style={styles.subtitle}>Organizations: {item.organizations.join(', ')}</Text>
+              <View style={styles.interestsContainer}>
+                {item.interests.map((interest: string, i: number) => (
+                  <Text key={i} style={styles.interest}>{interest}</Text>
+                ))}
+              </View>
             </View>
           </Animated.View>
         );
@@ -220,7 +302,23 @@ export default function TabTwoScreen() {
             ]}
           >
             <View style={styles.cardContent}>
-              <Text style={styles.cardText}>{item.task || 'Blank Card'}</Text>
+              <Image
+                source={{ uri: item.profilePhoto }}
+                style={styles.profilePhoto}
+              />
+              <Text style={styles.name}>{item.name} ({item.pronouns})</Text>
+              <Text style={styles.details}>{item.major} | {item.year}</Text>
+              <Text style={styles.bio}>{item.bio}</Text>
+              <Text style={styles.subtitle}>Ethnicity: {item.ethnicity}</Text>
+              <Text style={styles.subtitle}>Career Path: {item.careerPath}</Text>
+              <Text style={styles.subtitle}>Hobbies: {item.hobbies.join(', ')}</Text>
+              <Text style={styles.subtitle}>Interested Industries: {item.interestedIndustries.join(', ')}</Text>
+              <Text style={styles.subtitle}>Organizations: {item.organizations.join(', ')}</Text>
+              <View style={styles.interestsContainer}>
+                {item.interests.map((interest: string, i: number) => (
+                  <Text key={i} style={styles.interest}>{interest}</Text>
+                ))}
+              </View>
             </View>
           </Animated.View>
         );
@@ -266,8 +364,8 @@ const styles = StyleSheet.create({
   },
   cardStyle: {
     position: 'absolute',
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_WIDTH * 1.4,
+    width: SCREEN_WIDTH * 0.5,
+    height: SCREEN_WIDTH * 0.7,
     borderRadius: 20,
     backgroundColor: 'white',
     shadowColor: '#000',
@@ -282,11 +380,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     backgroundColor: '#F5F5F5',
+    padding: 20,
   },
-  cardText: {
-    fontSize: 22,
-    fontWeight: '600',
+  profilePhoto: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 15,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 5,
+  },
+  details: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 10,
+  },
+  bio: {
+    fontSize: 14,
+    color: '#444',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#555',
+    marginBottom: 5,
+  },
+  interestsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  interest: {
+    fontSize: 12,
+    color: '#fff',
+    backgroundColor: '#5C6BC0',
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    margin: 5,
   },
   likeContainer: {
     position: 'absolute',
