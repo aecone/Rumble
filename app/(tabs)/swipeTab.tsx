@@ -236,7 +236,6 @@ export default function TabTwoScreen() {
                 <Text style={styles.name}>{item.name} ({item.pronouns})</Text>
                 <Text style={styles.details}>{item.major} | {item.year}</Text>
                 <Text style={styles.bio}>{item.bio}</Text>
-                <Text style={styles.subtitle}>Ethnicity: {item.ethnicity}</Text>
                 <Text style={styles.subtitle}>Career Path: {item.careerPath}</Text>
                 <Text style={styles.subtitle}>Hobbies: {item.hobbies ? item.hobbies.join(', ') : 'N/A'}</Text>
                 <Text style={styles.subtitle}>Interested Industries: {item.interestedIndustries ? item.interestedIndustries.join(', ') : 'N/A'}</Text>
@@ -332,7 +331,7 @@ export default function TabTwoScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <Text style={styles.mainTitle}>Card Swiper</Text>
+          <Text style={styles.mainTitle}>Swipe Connect</Text>
           <View style={styles.cardsContainer}>
             {renderCards()}
           </View>
@@ -364,8 +363,8 @@ const styles = StyleSheet.create({
   },
   cardStyle: {
     position: 'absolute',
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_WIDTH * 0.7,
+    width: SCREEN_WIDTH * 0.4,
+    height: SCREEN_WIDTH * 0.4,
     borderRadius: 20,
     backgroundColor: 'white',
     shadowColor: '#000',
