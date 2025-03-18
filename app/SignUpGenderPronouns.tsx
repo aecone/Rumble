@@ -28,7 +28,7 @@ const SignUpGenderPronouns = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please list your gender and pronouns</Text>
+      <Text style={styles.title}>Please list your gender & pronouns</Text>
       <TextInput
         style={styles.textInput}
         placeholder="Gender"
@@ -57,38 +57,41 @@ export default SignUpGenderPronouns;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#534E5B',
   },
   title: {
     fontSize: 26,
-    fontWeight: "700",
+    fontWeight: '700',
     marginBottom: 30,
-    color: "#1A237E",
+    color: '#FFFFFF',
+    textAlign: 'center', // Center the text
   },
   textInput: {
     height: 50,
-    width: "90%",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E8EAF6",
-    borderWidth: 2,
-    borderRadius: 10,
+    width: '90%',
+    backgroundColor: '#534E5B',
+    borderColor: '#E8EAF6',
+    borderWidth: 1,
+    borderRadius: 40,
     marginVertical: 10,
     paddingHorizontal: 20,
     fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '200'
   },
   button: {
-    width: "90%",
+    width: '90%',
     marginVertical: 20,
     padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    backgroundColor: "#5C6BC0",
+    borderRadius: 50,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF'
   },
   text: {
-    color: "#FFFFFF",
+    color: '#534E5B',
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '500',
   },
 });
