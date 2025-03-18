@@ -31,12 +31,12 @@ npx expo start
 
 ---
 
-### **3. Install Firebase & Required Dependencies**
-
+### **3. Set up FLASK and Install Firebase & Required Dependencies**
 Run the following commands **one by one** to install Firebase and other necessary libraries:
 
 ```sh
-npx install-expo-modules@latest && npx expo start && npm install firebase -g firebase-tools @react-native-async-storage/async-storage expo-image-picker expo-constants react-native-dotenv
+npx install-expo-modules@latest && npx expo start && npm install firebase -g firebase-tools @react-native-async-storage/async-storage expo-image-picker expo-constants react-native-dotenv && npm install react-native-config
+
 ```
 
 You'll need Python installed. If you don't have it, install Python (3.13 from Microsoft Store).
@@ -44,13 +44,15 @@ You'll need Python installed. If you don't have it, install Python (3.13 from Mi
 Create a Virtual Environment (venv)
 Navigate to your project folder and run: python -m venv venv
 
-Then run: venv\Scripts\activate (for Windows) or source venv/bin/activate (for Mac)
+The steps below must be repeated every time you start coding:
+
+Run: venv\Scripts\activate (for Windows) or source venv/bin/activate (for Mac)
 
 Install Flask and Dependencies in your venv
 Inside your virtual environment, install Flask and necessary libraries: pip install -r requirements.txt
 We put all required packages inside requirements.txt so the above line will install them
 
-TO RUN THE BACKEND, GO TO THE BACKEND FOLDER AND RUN `python app.py`
+Finally, run the file app.py (THIS WILL START YOUR LOCAL FLASK SERVER)
 
 # Input Flask Backend Firebase Key (Service Account JSON)
 

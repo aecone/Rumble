@@ -1,16 +1,23 @@
+import os
+import json
+import base64
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
-import sys
-import os
-
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Adds backend/ to Python path
 from config import FIREBASE_CREDENTIALS  
 
-# Ensure Firebase is initialized
-if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_CREDENTIALS)
-    firebase_admin.initialize_app(cred)
-    
+# Load Firebase credentials from environment variable
+if FIREBASE_CREDENTIALS:
+    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
+    firebase_credentials = json.loads(firebase_credentials_json)
+
+    # Ensure Firebase is initialized
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(firebase_credentials)
+        firebase_admin.initialize_app(cred)
+else:
+    raise ValueError("FIREBASE_CREDENTIALS environment variable is not set")
+
+# Initialize Firestore client
 db = firestore.client()
 
 def get_user_profile(user_id):
