@@ -64,25 +64,39 @@ const MentorOrMentee = () => {
             <Text style={styles.title}>Would you like to be a mentor or a mentee?</Text>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[
-                        styles.button,
-                        role === "mentor" ? styles.selectedButton : styles.unselectedButton,
-                    ]}
-                    onPress={() => setRole("mentor")}
-                >
-                    <Text style={styles.text}>Mentor</Text>
-                </TouchableOpacity>
+            <TouchableOpacity
+                style={[
+                    styles.button,
+                    role === "mentor" ? styles.selectedButton : styles.unselectedButton,
+                ]}
+                onPress={() => setRole("mentor")}
+            >
+                <Text style={[
+                    styles.text, 
+                    role === "mentor" ? styles.selectedText : styles.unselectedText
+                ]}>
+                    Mentor
+                </Text>
+            </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={[
-                        styles.button,
-                        role === "mentee" ? styles.selectedButton : styles.unselectedButton,
-                    ]}
-                    onPress={() => setRole("mentee")}
-                >
-                    <Text style={styles.text}>Mentee</Text>
-                </TouchableOpacity>
+            </View>
+
+            <View style={styles.buttonContainer}>
+            <TouchableOpacity
+                style={[
+                    styles.button,
+                    role === "mentee" ? styles.selectedButton : styles.unselectedButton,
+                ]}
+                onPress={() => setRole("mentee")}
+            >
+                <Text style={[
+                    styles.text, 
+                    role === "mentee" ? styles.selectedText : styles.unselectedText
+                ]}>
+                    Mentee
+                </Text>
+            </TouchableOpacity>
+
             </View>
 
             <TouchableOpacity
@@ -90,7 +104,7 @@ const MentorOrMentee = () => {
                 onPress={signUp}
                 disabled={!role} 
             >
-                <Text style={styles.text}>Sign Up</Text>
+                <Text style={styles.selectedText}>Sign Up</Text>
             </TouchableOpacity>
         </View>
     );
@@ -103,26 +117,30 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#FAFAFA",
+        backgroundColor: "#534E5B",
     },
     title: {
         fontSize: 26,
         fontWeight: "700",
         marginBottom: 30,
-        color: "#1A237E",
+        color: "#FFFFFF",
+        alignItems: "center"
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
         width: "90%",
+        borderColor: "#FFFFFF"
     },
     button: {
         flex: 1,
         marginHorizontal: 5,
         marginVertical: 10,
         padding: 15,
-        borderRadius: 10,
-        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 40,
+        borderColor: "#FFFFFF",
+        alignItems: "flex-start",
     },
     text: {
         color: "#FFFFFF",
@@ -130,20 +148,32 @@ const styles = StyleSheet.create({
         fontWeight: "600",
     },
     selectedButton: {
-        backgroundColor: "#2E7D32", 
+        backgroundColor: "#FFFFFF", 
+        color: '#534E5B',
+        borderColor: "#FFFFFF"
+    },
+    selectedText: {
+        color: '#534E5B',
+        fontSize: 20
     },
     unselectedButton: {
-        backgroundColor: "#5C6BC0", 
+        backgroundColor: "#534E5B", 
+        color: '#534E5B'
+    },
+    unselectedText: {
+        color: "#FFFFFF",
+        fontSize: 20,
+        fontWeight: "400"
     },
     signupButton: {
         marginTop: 20,
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 40,
         alignItems: "center",
         width: "90%",
     },
     activeButton: {
-        backgroundColor: "#1A237E", 
+        backgroundColor: "#FFFFFF", 
     },
     disabledButton: {
         backgroundColor: "#BDBDBD",

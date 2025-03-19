@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#534E5B', // A lighter indigo to complement the title color
     padding: 20,
-    borderRadius: 15, // Matching rounded corners for consistency
+    borderRadius: 40, // Matching rounded corners for consistency
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#5C6BC0', // Shadow color to match the button for a cohesive look
