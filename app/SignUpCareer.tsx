@@ -2,28 +2,28 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
-const SignUpEthnicity = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear} = useLocalSearchParams();
-  const [ethnicity, setEthnicity] = useState('');
+const SignUpCareer = () => {
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies} = useLocalSearchParams();
+  const [career, setCareer] = useState('');
 
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/SignUpGenderPronouns',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }  // Pass name info to the next page
+      pathname: '/SignUpIndustries',
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career }  // Pass name info to the next page
     });
   };
 
-  const isFormValid = ethnicity.trim();
+  const isFormValid = career.trim();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's your ethnicity?</Text>
+      <Text style={styles.title}>What is you intended career?</Text>
       <TextInput
         style={styles.textInput}
-        placeholder="Ethnicity"
-        value={ethnicity}
-        onChangeText={setEthnicity}
+        placeholder="Intended career"
+        value={career}
+        onChangeText={setCareer}
       />
       <TouchableOpacity 
         style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]} // Change button color based on validity
@@ -36,7 +36,7 @@ const SignUpEthnicity = () => {
   );
 };
 
-export default SignUpEthnicity;
+export default SignUpCareer;
 
 const styles = StyleSheet.create({
   container: {

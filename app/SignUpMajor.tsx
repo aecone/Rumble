@@ -9,7 +9,7 @@ const SignUpMajor = () => {
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/SignUpEthnicity',
+      pathname: '/SignUpGradYear',
       params: { firstName, lastName, email, password, birthday, major }  // Pass name info to the next page
     });
   };

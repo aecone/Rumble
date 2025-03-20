@@ -10,7 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 
 
 const SignUpGenderPronouns = () => {
-  const { firstName, lastName, email, password, birthday, major, ethnicity } =
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity } =
     useLocalSearchParams();
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
@@ -18,8 +18,8 @@ const SignUpGenderPronouns = () => {
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/MentorOrMentee',
-      params: { firstName, lastName, email, password, birthday, major, ethnicity, gender, pronouns }  // Pass name info to the next page
+      pathname: '/SignUpHobbies',
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns }  // Pass name info to the next page
     });
   };
   

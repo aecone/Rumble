@@ -7,55 +7,28 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 
+
 const MentorOrMentee = () => {
-    const { firstName, lastName, email, password, birthday, major, ethnicity, gender, prounouns } =
-        useLocalSearchParams();
-    
+    const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs } =
+            useLocalSearchParams();
     const [role, setRole] = useState(""); 
 
-    const signUp = async () => {
+    const handleRoleSelection = () => {
         if (!role) {
-            alert("Please select Mentor or Mentee before signing up.");
+            alert("Please select Mentor or Mentee before proceeding.");
             return;
         }
 
-        try {
-            const emailString = Array.isArray(email) ? email[0] : email;
-            const passwordString = Array.isArray(password) ? password[0] : password;
-
-            if (!emailString || !passwordString) {
-                alert("Invalid email or password.");
-                return;
-            }
-
-            const response = await fetch("http://127.0.0.1:5000/api/create_user", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: emailString,
-                    password: passwordString,
-                    firstName,
-                    lastName,
-                    birthday,
-                    major,
-                    ethnicity,
-                    gender,
-                    prounouns,
-                    role, // Include selected role
-                }),
+        if (role === "mentor") {
+            router.push({
+                pathname: '/MentorAreas',
+                params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs, role }
             });
-
-            const data = await response.json();
-            if (response.ok) {
-                router.replace("/"); 
-            } else {
-                alert("Sign up failed: " + (data.error || "Unknown error"));
-            }
-        } catch (error) {
-            console.log(error);
-            alert("Sign up failed: " + error.message);
+        } else if (role === "mentee") {
+            router.push({
+                pathname: '/MenteeAreas',
+                params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs, role }
+            });
         }
     };
 
@@ -64,47 +37,45 @@ const MentorOrMentee = () => {
             <Text style={styles.title}>Would you like to be a mentor or a mentee?</Text>
 
             <View style={styles.buttonContainer}>
-            <TouchableOpacity
-                style={[
-                    styles.button,
-                    role === "mentor" ? styles.selectedButton : styles.unselectedButton,
-                ]}
-                onPress={() => setRole("mentor")}
-            >
-                <Text style={[
-                    styles.text, 
-                    role === "mentor" ? styles.selectedText : styles.unselectedText
-                ]}>
-                    Mentor
-                </Text>
-            </TouchableOpacity>
-
+                <TouchableOpacity
+                    style={[
+                        styles.button,
+                        role === "mentor" ? styles.selectedButton : styles.unselectedButton,
+                    ]}
+                    onPress={() => setRole("mentor")}
+                >
+                    <Text style={[
+                        styles.text, 
+                        role === "mentor" ? styles.selectedText : styles.unselectedText
+                    ]}>
+                        Mentor
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <View style={styles.buttonContainer}>
-            <TouchableOpacity
-                style={[
-                    styles.button,
-                    role === "mentee" ? styles.selectedButton : styles.unselectedButton,
-                ]}
-                onPress={() => setRole("mentee")}
-            >
-                <Text style={[
-                    styles.text, 
-                    role === "mentee" ? styles.selectedText : styles.unselectedText
-                ]}>
-                    Mentee
-                </Text>
-            </TouchableOpacity>
-
+                <TouchableOpacity
+                    style={[
+                        styles.button,
+                        role === "mentee" ? styles.selectedButton : styles.unselectedButton,
+                    ]}
+                    onPress={() => setRole("mentee")}
+                >
+                    <Text style={[
+                        styles.text, 
+                        role === "mentee" ? styles.selectedText : styles.unselectedText
+                    ]}>
+                        Mentee
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <TouchableOpacity
                 style={[styles.signupButton, role ? styles.activeButton : styles.disabledButton]}
-                onPress={signUp}
+                onPress={handleRoleSelection}
                 disabled={!role} 
             >
-                <Text style={styles.selectedText}>Sign Up</Text>
+                <Text style={styles.selectedText}>Next</Text>
             </TouchableOpacity>
         </View>
     );
