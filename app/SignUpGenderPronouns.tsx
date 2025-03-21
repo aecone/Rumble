@@ -1,13 +1,7 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Picker } from '@react-native-picker/picker';
 import { router, useLocalSearchParams } from "expo-router";
-
 
 const SignUpGenderPronouns = () => {
   const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity } =
@@ -16,35 +10,66 @@ const SignUpGenderPronouns = () => {
   const [pronouns, setPronouns] = useState("");
 
   const proceed = () => {
-    // Navigate to the next page (Email/Password entry)
+    // Navigate to the next page
     router.push({
       pathname: '/SignUpHobbies',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns }  // Pass name info to the next page
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns }
     });
   };
   
   // Check if both fields are filled
-  //const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
+  const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please list your gender & pronouns</Text>
-      <TextInput
-        style={styles.textInput}
-        placeholder="Gender"
-        value={gender}
-        onChangeText={setGender}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder="Pronouns"
-        value={pronouns}
-        onChangeText={setPronouns}
-      />
+      <Text style={styles.title}>Please select your gender & pronouns</Text>
+      
+      {/* Gender Dropdown */}
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={gender}
+          onValueChange={(itemValue) => setGender(itemValue)}
+          style={[styles.picker, { backgroundColor: '#534E5B' }]}
+          mode="dropdown"
+          dropdownIconColor={"#534E5B"}
+        >
+          <Picker.Item label="Select Gender" value="" />
+          <Picker.Item label="Woman" value="Woman" />
+          <Picker.Item label="Man" value="Man" />
+          <Picker.Item label="Non-binary" value="Non-binary" />
+          <Picker.Item label="Genderfluid" value="Genderfluid" />
+          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
+      </View>
+      
+      {/* Pronouns Dropdown */}
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={pronouns}
+          onValueChange={(itemValue) => setPronouns(itemValue)}
+          style={[styles.picker, { backgroundColor: '#534E5B' }]}
+          mode="dropdown"
+          dropdownIconColor={"#534E5B"}
+        >
+          <Picker.Item label="Select Pronouns" value="" />
+          <Picker.Item label="He/Him" value="He/Him" />
+          <Picker.Item label="She/Her" value="She/Her" />
+          <Picker.Item label="They/Them" value="They/Them" />
+          <Picker.Item label="He/They" value="He/They" />
+          <Picker.Item label="She/They" value="She/They" />
+          <Picker.Item label="Ze/Hir" value="Ze/Hir" />
+          <Picker.Item label="Ze/Zir" value="Ze/Zir" />
+          <Picker.Item label="Xe/Xem" value="Xe/Xem" />
+          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
+      </View>
+
       <TouchableOpacity
-        style={[styles.button]} // Change button color based on validity
+        style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]}
         onPress={proceed}
-        //disabled={!isFormValid}
+        disabled={!isFormValid}
       >
         <Text style={styles.text}>Next</Text>
       </TouchableOpacity>
@@ -66,20 +91,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 30,
     color: '#FFFFFF',
-    textAlign: 'center', // Center the text
+    textAlign: 'center',
   },
-  textInput: {
+  pickerContainer: {
     height: 50,
     width: '90%',
     backgroundColor: '#534E5B',
-    borderColor: '#E8EAF6',
-    borderWidth: 1,
     borderRadius: 40,
     marginVertical: 10,
-    paddingHorizontal: 20,
-    fontSize: 16,
+    justifyContent: 'center',
+    borderColor: '#E8EAF6',
+    borderWidth: 1,
+  },
+  picker: {
+    width: '100%',
     color: '#FFFFFF',
-    fontWeight: '200'
+    alignContent: 'center',
+    fontSize: 22,
+    borderColor: '#534E5B',
+    borderRadius: 40
   },
   button: {
     width: '90%',
@@ -87,7 +117,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF'
   },
   text: {
     color: '#534E5B',
