@@ -1,37 +1,75 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
+const predefinedIndustries = [
+  "Technology", "Healthcare", "Finance", "Education", "Entertainment",
+  "Retail", "Manufacturing", "Real Estate", "Transportation", "Energy",
+  "Agriculture", "Media", "Telecommunications", "Hospitality", "Automotive",
+  "Aerospace", "Pharmaceuticals", "Consulting", "Non-Profit", "Government",
+];
+
 const SignUpIndustries = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career} = useLocalSearchParams();
-  const [industries, setIndustries] = useState('');
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career } = useLocalSearchParams();
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+
+  const toggleIndustry = (industry: string) => {
+    setSelectedIndustries(prevIndustries =>
+      prevIndustries.includes(industry)
+        ? prevIndustries.filter(i => i !== industry)  // Remove if selected
+        : [...prevIndustries, industry]  // Add if not selected
+    );
+  };
 
   const proceed = () => {
-    // Navigate to the next page (Email/Password entry)
     router.push({
       pathname: '/SignUpOrgs',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries }  // Pass name info to the next page
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries: selectedIndustries.join(', ') }
     });
   };
 
-  const isFormValid = industries.trim();
+  const isFormValid = selectedIndustries.length > 0;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What industries are you interested in?</Text>
-      <TextInput
-        style={styles.textInput}
-        placeholder="List of intended industries"
-        value={industries}
-        onChangeText={setIndustries}
-      />
-      <TouchableOpacity 
-        style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]} // Change button color based on validity
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+      <View style={styles.contentWrapper}>
+        <Text style={styles.title}>What industries are you interested in?</Text>
+
+        <View style={styles.listContainer}>
+          <FlatList
+            data={predefinedIndustries}
+            numColumns={3}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.chip,
+                  selectedIndustries.includes(item) ? styles.selectedChip : styles.unselectedChip
+                ]}
+                onPress={() => toggleIndustry(item)}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    selectedIndustries.includes(item) ? styles.selectedChipText : styles.unselectedChipText
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.chipContainer}
+          />
+        </View>
+
+        <TouchableOpacity 
+          style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]}
+          onPress={proceed}
+          disabled={!isFormValid}
+        >
+          <Text style={styles.text}>Next</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -41,41 +79,64 @@ export default SignUpIndustries;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#534E5B',
+    paddingHorizontal: 100,
+  },
+  contentWrapper: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#534E5B',
+  },
+  listContainer: {
+    marginVertical: 20,
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 30,
     color: '#FFFFFF',
+    textAlign: 'center',
   },
-  textInput: {
-    height: 50,
-    width: '90%',
-    backgroundColor: '#534E5B',
-    borderColor: '#E8EAF6',
-    borderWidth: 1,
-    borderRadius: 40,
-    marginVertical: 10,
-    paddingHorizontal: 20,
-    fontSize: 16,
+  chipContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chip: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    margin: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedChip: {
+    backgroundColor: '#92C7C5', // Teal when selected
+  },
+  unselectedChip: {
+    backgroundColor: '#E8EAF6', // Light gray when unselected
+  },
+  selectedChipText: {
     color: '#FFFFFF',
-    fontWeight: '200'
+    fontWeight: 'bold',
+  },
+  unselectedChipText: {
+    color: '#534E5B',
   },
   button: {
-    width: '90%',
-    marginVertical: 20,
+    width: '100%',
     padding: 15,
-    borderRadius: 50,
+    borderRadius: 25,
     alignItems: 'center',
-    backgroundColor: '#534E5'
+    marginTop: 20,
   },
   text: {
     color: '#534E5B',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  chipText: {
+    color: '#534E5B',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
-

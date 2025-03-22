@@ -18,7 +18,7 @@ const SignUpOrgs = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What organizations are you involved in?</Text>
+      <Text style={styles.title}>List the organizations you are involved in</Text>
       <TextInput
         style={styles.textInput}
         placeholder="List of organizations"
