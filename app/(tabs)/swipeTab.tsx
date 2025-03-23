@@ -7,9 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
-import { auth } from "../../FirebaseConfig";
-
-const API_URL = 'http://127.0.0.1:5000/api'; // Replace if needed
+import { auth, API_BASE_URL } from "../../FirebaseConfig";
 
 type UserCard = {
   id: string;
@@ -35,7 +33,7 @@ export default function SwipeTab() {
       }
 
       const token = await currentUser.getIdToken(true);
-      const response = await fetch(`${API_URL}/suggested_users`, {
+      const response = await fetch(`${API_BASE_URL}/suggested_users`, {
         method: 'GET',
         headers: {
           Authorization: token,
@@ -63,7 +61,7 @@ export default function SwipeTab() {
     try {
       const token = await currentUser.getIdToken(true);
 
-      const response = await fetch(`${API_URL}/swipe`, {
+      const response = await fetch(`${API_BASE_URL}/swipe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

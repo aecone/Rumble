@@ -30,3 +30,4 @@ export const googleAuthConfig = {
   // iosClientId: "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
   webClientId: "Y422725323894-aibv8o3npa4ufish8g5b2j9q2o42eqc8.apps.googleusercontent.com",
 };
+export const API_BASE_URL = "http://127.0.0.1:5000/api";

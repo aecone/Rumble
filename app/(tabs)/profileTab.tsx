@@ -20,6 +20,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
+import { API_BASE_URL } from "../../FirebaseConfig";
+
 
 export default function TabFourScreen() {
   getAuth().onAuthStateChanged((user) => {
@@ -84,7 +86,6 @@ export default function TabFourScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const API_BASE_URL = "http://127.0.0.1:5000/api"; 
 
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;

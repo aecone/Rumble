@@ -6,6 +6,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import { API_BASE_URL } from "../FirebaseConfig";
+
 
 const MentorOrMentee = () => {
     const { firstName, lastName, email, password, birthday, major, ethnicity, gender, prounouns } =
@@ -27,7 +29,6 @@ const MentorOrMentee = () => {
                 alert("Invalid email or password.");
                 return;
             }
-            const API_BASE_URL = "http://127.0.0.1:5000/api"; 
             const response = await fetch(`${API_BASE_URL}/create_user`, {
                 method: "POST",
                 headers: {
