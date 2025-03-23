@@ -84,7 +84,7 @@ export default function TabFourScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const API_BASE_URL = "https://rumble-xe2g.onrender.com/api"; 
+  const API_BASE_URL = "http://127.0.0.1:5000/api"; 
 
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
@@ -176,7 +176,7 @@ export default function TabFourScreen() {
     setLoading(true);
     try {
 
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/profile`, {
         headers: { Authorization: token },
       });
@@ -195,7 +195,7 @@ export default function TabFourScreen() {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/profile`, {
 
         method: "PUT",
@@ -220,7 +220,7 @@ export default function TabFourScreen() {
   const updateSettings = async () => {
     if (!user) return;
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/update_settings`, {
         method: "PUT",
         headers: {
@@ -291,7 +291,7 @@ useEffect(() => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/delete_account`, {
         method: "DELETE",
         headers: {

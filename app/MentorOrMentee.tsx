@@ -27,7 +27,7 @@ const MentorOrMentee = () => {
                 alert("Invalid email or password.");
                 return;
             }
-            const API_BASE_URL = "https://rumble-xe2g.onrender.com/api"; 
+            const API_BASE_URL = "http://127.0.0.1:5000/api"; 
             const response = await fetch(`${API_BASE_URL}/create_user`, {
                 method: "POST",
                 headers: {
