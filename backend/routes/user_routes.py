@@ -1,9 +1,7 @@
 from flask import Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from logger import logger  # Import the logger
 
 user_routes = Blueprint("user_routes", __name__)
 
@@ -31,7 +29,7 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    print("Received data:", data)
+    logger.info("Received data: {data}")
     required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -44,7 +42,7 @@ def edit_profile():
 
     if updated:
         updated_profile = get_user_profile(user_id)
-        print("Profile updated successfully:", updated_profile)
+        logger.info("Profile updated successfully: {updated_profile}")
         return jsonify(updated_profile), 200
 
     return jsonify({"error": "Profile update failed"}), 500
@@ -59,7 +57,7 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    print("Received data:", data)
+    logger.info("Received data: {data}")
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -72,7 +70,7 @@ def edit_settings():
 
     if updated:
         updated_settings = get_user_profile(user_id)
-        print("Profile updated successfully:", updated_settings)
+        logger.info("Profile updated successfully: {updated_settings}")
         return jsonify(updated_settings), 200
 
     return jsonify({"error": "Settings update failed"}), 500
@@ -83,7 +81,7 @@ def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        print("Error verifying token:", error)
+        logger.warning("Error verifying token: {error}")
         return error
 
     user_id = decoded_token["uid"]  # Firebase UID
@@ -148,5 +146,5 @@ def create_user():
         return jsonify(result), 201
 
     except Exception as e:
-        print(f"❌ Error processing user creation: {str(e)}")
+        logger.warning(f"Error processing request: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
