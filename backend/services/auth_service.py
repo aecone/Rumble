@@ -4,7 +4,6 @@ from logger import logger  # Import the logger
 
 def verify_token():
     """Verifies Firebase ID token from Authorization header."""
-    
     auth_header = request.headers.get("Authorization")
     if not auth_header:
         logger.warning("Missing Authorization header")  # Debugging log

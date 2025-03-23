@@ -92,7 +92,6 @@ def delete_account():
     if "error" in result:
         return jsonify(result), 500
     return jsonify(result), 200
-
 @user_routes.route("/create_user", methods=["POST"])
 def create_user():
     """
@@ -109,6 +108,7 @@ def create_user():
         if not email or not password:
             return jsonify({"error": "Email and password are required"}), 400
 
+        # Assemble Firestore document
         user_data = {
             "settings": {
                 "firstName": data.get("firstName", ""),
@@ -120,7 +120,7 @@ def create_user():
                 "pronouns": data.get("pronouns", "")
             },
             "profile": {
-                "bio": "",  # Bio remains empty initially
+                "bio": "",
                 "profilePictureUrl": data.get("profilePictureUrl", ""),
                 "major": data.get("major", ""),
                 "gradYear": data.get("gradYear", None),
@@ -128,17 +128,22 @@ def create_user():
                 "orgs": data.get("orgs", []),
                 "careerPath": data.get("careerPath", ""),
                 "interestedIndustries": data.get("interestedIndustries", []),
-                "userType": data.get("userType", "mentee"), 
+                "userType": data.get("userType", "mentee"),
                 "mentorshipAreas": data.get("mentorshipAreas", [])
             },
-            "liked_users": {},  # Initialize as an empty HashMap
-            "matched_users": []  # Initialize as an empty List
+            "liked_users": {},
+            "matched_users": []
         }
+        logger.info("Writing user data to Firestore:")
+        logger.info(user_data)
 
+        # Use your service to create the user
         result = create_user_in_firebase(email, password, user_data)
-        status_code = 201 if "user_id" in result else 500
 
-        return jsonify(result), status_code
+        if "error" in result:
+            return jsonify(result), 500
+
+        return jsonify(result), 201
 
     except Exception as e:
         logger.warning(f"Error processing request: {str(e)}")
