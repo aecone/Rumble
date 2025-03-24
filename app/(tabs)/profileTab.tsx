@@ -20,7 +20,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
-// import { API_BASE_URL } from "../../FirebaseConfig";
+import { API_BASE_URL } from "../../FirebaseConfig";
 
 
 export default function TabFourScreen() {
@@ -86,7 +86,6 @@ export default function TabFourScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const API_BASE_URL = "https://rumble-xe2g.onrender.com/api"; 
 
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;

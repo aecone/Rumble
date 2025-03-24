@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-// import { API_BASE_URL } from "../FirebaseConfig";
+import { API_BASE_URL } from "../FirebaseConfig";
 
 
 const MentorOrMentee = () => {
@@ -14,7 +14,7 @@ const MentorOrMentee = () => {
         useLocalSearchParams();
     
     const [role, setRole] = useState(""); 
-    const API_BASE_URL = "https://rumble-xe2g.onrender.com/api"; 
+
     const signUp = async () => {
         if (!role) {
             alert("Please select Mentor or Mentee before signing up.");
@@ -56,7 +56,7 @@ const MentorOrMentee = () => {
             }
         } catch (error) {
             console.log(error);
-            alert("Sign up failed: " + (error as Error).message);
+            alert("Sign up failed: " + error.message);
         }
     };
 
