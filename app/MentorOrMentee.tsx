@@ -56,7 +56,7 @@ const MentorOrMentee = () => {
             }
         } catch (error) {
             console.log(error);
-            alert("Sign up failed: " + error.message);
+            alert("Sign up failed: " + (error as Error).message);
         }
     };
 
