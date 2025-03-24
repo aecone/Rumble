@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
-
+from logger import logger  # Import the logger
 
 user_routes = Blueprint("user_routes", __name__)
 
@@ -29,7 +29,7 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    print("Received data:", data)
+    logger.info("Received data: {data}")
     required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -42,7 +42,7 @@ def edit_profile():
 
     if updated:
         updated_profile = get_user_profile(user_id)
-        print("Profile updated successfully:", updated_profile)
+        logger.info("Profile updated successfully: {updated_profile}")
         return jsonify(updated_profile), 200
 
     return jsonify({"error": "Profile update failed"}), 500
@@ -57,7 +57,7 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    print("Received data:", data)
+    logger.info("Received data: {data}")
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -70,7 +70,7 @@ def edit_settings():
 
     if updated:
         updated_settings = get_user_profile(user_id)
-        print("Profile updated successfully:", updated_settings)
+        logger.info("Profile updated successfully: {updated_settings}")
         return jsonify(updated_settings), 200
 
     return jsonify({"error": "Settings update failed"}), 500
@@ -81,7 +81,7 @@ def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        print("Error verifying token:", error)
+        logger.warning("Error verifying token: {error}")
         return error
 
     user_id = decoded_token["uid"]  # Firebase UID
@@ -92,11 +92,13 @@ def delete_account():
     if "error" in result:
         return jsonify(result), 500
     return jsonify(result), 200
-
 @user_routes.route("/create_user", methods=["POST"])
 def create_user():
     """
     API endpoint to create a new user in Firebase Auth & Firestore.
+    - Stores profile information in Firestore.
+    - Initializes `liked_users` as an empty HashMap.
+    - Initializes `matched_users` as an empty List.
     """
     try:
         data = request.json
@@ -106,6 +108,7 @@ def create_user():
         if not email or not password:
             return jsonify({"error": "Email and password are required"}), 400
 
+        # Assemble Firestore document
         user_data = {
             "settings": {
                 "firstName": data.get("firstName", ""),
@@ -117,7 +120,7 @@ def create_user():
                 "pronouns": data.get("pronouns", "")
             },
             "profile": {
-                "bio": "",  # Bio remains empty initially
+                "bio": "",
                 "profilePictureUrl": data.get("profilePictureUrl", ""),
                 "major": data.get("major", ""),
                 "gradYear": data.get("gradYear", None),
@@ -125,16 +128,23 @@ def create_user():
                 "orgs": data.get("orgs", []),
                 "careerPath": data.get("careerPath", ""),
                 "interestedIndustries": data.get("interestedIndustries", []),
-                "userType": data.get("userType", "mentee"), 
+                "userType": data.get("userType", "mentee"),
                 "mentorshipAreas": data.get("mentorshipAreas", [])
-            }
+            },
+            "liked_users": {},
+            "matched_users": []
         }
+        logger.info("Writing user data to Firestore:")
+        logger.info(user_data)
 
+        # Use your service to create the user
         result = create_user_in_firebase(email, password, user_data)
-        status_code = 201 if "user_id" in result else 500
 
-        return jsonify(result), status_code
+        if "error" in result:
+            return jsonify(result), 500
+
+        return jsonify(result), 201
 
     except Exception as e:
-        print(f"Error processing request: {str(e)}")
+        logger.warning(f"Error processing request: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500

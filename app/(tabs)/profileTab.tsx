@@ -20,6 +20,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router'
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
+import { API_BASE_URL } from "../../FirebaseConfig";
 
 
 export default function TabFourScreen() {
@@ -85,10 +86,10 @@ export default function TabFourScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  
+
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
   
     try {
       // Validate Rutgers email
@@ -172,11 +173,12 @@ export default function TabFourScreen() {
   );
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-      const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/profile", {
+
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/profile`, {
         headers: { Authorization: token },
       });
       const data = await response.json();
@@ -191,11 +193,12 @@ export default function TabFourScreen() {
     setLoading(false);
   };
   const updateProfile = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-      const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/update_profile", {
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/profile`, {
+
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -218,8 +221,8 @@ export default function TabFourScreen() {
   const updateSettings = async () => {
     if (!user) return;
     try {
-      const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/update_settings", {
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/update_settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -241,7 +244,7 @@ export default function TabFourScreen() {
   const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
 
   const uploadImage = async (uri: string) => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
       const response = await fetch(uri);
@@ -286,11 +289,11 @@ useEffect(() => {
 }, [userProfile.profile.profilePictureUrl, pendingImageUpdate]);
 
   const deleteAccount = async () => {
-    if (!user) return;
+    if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-      const token = await user.getIdToken();
-      const response = await fetch("http://127.0.0.1:5000/api/delete_account", {
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/delete_account`, {
         method: "DELETE",
         headers: {
           Authorization: `${token}`,

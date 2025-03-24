@@ -6,6 +6,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import { API_BASE_URL } from "../FirebaseConfig";
+
 
 
 const MentorOrMentee = () => {
@@ -28,6 +30,7 @@ const MentorOrMentee = () => {
             router.push({
                 pathname: '/MenteeAreas',
                 params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs, role }
+
             });
         }
     };
