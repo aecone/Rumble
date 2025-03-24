@@ -7,7 +7,9 @@ import {
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
-import { auth, API_BASE_URL } from "../../FirebaseConfig";
+// import { auth, API_BASE_URL } from "../../FirebaseConfig";
+import { auth } from "../../FirebaseConfig";
+
 
 type UserCard = {
   id: string;
@@ -19,7 +21,7 @@ type UserCard = {
 export default function SwipeTab() {
   const [users, setUsers] = useState<UserCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const API_BASE_URL = "https://rumble-xe2g.onrender.com/api"; 
   useEffect(() => {
     fetchSuggestedUsers();
   }, []);
