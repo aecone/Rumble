@@ -9,54 +9,29 @@ import { router, useLocalSearchParams } from "expo-router";
 import { API_BASE_URL } from "../FirebaseConfig";
 
 
+
 const MentorOrMentee = () => {
-    const { firstName, lastName, email, password, birthday, major, ethnicity, gender, prounouns } =
-        useLocalSearchParams();
-    
+    const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs } =
+            useLocalSearchParams();
     const [role, setRole] = useState(""); 
 
-    const signUp = async () => {
+    const handleRoleSelection = () => {
         if (!role) {
-            alert("Please select Mentor or Mentee before signing up.");
+            alert("Please select Mentor or Mentee before proceeding.");
             return;
         }
 
-        try {
-            const emailString = Array.isArray(email) ? email[0] : email;
-            const passwordString = Array.isArray(password) ? password[0] : password;
-
-            if (!emailString || !passwordString) {
-                alert("Invalid email or password.");
-                return;
-            }
-            const response = await fetch(`${API_BASE_URL}/create_user`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: emailString,
-                    password: passwordString,
-                    firstName,
-                    lastName,
-                    birthday,
-                    major,
-                    ethnicity,
-                    gender,
-                    prounouns,
-                    role, // Include selected role
-                }),
+        if (role === "mentor") {
+            router.push({
+                pathname: '/MentorAreas',
+                params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs, role }
             });
+        } else if (role === "mentee") {
+            router.push({
+                pathname: '/MenteeAreas',
+                params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs, role }
 
-            const data = await response.json();
-            if (response.ok) {
-                router.replace("/"); 
-            } else {
-                alert("Sign up failed: " + (data.error || "Unknown error"));
-            }
-        } catch (error) {
-            console.log(error);
-            alert("Sign up failed: " + error.message);
+            });
         }
     };
 
@@ -72,9 +47,16 @@ const MentorOrMentee = () => {
                     ]}
                     onPress={() => setRole("mentor")}
                 >
-                    <Text style={styles.text}>Mentor</Text>
+                    <Text style={[
+                        styles.text, 
+                        role === "mentor" ? styles.selectedText : styles.unselectedText
+                    ]}>
+                        Mentor
+                    </Text>
                 </TouchableOpacity>
+            </View>
 
+            <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={[
                         styles.button,
@@ -82,16 +64,21 @@ const MentorOrMentee = () => {
                     ]}
                     onPress={() => setRole("mentee")}
                 >
-                    <Text style={styles.text}>Mentee</Text>
+                    <Text style={[
+                        styles.text, 
+                        role === "mentee" ? styles.selectedText : styles.unselectedText
+                    ]}>
+                        Mentee
+                    </Text>
                 </TouchableOpacity>
             </View>
 
             <TouchableOpacity
                 style={[styles.signupButton, role ? styles.activeButton : styles.disabledButton]}
-                onPress={signUp}
+                onPress={handleRoleSelection}
                 disabled={!role} 
             >
-                <Text style={styles.text}>Sign Up</Text>
+                <Text style={styles.selectedText}>Next</Text>
             </TouchableOpacity>
         </View>
     );
@@ -104,26 +91,30 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#FAFAFA",
+        backgroundColor: "#534E5B",
     },
     title: {
         fontSize: 26,
         fontWeight: "700",
         marginBottom: 30,
-        color: "#1A237E",
+        color: "#FFFFFF",
+        alignItems: "center"
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
         width: "90%",
+        borderColor: "#FFFFFF"
     },
     button: {
         flex: 1,
         marginHorizontal: 5,
         marginVertical: 10,
         padding: 15,
-        borderRadius: 10,
-        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 40,
+        borderColor: "#FFFFFF",
+        alignItems: "flex-start",
     },
     text: {
         color: "#FFFFFF",
@@ -131,20 +122,32 @@ const styles = StyleSheet.create({
         fontWeight: "600",
     },
     selectedButton: {
-        backgroundColor: "#2E7D32", 
+        backgroundColor: "#FFFFFF", 
+        color: '#534E5B',
+        borderColor: "#FFFFFF"
+    },
+    selectedText: {
+        color: '#534E5B',
+        fontSize: 20
     },
     unselectedButton: {
-        backgroundColor: "#5C6BC0", 
+        backgroundColor: "#534E5B", 
+        color: '#534E5B'
+    },
+    unselectedText: {
+        color: "#FFFFFF",
+        fontSize: 20,
+        fontWeight: "400"
     },
     signupButton: {
         marginTop: 20,
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 40,
         alignItems: "center",
         width: "90%",
     },
     activeButton: {
-        backgroundColor: "#1A237E", 
+        backgroundColor: "#FFFFFF", 
     },
     disabledButton: {
         backgroundColor: "#BDBDBD",

@@ -3,46 +3,48 @@ import React, { useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { router, useLocalSearchParams } from 'expo-router';
 
-const SignUpEthnicity = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear} = useLocalSearchParams();
-  const [ethnicity, setEthnicity] = useState('');
+const SignUpCareer = () => {
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies} = useLocalSearchParams();
+  const [career, setCareer] = useState('');
 
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/SignUpGenderPronouns',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }  // Pass name info to the next page
+      pathname: '/SignUpIndustries',
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career }  // Pass name info to the next page
     });
   };
 
-  const isFormValid = ethnicity.trim();
+  const isFormValid = career.trim();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please select your race/ethnicity</Text>
+      <Text style={styles.title}>What's your intended career</Text>
 
       {/* DropDown Picker */}
       <View style={styles.pickerContainer}>
         <Picker
-          selectedValue={ethnicity}
-          onValueChange={(itemValue) => setEthnicity(itemValue)}
+          selectedValue={career}
+          onValueChange={(itemValue) => setCareer(itemValue)}
           style={[styles.picker, { backgroundColor: '#534E5B' }]}
           mode="dropdown"
           dropdownIconColor={"#534E5B"}
         >
-          <Picker.Item label="Select Race/Ethnicity" value="" />
-          <Picker.Item label="Asian" value="Asian" />
-          <Picker.Item label="East Asian" value="East Asian" />
-          <Picker.Item label="South Asian" value="South Asian" />
-          <Picker.Item label="Southeast Asian" value="Southeast Asian" />
-          <Picker.Item label="Middle Eastern/Arab" value="Middle Eastern/Arab" />
-          <Picker.Item label="American Indian/Alaskan Native" value="American Indian/Alaskan Native" />
-          <Picker.Item label="African American" value="African American" />
-          <Picker.Item label="Native Hawaiian or Pacific Islander" value="Native Hawaiian or Pacific Islander" />
-          <Picker.Item label="Hispanic or Latino" value="Hispanic or Latino" />
-          <Picker.Item label="White" value="White" />
-          <Picker.Item label="Multiracial" value="Multiracial" />
-          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+          <Picker.Item label="Select career" value="" />
+          <Picker.Item label="UI/UX" value="UI/UX" />
+          <Picker.Item label="Medicine" value="Medicine" />
+          <Picker.Item label="Politician" value="Politician" />
+          <Picker.Item label="Law" value="Law" />
+          <Picker.Item label="Design" value="Design" />
+          <Picker.Item label="Research" value="Research" />
+          <Picker.Item label="Finance" value="Finance" />
+          <Picker.Item label="Data Science" value="Data Science" />
+          <Picker.Item label="Data Engineering" value="Data Engineering" />
+          <Picker.Item label="Software Engineering" value="Software Engineering" />
+          <Picker.Item label="Computer Engineering" value="Computer Engineering" />
+          <Picker.Item label="Biomedical Engineering" value="Biomedical Engineering" />
+          <Picker.Item label="Electrical Engineering" value="Electrical Engineering" />
+          <Picker.Item label="Data Engineering" value="Data Engineering" />
           <Picker.Item label="Other" value="Other" />
         </Picker>
       </View>
@@ -58,7 +60,7 @@ const SignUpEthnicity = () => {
   );
 };
 
-export default SignUpEthnicity;
+export default SignUpCareer;
 
 const styles = StyleSheet.create({
   container: {
@@ -71,7 +73,9 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 30,
+    marginTop: 30,
     color: '#FFFFFF',
+    textAlign: 'center',
   },
   pickerContainer: {
     height: 50,
@@ -104,4 +108,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-
