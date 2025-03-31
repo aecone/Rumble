@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
-from logger import logger  # Import the logger
+import logging
+
+from flask import Blueprint, request, jsonify
 
 user_routes = Blueprint("user_routes", __name__)
+logger = logging.getLogger(__name__)
 
 @user_routes.route("/profile", methods=["GET"])
 def get_profile():

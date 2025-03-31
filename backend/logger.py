@@ -1,20 +1,22 @@
+# logger.py
 import logging
-from flask import Flask, request
+import os
 
-LOG_FILE = "/tmp/app.log"  # Store logs in a writable directory on Render
+LOG_FILE = "/tmp/app.log"
 
-# Set up logging
+# Make sure the log directory exists (Render-safe)
+os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+
+# Root logger config
 logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,  # Capture all INFO, WARNING, ERROR, CRITICAL logs
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()  # Optional: also prints to console
+    ]
 )
 
-logger = logging.getLogger("FlaskApp")
-
-# Capture Flask's built-in logs (requests, errors)
-werkzeug_logger = logging.getLogger("werkzeug")
-werkzeug_logger.setLevel(logging.INFO)
-werkzeug_logger.addHandler(logging.FileHandler(LOG_FILE))
-
-logger.info("Flask App Started - Logging Initialized")
+# You can also expose a reusable logger for app.py
+app_logger = logging.getLogger("FlaskApp")
+app_logger.info("Logger initialized in logger.py")
