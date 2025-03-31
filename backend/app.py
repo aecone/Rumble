@@ -8,6 +8,8 @@ import logging
 import os
 import json
 import base64
+from datetime import datetime
+
 
 log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
@@ -67,7 +69,14 @@ def get_logs():
             parts = line.strip().split(" - ")  # Split by " - " separator
             if len(parts) >= 4:
                 timestamp, level, _, message = parts[:4]  # Extract log details
-                log_entries.append({"timestamp": timestamp, "level": level, "message": message})
+                try:
+                    # Convert timestamp to 12-hour format
+                    dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S,%f")
+                    formatted_timestamp = dt.strftime("%I:%M %p").lstrip("0")  # Remove leading zero
+                except ValueError:
+                    formatted_timestamp = timestamp  # Fallback if parsing fails
+
+                log_entries.append({"timestamp": formatted_timestamp, "level": level, "message": message})
 
         # **Reverse order (most recent logs at the top)**
         log_entries.reverse()
