@@ -101,7 +101,7 @@ def create_user():
     - Initializes `matched_users` as an empty List.
     """
     try:
-        data = request.json
+        data = request.json or {}
         email = data.get("email")
         password = data.get("password")
 

@@ -93,8 +93,6 @@ def create_user_in_firebase(email, password, user_data):
         return {"error": "Failed to create user"}
 
 
-
-
 """Extra firebase functions
 
 - To delete all users in Firebase Auth, you can use the following function:
