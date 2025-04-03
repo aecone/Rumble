@@ -12,9 +12,23 @@ import { auth, API_BASE_URL } from "../../FirebaseConfig";
 type UserCard = {
   id: string;
   firstName: string;
-  major?: string;
+  lastName: string;
+  email?: string;
+  birthday?: string;
+  ethnicity?: string;
+  gender?: string;
+  pronouns?: string;
   bio?: string;
+  profilePictureUrl?: string;
+  major?: string;
+  gradYear?: number;
+  hobbies?: string[];
+  orgs?: string[];
+  careerPath?: string;
+  interestedIndustries?: string[];
+  mentorshipAreas?: string[];
 };
+
 
 export default function SwipeTab() {
   const [users, setUsers] = useState<UserCard[]>([]);
@@ -24,7 +38,7 @@ export default function SwipeTab() {
     fetchSuggestedUsers();
   }, []);
 
-  const fetchSuggestedUsers = async () => {
+  const fetchSuggestedUsers = async (filters = {}) => {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -32,15 +46,19 @@ export default function SwipeTab() {
         return;
       }
 
+      
       const token = await currentUser.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/suggested_users`, {
-        method: 'GET',
+        method: "POST",
         headers: {
-          Authorization: token,
+          "Content-Type": "application/json",
+          Authorization: `${token}`, // ← if using Firebase Auth
         },
+        body: JSON.stringify(filters), // can be empty
       });
-
+    
       const data = await response.json();
+      console.log(data.users);
 
       if (response.ok) {
         setUsers(data.users); // [{ id, firstName, major, bio }]
@@ -101,13 +119,45 @@ export default function SwipeTab() {
 
       {currentUserCard ? (
         <View style={styles.card}>
-          <Text style={styles.name}>{currentUserCard.firstName}</Text>
-          {currentUserCard.major && (
-            <Text style={styles.info}>Major: {currentUserCard.major}</Text>
-          )}
-          {currentUserCard.bio && (
-            <Text style={styles.info}>Bio: {currentUserCard.bio}</Text>
-          )}
+         <Text style={styles.name}>{currentUserCard.firstName}</Text>
+
+            {currentUserCard.lastName && (
+              <Text style={styles.info}>Last Name: {currentUserCard.lastName}</Text>
+            )}
+            {currentUserCard.ethnicity && (
+              <Text style={styles.info}>Ethnicity: {currentUserCard.ethnicity}</Text>
+            )}
+            {currentUserCard.gender && (
+              <Text style={styles.info}>Gender: {currentUserCard.gender}</Text>
+            )}
+            {currentUserCard.pronouns && (
+              <Text style={styles.info}>Pronouns: {currentUserCard.pronouns}</Text>
+            )}
+            {currentUserCard.bio && (
+              <Text style={styles.info}>Bio: {currentUserCard.bio}</Text>
+            )}
+            {currentUserCard.major && (
+              <Text style={styles.info}>Major: {currentUserCard.major}</Text>
+            )}
+            {currentUserCard.gradYear && (
+              <Text style={styles.info}>Graduation Year: {currentUserCard.gradYear}</Text>
+            )}
+            {currentUserCard.careerPath && (
+              <Text style={styles.info}>Career Path: {currentUserCard.careerPath}</Text>
+            )}
+            {currentUserCard.hobbies && currentUserCard.hobbies.length > 0 && (
+              <Text style={styles.info}>Hobbies: {currentUserCard.hobbies.join(", ")}</Text>
+            )}
+            {(currentUserCard.orgs?.length ?? 0) > 0 && (
+              <Text style={styles.info}>Organizations: {currentUserCard.orgs?.join(", ")}</Text>
+            )}
+            {(currentUserCard.interestedIndustries ?? []).length > 0 && (
+              <Text style={styles.info}>Industries: {(currentUserCard.interestedIndustries ?? []).join(", ")}</Text>
+            )}
+            {(currentUserCard.mentorshipAreas?.length ?? 0) > 0 && (
+              <Text style={styles.info}>Mentorship Areas: {(currentUserCard.mentorshipAreas ?? []).join(", ")}</Text>
+            )}
+          
 
           <View style={styles.buttonRow}>
             <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
