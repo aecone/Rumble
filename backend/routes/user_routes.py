@@ -29,7 +29,9 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    logger.info("Received data: {data}")
+    #logger.info("Received data: {data}")
+    print("Received data: {data}")
+
     required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -42,7 +44,9 @@ def edit_profile():
 
     if updated:
         updated_profile = get_user_profile(user_id)
-        logger.info("Profile updated successfully: {updated_profile}")
+        #logger.info("Profile updated successfully: {updated_profile}")
+        print("Profile updated successfully: {updated_profile}")
+
         return jsonify(updated_profile), 200
 
     return jsonify({"error": "Profile update failed"}), 500
@@ -57,7 +61,9 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    logger.info("Received data: {data}")
+    #logger.info("Received data: {data}")
+    print("Received data: {data}")
+
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
 
     missing_fields = [field for field in required_fields if field not in data]
@@ -70,7 +76,9 @@ def edit_settings():
 
     if updated:
         updated_settings = get_user_profile(user_id)
-        logger.info("Profile updated successfully: {updated_settings}")
+        #logger.info("Profile updated successfully: {updated_settings}")
+        print("Profile updated successfully: {updated_settings}")
+
         return jsonify(updated_settings), 200
 
     return jsonify({"error": "Settings update failed"}), 500
@@ -81,7 +89,9 @@ def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        logger.warning("Error verifying token: {error}")
+        #logger.warning("Error verifying token: {error}")
+        print("Error verifying token: {error}")
+
         return error
 
     user_id = decoded_token["uid"]  # Firebase UID
@@ -134,8 +144,12 @@ def create_user():
             "liked_users": {},
             "matched_users": []
         }
-        logger.info("Writing user data to Firestore:")
-        logger.info(user_data)
+        #logger.info("Writing user data to Firestore:")
+        print("Writing user data to Firestore:")
+
+        #logger.info(user_data)
+        print(user_data)
+
 
         # Use your service to create the user
         result = create_user_in_firebase(email, password, user_data)
@@ -146,5 +160,7 @@ def create_user():
         return jsonify(result), 201
 
     except Exception as e:
-        logger.warning(f"Error processing request: {str(e)}")
+        #logger.warning(f"Error processing request: {str(e)}")
+        print(f"Error processing request: {str(e)}")
+
         return jsonify({"error": "Internal server error"}), 500
