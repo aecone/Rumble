@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
   Animated,
+  ScrollView,
 } from 'react-native';
 import { auth, API_BASE_URL } from "../../FirebaseConfig";
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
@@ -231,13 +232,32 @@ export default function SwipeTab() {
                 <Text style={styles.dislikeText}>NOPE</Text>
               </Animated.View>
               
+              <Text style={styles.name}>BIG PROFILE PICTURE</Text>
               <Text style={styles.name}>{user.firstName}</Text>
-              {user.major && (
-                <Text style={styles.info}>Major: {user.major}</Text>
-              )}
-              {user.bio && (
-                <Text style={styles.info}>Bio: {user.bio}</Text>
-              )}
+              
+              {/* Scrollable area for profile content */}
+              <ScrollView 
+                style={styles.scrollContainer}
+                showsVerticalScrollIndicator={true}
+                persistentScrollbar={true}
+                contentContainerStyle={styles.scrollContent}
+              >
+                {user.major && (
+                  <Text style={styles.info}>{user.major} major</Text>
+                )} 
+                <Text style={styles.info}>PRONOUNS</Text>
+                <Text style={styles.info}>YEAR</Text>
+                {user.bio && (
+                  <Text style={styles.info}>Bio: {user.bio}</Text>
+                )}
+                <Text style={styles.info}>CAREER PATH</Text>
+                <Text style={styles.info}>INDUSTRIES</Text>
+                <Text style={styles.info}>MENTORSHIP AREAS</Text>
+                <Text style={styles.info}>ORGANIZATIONS</Text>
+                <Text style={styles.info}>HOBBIES</Text>
+             
+                
+              </ScrollView>
             </Animated.View>
           </PanGestureHandler>
         );
@@ -281,13 +301,13 @@ export default function SwipeTab() {
         </View>
 
         {users.length > 0 && (
-          <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={handleManualSkip} style={styles.skipButton}>
-              <Text style={styles.buttonText}>Skip 👎</Text>
+          <View style={styles.cardActionButtons}>
+            <TouchableOpacity onPress={handleManualSkip} style={styles.likeButton}>
+              <Text style={styles.likeButtonText}>✕</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleManualSwipeRight} style={styles.likeButton}>
-              <Text style={styles.buttonText}>Like 👍</Text>
+              <Text style={styles.likeButtonText}>✓</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -304,7 +324,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   title: {
-    fontSize: 24,
+    fontSize: 35,
     fontWeight: '600',
     marginBottom: 20,
   },
@@ -316,36 +336,43 @@ const styles = StyleSheet.create({
   },
   card: {
     position: 'absolute',
-    width: '90%',
-    padding: 30,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    width: '80%',
+    height: '90%',
+    padding: 20,
+    paddingTop: 45,
+    paddingBottom: 80,
+    borderRadius: 40,
+    backgroundColor: '#F9F5F2',
     elevation: 4,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+    marginBottom: 20
+  },
+  scrollContainer: {
+    width: '100%',
+    marginTop: 10,
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+    alignItems: 'center',
   },
   name: {
-    fontSize: 22,
+    fontSize: 40,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   info: {
-    fontSize: 16,
+    fontSize: 35,
     color: '#444',
     marginBottom: 6,
   },
   buttonRow: {
     flexDirection: 'row',
     marginBottom: 30,
-  },
-  likeButton: {
-    backgroundColor: '#4CAF50',
-    padding: 12,
-    borderRadius: 8,
-    marginLeft: 10,
   },
   skipButton: {
     backgroundColor: '#E57373',
@@ -363,6 +390,26 @@ const styles = StyleSheet.create({
     marginTop: 50,
     color: '#888',
   },
+  likeButton: {
+    backgroundColor: '#534E5B',
+    width: 110,
+    height: 110,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    marginBottom: 30
+
+  },
+  likeButtonText: {
+    color: '#FFF',
+    fontSize: 45,
+    fontWeight: '700',
+  },
   noMoreCardsContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -376,10 +423,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   likeText: {
-    borderWidth: 3,
-    borderColor: '#4CAF50',
-    color: '#4CAF50',
-    fontSize: 24,
+    color: '#C0DEDD',
+    fontSize: 45,
     fontWeight: 'bold',
     padding: 8,
   },
@@ -391,11 +436,18 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dislikeText: {
-    borderWidth: 3,
-    borderColor: '#F44336',
-    color: '#F44336',
-    fontSize: 24,
+    color: '#F1DFDE',
+    fontSize: 45,
     fontWeight: 'bold',
     padding: 8,
+  },
+  cardActionButtons: {
+    position: 'absolute',
+    bottom: 15,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 300,
   },
 });
