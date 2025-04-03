@@ -2,16 +2,21 @@ from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
+from google.cloud.firestore_v1 import FieldFilter
 
 db = firestore.client()
 match_routes = Blueprint('match_routes', __name__)
 
-@match_routes.route('/suggested_users', methods=['GET'])
+@match_routes.route('/suggested_users', methods=['POST'])
 def suggested_users():
     """
     GET /suggested_users
 
     Returns a list of suggested users for the authenticated user.
+
+    Accepts optional filters: major, gradYear, hobbies, orgs,
+    careerPath, interestedIndustries, userType, mentorshipAreas 
+
     Filters out:
       - The authenticated user themselves
       - Users they’ve already liked
@@ -36,9 +41,34 @@ def suggested_users():
             return error
 
         user_id = decoded_token["uid"]
+        data = request.get_json(silent=True) or {}
 
-        users_ref = db.collection('users')
-        docs = users_ref.stream()
+        # Define filterable fields
+        raw_filters = {
+            "major": data.get("major", ""),
+            "gradYear": data.get("gradYear", None),
+            "hobbies": data.get("hobbies", []),
+            "orgs": data.get("orgs", []),
+            "careerPath": data.get("careerPath", ""),
+            "interestedIndustries": data.get("interestedIndustries", []),
+            "userType": data.get("userType", ""),
+            "mentorshipAreas": data.get("mentorshipAreas", [])
+        }
+        print(f"{raw_filters} raw filters")
+        users_ref = db.collection("users")
+        query = users_ref
+
+        for key, value in raw_filters.items():
+            field_path = f"profile.{key}"
+
+            if isinstance(value, str) and value.strip():
+                query = query.where(filter=FieldFilter(field_path, "==", value.strip()))
+            elif isinstance(value, int):
+                query = query.where(filter=FieldFilter(field_path, "==", value))
+            elif isinstance(value, list) and value:
+                query = query.where(filter=FieldFilter(field_path, "array_contains_any", value))
+
+        docs = query.stream()
         user_data = get_user_profile(user_id)
         suggested = []
         for doc in docs:
@@ -50,14 +80,26 @@ def suggested_users():
             suggested.append({
                 "id": uid,
                 "firstName": data.get("settings", {}).get("firstName", "Unknown"),
+                "lastName": data.get("settings", {}).get("lastName", ""),
+                "ethnicity": data.get("settings", {}).get("ethnicity", ""),
+                "gender": data.get("settings", {}).get("gender", ""),
+                "pronouns": data.get("settings", {}).get("pronouns", ""),
+                "bio": data.get("profile", {}).get("bio", ""),
                 "major": data.get("profile", {}).get("major", ""),
-                "bio": data.get("profile", {}).get("bio", "")
+                "gradYear": data.get("profile", {}).get("gradYear", ""),
+                "hobbies": data.get("profile", {}).get("hobbies", []),
+                "orgs": data.get("profile", {}).get("orgs", []),
+                "careerPath": data.get("profile", {}).get("careerPath", ""),
+                "interestedIndustries": data.get("profile", {}).get("interestedIndustries", []),
+                "mentorshipAreas": data.get("profile", {}).get("mentorshipAreas", [])
             })
-
+        print(f"{suggested} suggested users")
         return jsonify({"users": suggested})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 
 @match_routes.route('/swipe', methods=['POST'])
 def swipe():
