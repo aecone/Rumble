@@ -215,6 +215,7 @@ export default function SwipeTab() {
 
     return users.map((user, index) => {
       if (index === 0) {
+        // Inside your renderCards function, for the first card:
         return (
           <PanGestureHandler
             key={user.id}
@@ -264,15 +265,16 @@ export default function SwipeTab() {
                 </View>
               )}
               <Text style={styles.name}>{user.firstName} {user.lastName} | {user.pronouns}</Text>
-              <Text style={styles.info}>{user.major} major</Text>
-              <Text style={styles.info}>Class of {user.gradYear}</Text>
-              <Text style={styles.info}>{user.bio}</Text>
-              <Text style={styles.info}>{user.ethnicity}</Text>
-              <Text style={styles.info}>Organizations: {Array.isArray(user.orgs) ? user.orgs.join(', ') : user.orgs}</Text>
-              <Text style={styles.info}>Can mentor in: {Array.isArray(user.mentorshipAreas) ? user.mentorshipAreas.join(', ') : user.mentorshipAreas}</Text>
-              <Text style={styles.info}>Hobbies: {Array.isArray(user.hobbies) ? user.hobbies.join(', ') : user.hobbies}</Text>
               
-              
+              <ScrollView style={styles.infoScrollView} contentContainerStyle={styles.infoScrollViewContent}>
+                <Text style={styles.info}>{user.major} major</Text>
+                <Text style={styles.info}>Class of {user.gradYear}</Text>
+                <Text style={styles.info}>{user.bio}</Text>
+                <Text style={styles.info}>{user.ethnicity}</Text>
+                <Text style={styles.info}>Organizations: {Array.isArray(user.orgs) ? user.orgs.join(', ') : user.orgs}</Text>
+                <Text style={styles.info}>Can mentor in: {Array.isArray(user.mentorshipAreas) ? user.mentorshipAreas.join(', ') : user.mentorshipAreas}</Text>
+                <Text style={styles.info}>Hobbies: {Array.isArray(user.hobbies) ? user.hobbies.join(', ') : user.hobbies}</Text>
+              </ScrollView>
             </Animated.View>
           </PanGestureHandler>
         );
@@ -349,11 +351,11 @@ const styles = StyleSheet.create({
   },
   card: {
     position: 'absolute',
-    width: '80%',
+    width: '60%',
     height: '90%',
     padding: 20,
     paddingTop: 45,
-    paddingBottom: 80,
+    paddingBottom: 25,
     borderRadius: 40,
     backgroundColor: '#F9F5F2',
     elevation: 4,
@@ -365,14 +367,14 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   profileImage: {
-    width: 550,
-    height: 550,
+    width: 300,
+    height: 300,
     borderRadius: 45,
     marginBottom: 15,
   },
   profileImagePlaceholder: {
-    width: 550,
-    height: 550,
+    width: 300,
+    height: 300,
     borderRadius: 45,
     backgroundColor: '#534E5B',
     justifyContent: 'center',
@@ -399,7 +401,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   info: {
-    fontSize: 35,
+    fontSize: 20,
     color: '#444',
     marginBottom: 6,
     alignItems: 'center',
@@ -483,6 +485,14 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 300,
+    gap: 500,
+  },
+  infoScrollView: {
+    width: '100%',
+    flex: 1,
+    marginTop: 10,
+  },
+  infoScrollViewContent: {
+    paddingBottom: 10,
   },
 });
