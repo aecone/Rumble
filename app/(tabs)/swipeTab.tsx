@@ -86,7 +86,7 @@ export default function SwipeTab() {
           Authorization: token,
         },
         body: JSON.stringify({
-          swiped_id: targetUser.id,
+          swipedID: targetUser.id,
         }),
       });
 
