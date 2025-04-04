@@ -9,6 +9,7 @@ import {
   Dimensions,
   Animated,
   ScrollView,
+  Image,
 } from 'react-native';
 import { auth, API_BASE_URL } from "../../FirebaseConfig";
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
@@ -19,9 +20,23 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 type UserCard = {
   id: string;
   firstName: string;
-  major?: string;
+  lastName: string;
+  email?: string;
+  birthday?: string;
+  ethnicity?: string;
+  gender?: string;
+  pronouns?: string;
   bio?: string;
+  profilePictureUrl?: string;
+  major?: string;
+  gradYear?: number;
+  hobbies?: string[];
+  orgs?: string[];
+  careerPath?: string;
+  interestedIndustries?: string[];
+  mentorshipAreas?: string[];
 };
+
 
 export default function SwipeTab() {
   const [users, setUsers] = useState<UserCard[]>([]);
@@ -62,7 +77,7 @@ export default function SwipeTab() {
     fetchSuggestedUsers();
   }, []);
 
-  const fetchSuggestedUsers = async () => {
+  const fetchSuggestedUsers = async (filters = {}) => {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -70,18 +85,22 @@ export default function SwipeTab() {
         return;
       }
 
+      
       const token = await currentUser.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/suggested_users`, {
-        method: 'GET',
+        method: "POST",
         headers: {
-          Authorization: token,
+          "Content-Type": "application/json",
+          Authorization: `${token}`, // ← if using Firebase Auth
         },
+        body: JSON.stringify(filters), // can be empty
       });
-
+    
       const data = await response.json();
+      console.log(data.users);
 
       if (response.ok) {
-        setUsers(data.users); // [{ id, firstName, major, bio }]
+        setUsers(data.users);
       } else {
         Alert.alert('Error', data.error || 'Failed to load users');
       }
@@ -222,7 +241,6 @@ export default function SwipeTab() {
               >
                 <Text style={styles.likeText}>LIKE</Text>
               </Animated.View>
-              
               <Animated.View
                 style={[
                   styles.dislikeContainer,
@@ -232,32 +250,29 @@ export default function SwipeTab() {
                 <Text style={styles.dislikeText}>NOPE</Text>
               </Animated.View>
               
-              <Text style={styles.name}>BIG PROFILE PICTURE</Text>
-              <Text style={styles.name}>{user.firstName}</Text>
+              {user.profilePictureUrl ? (
+                <Image
+                  source={{ uri: user.profilePictureUrl }}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.profileImagePlaceholder}>
+                  <Text style={styles.placeholderText}>
+                    {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                  </Text>
+                </View>
+              )}
+              <Text style={styles.name}>{user.firstName} {user.lastName} | {user.pronouns}</Text>
+              <Text style={styles.info}>{user.major} major</Text>
+              <Text style={styles.info}>Class of {user.gradYear}</Text>
+              <Text style={styles.info}>{user.bio}</Text>
+              <Text style={styles.info}>{user.ethnicity}</Text>
+              <Text style={styles.info}>Organizations: {Array.isArray(user.orgs) ? user.orgs.join(', ') : user.orgs}</Text>
+              <Text style={styles.info}>Can mentor in: {Array.isArray(user.mentorshipAreas) ? user.mentorshipAreas.join(', ') : user.mentorshipAreas}</Text>
+              <Text style={styles.info}>Hobbies: {Array.isArray(user.hobbies) ? user.hobbies.join(', ') : user.hobbies}</Text>
               
-              {/* Scrollable area for profile content */}
-              <ScrollView 
-                style={styles.scrollContainer}
-                showsVerticalScrollIndicator={true}
-                persistentScrollbar={true}
-                contentContainerStyle={styles.scrollContent}
-              >
-                {user.major && (
-                  <Text style={styles.info}>{user.major} major</Text>
-                )} 
-                <Text style={styles.info}>PRONOUNS</Text>
-                <Text style={styles.info}>YEAR</Text>
-                {user.bio && (
-                  <Text style={styles.info}>Bio: {user.bio}</Text>
-                )}
-                <Text style={styles.info}>CAREER PATH</Text>
-                <Text style={styles.info}>INDUSTRIES</Text>
-                <Text style={styles.info}>MENTORSHIP AREAS</Text>
-                <Text style={styles.info}>ORGANIZATIONS</Text>
-                <Text style={styles.info}>HOBBIES</Text>
-             
-                
-              </ScrollView>
+              
             </Animated.View>
           </PanGestureHandler>
         );
@@ -276,13 +291,6 @@ export default function SwipeTab() {
               }
             ]}
           >
-            <Text style={styles.name}>{user.firstName}</Text>
-            {user.major && (
-              <Text style={styles.info}>Major: {user.major}</Text>
-            )}
-            {user.bio && (
-              <Text style={styles.info}>Bio: {user.bio}</Text>
-            )}
           </Animated.View>
         );
       }
@@ -291,25 +299,25 @@ export default function SwipeTab() {
     }).reverse();
   };
 
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <Text style={styles.title}>Swipe Stack</Text>
-
         <View style={styles.cardsContainer}>
           {renderCards()}
         </View>
-
+          
         {users.length > 0 && (
           <View style={styles.cardActionButtons}>
-            <TouchableOpacity onPress={handleManualSkip} style={styles.likeButton}>
-              <Text style={styles.likeButtonText}>✕</Text>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={handleManualSkip} style={styles.likeButton}>
+            <Text style={styles.likeButtonText}>✕</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleManualSwipeRight} style={styles.likeButton}>
-              <Text style={styles.likeButtonText}>✓</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={handleManualSwipeRight} style={styles.likeButton}>
+            <Text style={styles.likeButtonText}>✓</Text>
+          </TouchableOpacity>
+        </View>
         )}
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -322,6 +330,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
     backgroundColor: '#FAFAFA',
+  },
+  infoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: 20,
   },
   title: {
     fontSize: 35,
@@ -351,6 +364,26 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     marginBottom: 20
   },
+  profileImage: {
+    width: 550,
+    height: 550,
+    borderRadius: 45,
+    marginBottom: 15,
+  },
+  profileImagePlaceholder: {
+    width: 550,
+    height: 550,
+    borderRadius: 45,
+    backgroundColor: '#534E5B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  placeholderText: {
+    color: 'white',
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
   scrollContainer: {
     width: '100%',
     marginTop: 10,
@@ -369,6 +402,8 @@ const styles = StyleSheet.create({
     fontSize: 35,
     color: '#444',
     marginBottom: 6,
+    alignItems: 'center',
+    textAlign: 'center'
   },
   buttonRow: {
     flexDirection: 'row',
