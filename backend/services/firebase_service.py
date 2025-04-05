@@ -7,16 +7,14 @@ from config import FIREBASE_CREDENTIALS
 from logger import logger  # Import the logger
 
 # Load Firebase credentials from environment variable
-if FIREBASE_CREDENTIALS:
-    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
-    firebase_credentials = json.loads(firebase_credentials_json)
-
+if FIREBASE_CREDENTIALS and os.path.isfile(FIREBASE_CREDENTIALS):
     # Ensure Firebase is initialized
     if not firebase_admin._apps:
-        cred = credentials.Certificate(firebase_credentials)
+        cred = credentials.Certificate(FIREBASE_CREDENTIALS)
         firebase_admin.initialize_app(cred)
 else:
-    raise ValueError("FIREBASE_CREDENTIALS environment variable is not set")
+    raise ValueError("FIREBASE_CREDENTIALS path is invalid or not set")
+
 
 # Initialize Firestore client
 db = firestore.client()
