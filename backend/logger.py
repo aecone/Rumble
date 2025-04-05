@@ -17,4 +17,4 @@ werkzeug_logger = logging.getLogger("werkzeug")
 werkzeug_logger.setLevel(logging.INFO)
 werkzeug_logger.addHandler(logging.FileHandler(LOG_FILE))
 
-logger.info("Flask App Started - Logging Initialized")
+#logger.info("Flask App Started - Logging Initialized")
