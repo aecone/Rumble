@@ -37,8 +37,21 @@ export default function TabFourScreen() {
     gender: string;
     pronouns: string;
   };
+  type Profile = {
+    bio: string;
+    profilePictureUrl: string;
+    major: string;
+    gradYear: number | null;
+    hobbies: string[];
+    orgs: string[];
+    careerPath: string;
+    interestedIndustries: string[];
+    userType: string;
+    mentorshipAreas: string[];
+  };
 
   // State variables
+  
   const [settings, setSettings] = useState<Settings>({
         firstName: "",
         lastName: "",
@@ -49,11 +62,25 @@ export default function TabFourScreen() {
         pronouns: "",
     
   });
+  const [userProfile, setUserProfile] = useState<Profile>({
+    bio: "",
+      profilePictureUrl: "",
+      major: "",
+      gradYear: null,
+      hobbies: [],
+      orgs: [],
+      careerPath: "",
+      interestedIndustries: [],
+      userType: "TBD",
+      mentorshipAreas: [],
+    });
   
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
   const [modalVisible, setModalVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   // Navigation handlers
   const toggleEditing = () => {
@@ -152,6 +179,85 @@ export default function TabFourScreen() {
     }
   };
 
+  const handleUpdateCredentials = async () => {
+    const user = auth.currentUser;
+    if (!user || !API_BASE_URL) return;
+  
+    try {
+      // Validate Rutgers email
+      if (newEmail !== '' && !newEmail.toLowerCase().endsWith('rutgers.edu')) {
+        alert('Please enter a valid Rutgers email (must end with rutgers.edu)');
+        return;
+      }
+  
+      // Update email if provided
+      if (newEmail !== '') {
+        await updateEmail(user, newEmail);
+        setUserProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
+      }
+  
+      // Update password if provided
+      if (newPassword !== '') {
+        await updatePassword(user, newPassword);
+      }
+  
+      alert('Credentials updated successfully');
+  
+      // **Force user refresh**
+      await user.reload();  // <-- Ensures latest user data
+      setUser(auth.currentUser); // <-- Update state with latest user info
+  
+      // Fetch latest profile details
+      fetchProfile();
+  
+      // Reset inputs and close modal
+      setNewEmail('');
+      setNewPassword('');
+      setModalVisible(false);
+  
+    } catch (error: any) {
+      console.error('Error updating credentials: ', error);
+      alert('Error updating credentials: ' + error.message);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!user || !API_BASE_URL) return;
+    setLoading(true);
+    try {
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/delete_account`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+  
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        if (response.ok) {
+          console.log("Account deleted, now signing out...");
+          await auth.signOut();
+          console.log("Successfully signed out, navigating...");
+          
+          router.dismissAll();
+          router.replace("/");
+        
+          Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+        }
+        
+      } else {
+        Alert.alert("Error", data.error || "Failed to delete account.");
+      }
+    } catch (error) {
+      console.log("error");
+      Alert.alert("Error", "Could not complete request.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header with Settings and Edit buttons */}
@@ -237,6 +343,43 @@ export default function TabFourScreen() {
 
               </>
             )}
+            <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update Credentials</Text>
+            <TextInput 
+              placeholder="New Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput 
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
+              <Text style={styles.text}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
+              <Text style={styles.text}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
+            <Text style={styles.buttonText}>Delete Account</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.buttonText}>Update Email and Password</Text>
+      </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -311,4 +454,46 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     color: '#534E5B',
   },
+  button: {
+    padding: 10,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#5C6BC0",
+    marginTop: 10,
+    width: "60%",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FAFAFA',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 15,
+    color: '#1A237E',
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: '#5C6BC0',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  text: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
 });
