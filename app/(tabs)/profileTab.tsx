@@ -546,6 +546,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "white",
+    fontFamily: 'Montserrat-Regular',
   },
   header: {
     flexDirection: 'row',
@@ -628,8 +629,8 @@ const styles = StyleSheet.create({
   // Section Styles
   sectionContainer: {
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 25,
+    padding: 20,
     marginBottom: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
