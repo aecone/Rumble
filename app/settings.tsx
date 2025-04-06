@@ -20,6 +20,18 @@ import { onAuthStateChanged } from "firebase/auth";
 import { router } from 'expo-router';
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 import { API_BASE_URL } from "../FirebaseConfig";
+import { fetchSignInMethodsForEmail } from "firebase/auth";
+
+
+const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      return signInMethods.length > 0; 
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
+    }
+};
 
 export default function TabFourScreen() {
   // Check if user is authenticated
@@ -51,7 +63,28 @@ export default function TabFourScreen() {
   };
 
   // State variables
-  
+    const checkEmail = async (email: string): Promise<boolean> => {
+        try {
+          const emailExists = await checkEmailExists(email); // Check if email exists
+      
+          if (emailExists) {
+            alert("This email is already registered. Please sign in or use a different email.");
+            return false; // Return false if the email already exists
+          }
+      
+          if (!email.toLowerCase().endsWith("rutgers.edu")) {
+            alert("Please use a valid Rutgers email address.");
+            return false; // Return false if it's not a valid Rutgers email
+          }
+      
+          return true; // Return true if the email is valid
+        } catch (error) {
+          console.error("Error checking email:", error);
+          alert("An error occurred while checking the email. Please try again.");
+          return false; // Return false in case of any error
+        }
+      };
+      
   const [settings, setSettings] = useState<Settings>({
         firstName: "",
         lastName: "",
@@ -80,7 +113,9 @@ export default function TabFourScreen() {
   const [user, setUser] = useState(auth.currentUser);
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState('');
+  const [emailChanged, setEmailChanged] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [refresh, setRefresh] = useState(false);
 
   // Navigation handlers
   const toggleEditing = () => {
@@ -90,18 +125,42 @@ export default function TabFourScreen() {
   const handleSaveChanges = async () => {
     setLoading(true);
     try {
+      // Only validate email if it's actually changed
+      if (emailChanged && newEmail !== settings.email) {
+        const emailValid = await checkEmail(newEmail);
+        if (!emailValid) {
+          // If email is invalid, revert back to previous email
+          setNewEmail(settings.email); // Revert to settings email
+          setEmailChanged(false); // Reset email changed flag
+          return;
+        }
+        // Update the email in Firebase Auth
+        const user = auth.currentUser;
+        if (user) {
+          await updateEmail(user, newEmail);
+          console.log("Email updated successfully");
+        }
+        // Update the email in settings state
+        setSettings((prevSettings) => ({
+          ...prevSettings,
+          email: newEmail, // Update the email
+        }));
+      }
+  
       // Update settings in the backend
       await updateSettings();
-      
+  
       // Provide feedback to the user
       Alert.alert("Success", "Your settings have been updated successfully!");
     } catch (error) {
       console.error("Error during save operation:", error);
     } finally {
       setLoading(false);
-      setIsEditing(false);
+      setIsEditing(false); // Disable editing mode
     }
   };
+  
+  
   
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -170,6 +229,8 @@ export default function TabFourScreen() {
         body: JSON.stringify(settings),
       });
       if (response.ok) {
+        setRefresh((prev) => !prev);
+        setIsEditing(false);
         console.log("Settings updated successfully");
       } else {
         console.error("Error updating settings:", await response.json());
@@ -184,24 +245,18 @@ export default function TabFourScreen() {
     if (!user || !API_BASE_URL) return;
   
     try {
-      // Validate Rutgers email
-      if (newEmail !== '' && !newEmail.toLowerCase().endsWith('rutgers.edu')) {
-        alert('Please enter a valid Rutgers email (must end with rutgers.edu)');
-        return;
-      }
-  
-      // Update email if provided
-      if (newEmail !== '') {
-        await updateEmail(user, newEmail);
-        setUserProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
-      }
-  
       // Update password if provided
-      if (newPassword !== '') {
+      if (newPassword !== '' && newPassword.length >= 6) {
         await updatePassword(user, newPassword);
-      }
-  
-      alert('Credentials updated successfully');
+        alert('Credentials updated successfully');
+        } else if(newPassword !== '') {
+            alert('Password must be at least 6 characters long');
+            return;
+        }
+        else if(newPassword.length < 6) {
+            alert('Password must be at least 6 characters long');
+            return;
+        }
   
       // **Force user refresh**
       await user.reload();  // <-- Ensures latest user data
@@ -209,9 +264,7 @@ export default function TabFourScreen() {
   
       // Fetch latest profile details
       fetchProfile();
-  
-      // Reset inputs and close modal
-      setNewEmail('');
+
       setNewPassword('');
       setModalVisible(false);
   
@@ -262,12 +315,16 @@ export default function TabFourScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Header with Settings and Edit buttons */}
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
+        <TouchableOpacity 
+                  style={styles.headerButton} 
+        ></TouchableOpacity>
         <TouchableOpacity 
           style={styles.headerButton} 
           onPress={toggleEditing}
         >
-          <Text style={styles.headerButtonText}>{isEditing ? "Done" : "Edit"}</Text>
+        {!isEditing && (
+        <Text style={styles.headerButtonText}>Edit</Text>
+        )}
         </TouchableOpacity>
       </View>
 
@@ -282,6 +339,7 @@ export default function TabFourScreen() {
             {/* Display settings */}
             {isEditing ? (
               <>
+                <Text style={styles.settingLabel}> First Name: </Text>
                 <TextInput
                 style={styles.input}
                 value={settings.firstName || ''}
@@ -289,7 +347,7 @@ export default function TabFourScreen() {
                     setSettings({ ...settings, firstName: text })
                 }
                 />
-
+                <Text style={styles.settingLabel}> Last Name: </Text>
                 <TextInput
                 style={styles.input}
                 value={settings.lastName || ''}
@@ -297,32 +355,46 @@ export default function TabFourScreen() {
                     setSettings({ ...settings, lastName: text })
                 }
                 />
-
+                <Text style={styles.settingLabel}>Email:</Text>
                 <TextInput
-                  style={styles.input}
-                  value={settings.email || ''}
-                  onChangeText={(text) => setSettings({ ...settings, email: text })}
-                  placeholder="Email"
-                  keyboardType="email-address"
+                style={styles.input}
+                value={newEmail || settings.email} // Use newEmail for input value; fall back to settings.email if newEmail is empty
+                onChangeText={(text) => {
+                    setNewEmail(text); // Update newEmail to the entered text
+                    if (text !== settings.email) {
+                    setEmailChanged(true); // If email is modified, mark it as changed
+                    } else {
+                    setEmailChanged(false); // If email is the same as the settings, mark it as not changed
+                    }
+                }}
+                placeholder="Email"
+                keyboardType="email-address"
                 />
+
+
+
+                <Text style={styles.settingLabel}> Birthday: </Text>
                 <TextInput
                   style={styles.input}
                   value={settings.birthday || ''}
                   onChangeText={(text) => setSettings({ ...settings, birthday: text })}
                   placeholder="Birthday"
                 />
+                <Text style={styles.settingLabel}> Ethnicity: </Text>
                 <TextInput
                   style={styles.input}
                   value={settings.ethnicity || ''}
                   onChangeText={(text) => setSettings({ ...settings, ethnicity: text })}
                   placeholder="Ethnicity"
                 />
+                <Text style={styles.settingLabel}> Gender: </Text>
                 <TextInput
                   style={styles.input}
                   value={settings.gender || ''}
                   onChangeText={(text) => setSettings({ ...settings, gender: text })}
                   placeholder="Gender"
                 />
+                <Text style={styles.settingLabel}> Pronouns: </Text>
                 <TextInput
                 style={styles.input}
                 value={settings.pronouns || ''}  // Display pronouns string (if any)
@@ -333,28 +405,41 @@ export default function TabFourScreen() {
                 </TouchableOpacity>
               </>
             ) : (
-              <>
-                <Text style={styles.settingLabel}>First Name: {settings.firstName}</Text>
-                <Text style={styles.settingLabel}>Last Name: {settings.lastName}</Text>
-                <Text style={styles.settingLabel}>Birthday: {settings.birthday}</Text>
-                <Text style={styles.settingLabel}>Ethnicity: {settings.ethnicity}</Text>
-                <Text style={styles.settingLabel}>Gender: {settings.gender}</Text>
-                <Text style={styles.settingLabel}>Pronouns: {settings.pronouns}</Text>
-
-              </>
+                <>
+            <Text style={styles.settingLabel}> First Name: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}> {settings.firstName}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Last Name: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}> {settings.lastName}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Email: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}> {settings.email}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Birthday: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}>{settings.birthday}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Ethnicity: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}>{settings.ethnicity}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Gender: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}>{settings.gender}</Text>
+            </View>
+            <Text style={styles.settingLabel}> Pronouns: </Text>
+            <View style={styles.displayField}>
+                <Text style={styles.settingContent}>{settings.pronouns}</Text>
+            </View>
+                </>
             )}
             <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Update Credentials</Text>
-            <TextInput 
-              placeholder="New Email"
-              value={newEmail}
-              onChangeText={setNewEmail}
-              style={styles.input}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
             <TextInput 
               placeholder="New Password"
               value={newPassword}
@@ -371,16 +456,22 @@ export default function TabFourScreen() {
           </View>
         </View>
       </Modal>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
-            <Text style={styles.buttonText}>Delete Account</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+      
+      {!isEditing && (
+    <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
         <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Update Email and Password</Text>
-      </TouchableOpacity>
-          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.buttonText}>Update Password</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteAccount} onPress={deleteAccount}>
+        <Text style={styles.deleteAccountText}>Delete Account</Text>
+        </TouchableOpacity>
+    </View>
+    )}
+
+      </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -419,7 +510,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     width: '100%',
-    alignItems: "center",
+    
   },
   title: {
     fontSize: 20,
@@ -430,38 +521,71 @@ const styles = StyleSheet.create({
     backgroundColor: '#534E5B',
     paddingVertical: 15,
     marginTop: 20,
-    borderRadius: 5,
+    borderRadius: 30,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: "50%",
     marginBottom: 20,
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '300',
     textAlign: 'center',
   },
 
   input: {
     width: '100%',
-    padding: 10,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: 'black',
+    borderRadius: 30,
+    backgroundColor: 'transparent',
+    color: '#000', // ensures text is visible on transparent bg
+    fontSize: 16,
   },
 
-  settingLabel: {
+  settingContent: {
     fontSize: 16,
     marginVertical: 5,
     color: '#534E5B',
   },
+  settingLabel: {
+    fontSize: 16,
+    marginVertical: 10,
+    fontWeight: 'bold',
+  },
   button: {
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#5C6BC0",
+    backgroundColor: "#534E5B",
     marginTop: 10,
-    width: "60%",
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  buttonsContainer: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center", // Optional, for aligning child content inside the container
+    alignSelf: "center", // <-- This centers the container itself in its parent
+    marginTop: 20,
+    width: "50%",
+  },
+  deleteAccount: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  deleteAccountText: {
+    color: "534E5B",
+    fontWeight: "500",
   },
   modalContainer: {
     flex: 1,
@@ -480,20 +604,28 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     marginBottom: 15,
-    color: '#1A237E',
+    color: '#000',
   },
   modalButton: {
-    width: '100%',
-    backgroundColor: '#5C6BC0',
+    backgroundColor: '#534E5B',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 30,
+    width: "75%",
     alignItems: 'center',
     marginVertical: 5,
   },
   text: {
     fontSize: 18,
     textAlign: "center",
-    marginBottom: 20,
   },
-
+  displayField: {
+    width: '100%',
+    borderWidth: 1.5,
+    borderColor: 'black',
+    borderRadius: 30,
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    backgroundColor: 'transparent',
+  },
 });

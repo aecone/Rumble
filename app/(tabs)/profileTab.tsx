@@ -313,6 +313,7 @@ export default function TabFourScreen() {
           style={styles.headerButton} 
           onPress={navigateToSettings}
         >
+          
           <Text style={styles.headerButtonText}>⚙️</Text>
         </TouchableOpacity>
         
@@ -500,7 +501,7 @@ export default function TabFourScreen() {
                 updateSettings();
                 updateProfile();
               }}>
-                <Text style={styles.buttonText}>Save All Changes</Text>
+                <Text style={styles.buttonText}>Save</Text>
               </TouchableOpacity>
             ) : null}
             
@@ -603,34 +604,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
   },
-  editNameContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    width: "100%",
-  },
-  nameInput: {
-    borderColor: "#534E5B",
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 8,
-    margin: 3,
-    textAlign: "center",
-    width: "45%",
-  },
   userName: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
     textAlign: "center",
-  },
-  userTypeInput: {
-    borderColor: "#534E5B",
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 8,
-    marginTop: 5,
-    textAlign: "center",
-    width: "60%",
   },
   userType: {
     fontSize: 16,
@@ -659,7 +637,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,     
     alignSelf: "center",     // ← center this box horizontally
-    width: "50%",
+    width: "100%",
   },
 
   // Add these to your StyleSheet
@@ -673,20 +651,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#E6DFF1", // Light orange
   },
   industriesSectionBackground: {
-    backgroundColor: "#C0DEDD", // Light purple
+    backgroundColor: "#F4F0C3", // Light purple
   },
   
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
-    marginBottom: 10,
-    paddingBottom: 5,
+    marginBottom: 5,
   },
   sectionContent: {
     paddingHorizontal: 5,
-    alignItems: "center",
-    justifyContent: "center",    
   },
   sectionText: {
     fontSize: 16,
@@ -699,17 +674,15 @@ const styles = StyleSheet.create({
     
   },
   sectionTextPadded: {
-    paddingHorizontal: 30,
-    paddingVertical: 8,
-    borderRadius: 30,
     overflow: "hidden", // ← required in React Native for rounded corners to clip background
   },
   industryChip: {
-    backgroundColor: '#E8EAF6', 
+    backgroundColor: '#fFFFFF', 
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 15,
-    margin: 5,
+    marginRight: 7,
+    marginBottom: 7,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -717,7 +690,7 @@ const styles = StyleSheet.create({
   industryChipText: {
     color: '#534E5B',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '400',
   },
 
   commaSeparator: {
@@ -741,7 +714,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#534E5B",
@@ -751,7 +724,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    width: "25%",
+    width: "40%",
     alignContent: "center",
     alignSelf: "center",
   },
