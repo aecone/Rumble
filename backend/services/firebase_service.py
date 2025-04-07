@@ -14,7 +14,8 @@ if FIREBASE_CREDENTIALS:
         cred = credentials.Certificate(FIREBASE_CREDENTIALS)
         firebase_admin.initialize_app(cred)
 else:
-    raise ValueError("FIREBASE_CREDENTIALS environment variable is not set")
+    raise ValueError("FIREBASE_CREDENTIALS path is invalid or not set")
+
 
 # Initialize Firestore client
 db = firestore.client()

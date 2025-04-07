@@ -3,12 +3,17 @@ import React, { useState } from 'react'
 import { auth, db } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { router } from 'expo-router'
-import { doc, setDoc } from "firebase/firestore";
+import { useFonts } from 'expo-font' // Import the useFonts hook
 
 const index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  let [fontsLoaded] = useFonts({
+    'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
+  });
+  if (!fontsLoaded) {
+    return null; // Or a loading spinner
+  } 
   const signIn = async () => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password)
@@ -49,6 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF', // A softer white for a modern, minimalist background
+    fontFamily: 'Montserrat-Regular', // Using Montserrat for a clean, modern look
   },
   title: {
     fontSize: 28, // A bit larger for a more striking appearance
