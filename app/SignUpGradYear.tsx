@@ -3,46 +3,39 @@ import React, { useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { router, useLocalSearchParams } from 'expo-router';
 
-const SignUpEthnicity = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear} = useLocalSearchParams();
-  const [ethnicity, setEthnicity] = useState('');
+const SignUpGradYear = () => {
+    const { firstName, lastName, email, password, birthday, major} = useLocalSearchParams();
+  const [gradYear, setGradYear] = useState('');
 
   const proceed = () => {
     // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/SignUpGenderPronouns',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }  // Pass name info to the next page
+      pathname: '/SignUpEthnicity',
+      params: { firstName, lastName, email, password, birthday, major, gradYear }  // Pass name info to the next page
     });
   };
 
-  const isFormValid = ethnicity.trim();
+  const isFormValid = gradYear.trim() !== '';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please select your race/ethnicity</Text>
+      <Text style={styles.title}>What's your anticipated graduation year?</Text>
 
       {/* DropDown Picker */}
       <View style={styles.pickerContainer}>
         <Picker
-          selectedValue={ethnicity}
-          onValueChange={(itemValue) => setEthnicity(itemValue)}
+          selectedValue={gradYear}
+          onValueChange={(itemValue) => setGradYear(itemValue)}
           style={[styles.picker, { backgroundColor: '#534E5B' }]}
           mode="dropdown"
           dropdownIconColor={"#534E5B"}
         >
-          <Picker.Item label="Select Race/Ethnicity" value="" />
-          <Picker.Item label="Asian" value="Asian" />
-          <Picker.Item label="East Asian" value="East Asian" />
-          <Picker.Item label="South Asian" value="South Asian" />
-          <Picker.Item label="Southeast Asian" value="Southeast Asian" />
-          <Picker.Item label="Middle Eastern/Arab" value="Middle Eastern/Arab" />
-          <Picker.Item label="American Indian/Alaskan Native" value="American Indian/Alaskan Native" />
-          <Picker.Item label="African American" value="African American" />
-          <Picker.Item label="Native Hawaiian or Pacific Islander" value="Native Hawaiian or Pacific Islander" />
-          <Picker.Item label="Hispanic or Latino" value="Hispanic or Latino" />
-          <Picker.Item label="White" value="White" />
-          <Picker.Item label="Multiracial" value="Multiracial" />
-          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+          <Picker.Item label="Select Graduation Year" value="" />
+          <Picker.Item label="2025" value="2025" />
+          <Picker.Item label="2026" value="2026" />
+          <Picker.Item label="2027" value="2027" />
+          <Picker.Item label="2028" value="2028" />
+          <Picker.Item label="2029" value="2029" />
           <Picker.Item label="Other" value="Other" />
         </Picker>
       </View>
@@ -58,7 +51,7 @@ const SignUpEthnicity = () => {
   );
 };
 
-export default SignUpEthnicity;
+export default SignUpGradYear;
 
 const styles = StyleSheet.create({
   container: {
@@ -104,4 +97,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-

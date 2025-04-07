@@ -56,5 +56,5 @@ Finally, run the file app.py (THIS WILL START YOUR LOCAL FLASK SERVER)
 # Input Flask Backend Firebase Key (Service Account JSON)
 
 Create file named .env in root folder with
-FIREBASE_CREDENTIALS=C:/Users/crazy/Downloads/rumble-swipeconnect-firebase-adminsdk-fbsvc-6923445e97.json (REPLACE STRING WITH LOCAL PATH TO PRIVATE FIREBASE KEY; no quotes, forward slashes for python string format)
+FIREBASE_CREDENTIALS= ...json (REPLACE STRING WITH LOCAL PATH TO PRIVATE FIREBASE KEY; no quotes, forward slashes for python string format)
 Our flask files rely on your local .env file keys so that you only have to write your key down once

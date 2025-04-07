@@ -36,7 +36,7 @@ const Birthday = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's Your Birthday</Text>
+      <Text style={styles.title}>What's Your Birthday?</Text>
       <TextInput
         style={styles.textInput}
         placeholder="MM/DD/YYYY"
@@ -44,7 +44,7 @@ const Birthday = () => {
         onChangeText={setBirthday}
       />
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: isFormValid ? '#5C6BC0' : '#B0BEC5' }]} // Change button color based on validity
+        style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]} // Change button color based on validity
         onPress={proceed}
         disabled={!isFormValid} // Disable button if form is not valid
       >
@@ -61,35 +61,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#534E5B',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     marginBottom: 30,
-    color: '#1A237E',
+    color: '#FFFFFF',
   },
   textInput: {
     height: 50,
     width: '90%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#534E5B',
     borderColor: '#E8EAF6',
-    borderWidth: 2,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderRadius: 40,
     marginVertical: 10,
     paddingHorizontal: 20,
     fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '200'
   },
   button: {
     width: '90%',
     marginVertical: 20,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 50,
     alignItems: 'center',
+    backgroundColor: '#534E5'
   },
   text: {
-    color: '#FFFFFF',
+    color: '#534E5B',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });

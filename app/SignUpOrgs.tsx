@@ -2,38 +2,30 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
-const SignUpName = () => {
-  const { email, password} = useLocalSearchParams();
-  
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+const SignUpOrgs = () => {
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries} = useLocalSearchParams();
+  const [orgs, setOrgs] = useState('');
 
   const proceed = () => {
+    // Navigate to the next page (Email/Password entry)
     router.push({
-      pathname: '/SignUpBirthday',
-      params: { firstName, lastName, email, password }  // Pass name info to the next page
+      pathname: '/MentorOrMentee',
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs }  // Pass name info to the next page
     });
   };
 
-  // Check if both fields are filled
-  const isFormValid = firstName.trim() !== '' && lastName.trim() !== '';
+  const isFormValid = orgs.trim();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's your name?</Text>
+      <Text style={styles.title}>List the organizations you are involved in</Text>
       <TextInput
         style={styles.textInput}
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
+        placeholder="List of organizations"
+        value={orgs}
+        onChangeText={setOrgs}
       />
-      <TextInput
-        style={styles.textInput}
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-      />
-      <TouchableOpacity
+      <TouchableOpacity 
         style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]} // Change button color based on validity
         onPress={proceed}
         disabled={!isFormValid}
@@ -44,7 +36,7 @@ const SignUpName = () => {
   );
 };
 
-export default SignUpName;
+export default SignUpOrgs;
 
 const styles = StyleSheet.create({
   container: {
@@ -86,3 +78,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
