@@ -33,7 +33,7 @@ const checkEmailExists = async (email: string): Promise<boolean> => {
     }
 };
 
-export default function TabFourScreen() {
+export default function Settings() {
   // Check if user is authenticated
   getAuth().onAuthStateChanged((user) => {
     if (!user) router.replace('/');

@@ -96,7 +96,7 @@ export default function TabFourScreen() {
 
   // Navigation handlers
   const navigateToSettings = () => {
-    router.push('/Settings');
+    router.push('/settings');
   };
 
   const navigateToEditIndustries = () => {
