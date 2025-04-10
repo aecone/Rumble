@@ -394,7 +394,7 @@ export default function Settings() {
         <Picker
           selectedValue={settings.ethnicity || ''}
           onValueChange={(itemValue) => setSettings({ ...settings, ethnicity: itemValue })}
-          style={[styles.settingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
           >
           {renderEthnicityOptions()}
         </Picker>
@@ -405,7 +405,7 @@ export default function Settings() {
         <Picker
           selectedValue={settings.gender || ''}
           onValueChange={(itemValue) => setSettings({ ...settings, gender: itemValue })}
-          style={[styles.settingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
           >
           {renderGenderOptions()}
         </Picker>
@@ -416,7 +416,7 @@ export default function Settings() {
         <Picker
           selectedValue={settings.pronouns || ''}
           onValueChange={(itemValue) => setSettings({ ...settings, pronouns: itemValue })}
-          style={[styles.settingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
           >
           {renderPronounOptions()}
         </Picker>
@@ -616,6 +616,10 @@ const styles = StyleSheet.create({
   settingContent: {
     fontSize: 16,
     marginVertical: 5,
+    color: '#534E5B',
+  },
+  dropdownSettingContent: {
+    fontSize: 16,
     color: '#534E5B',
   },
   settingLabel: {
