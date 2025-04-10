@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { auth } from '../FirebaseConfig';
+import { Image } from 'react-native'; 
+
 
 export default function MessagingChat() {
   const { matchId, matchName } = useLocalSearchParams(); // Get match details from navigation params
@@ -127,13 +129,18 @@ export default function MessagingChat() {
           value={newMessage}
           onChangeText={setNewMessage}
         />
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={sendMessage}
-          disabled={loading}
-        >
-          <Text style={styles.sendButtonText}>{loading ? "Sending..." : "Send"}</Text>
-        </TouchableOpacity>
+<TouchableOpacity
+  style={styles.sendButton}
+  onPress={sendMessage}
+  disabled={loading}
+  activeOpacity={0.7} // optional for better visual feedback
+>
+  <Image
+    source={require('../assets/images/send.png')} // Make sure this path is correct
+    style={styles.sendIcon}
+    resizeMode="contain" // Helps avoid stretching
+  />
+</TouchableOpacity>
       </View>
     </View>
   );
@@ -191,14 +198,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   sendButton: {
-    marginLeft: 8,
-    backgroundColor: "#534E5B",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    marginLeft: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 30,
   },
   sendButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  sendIcon: {
+    width: 24, // Adjust the size as needed
+    height: 24,
   },
 });
