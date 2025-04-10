@@ -183,6 +183,7 @@ def get_matches():
     for match_id in matched_user_ids:
         match_profile = get_user_profile(match_id)
         if match_profile:
+            match_profile["id"] = match_id  # Ensure the ID is included
             matched_profiles.append(match_profile)
 
     return jsonify({"matches": matched_profiles}), 200

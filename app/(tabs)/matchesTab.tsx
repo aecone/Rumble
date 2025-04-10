@@ -79,7 +79,25 @@ export default function MatchesTab() {
     <TouchableOpacity style={styles.matchItem}>
       <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
       <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
-      <Image source={require('../../assets/images/messages-icon.png')} style={styles.messagesIcon} />
+      <View style={styles.iconContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          console.log("Navigating to messagingChat with:", {
+            matchId: item.id,
+            matchName: `${item.firstName} ${item.lastName}`,
+          });
+          router.push({
+            pathname: '/messagingChat',
+            params: { matchId: item.id, matchName: `${item.firstName} ${item.lastName}` },
+          });
+        }}
+      >
+        <Image
+          source={require('../../assets/images/messages-icon.png')}
+          style={styles.messagesIcon}
+        />
+      </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 
@@ -145,16 +163,19 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 22,
     fontWeight: 'bold',
+    flex: 1, // Allow the name to take up remaining space
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  messagesIcon: {
+    width: 24,
+    height: 24,
   },
   loadingText: {
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
-  },
-  messagesIcon: {
-    width: 24,
-    height: 24,
-    position: 'absolute',
-    right: 20,
   },
 });
