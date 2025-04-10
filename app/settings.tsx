@@ -143,7 +143,7 @@ export default function Settings() {
   
   // Authentication listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    return onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
         fetchProfile();
@@ -160,9 +160,7 @@ export default function Settings() {
         });
       }
     });
-  
-    return unsubscribe;
-  }, []);
+    }, []);
   
   // Fetch profile when screen comes into focus
   useFocusEffect(

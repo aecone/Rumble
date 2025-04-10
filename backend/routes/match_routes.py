@@ -161,33 +161,31 @@ def swipe():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@match_routes.route('/matches', methods=['GET'])
+@match_routes.route("/matches", methods=["GET"])
 def get_matches():
-    """
-    GET /matches
+    """Fetch detailed profiles of matched users."""
+    decoded_token, error = verify_token()
+    if error:
+        return error 
 
-    Retrieves a list of user IDs that the authenticated user has matched with.
+    user_id = decoded_token["uid"]
+    user_profile = get_user_profile(user_id)
 
-    Returns:
-        JSON: {
-            "matches": ["user_id_1", "user_id_2", ...]
-        }
-    """
-    try:
-        decoded_token, error = verify_token()
-        if error:
-            return error
+    if not user_profile:
+        return jsonify({"error": "User profile not found"}), 404
 
-        user_id = decoded_token["uid"]
-        user_doc = db.collection('users').document(user_id).get()
-        if user_doc.exists:
-            user_data = user_doc.to_dict()
-            return jsonify({"matches": user_data.get('matched_users', [])})
+    matched_user_ids = user_profile.get("matched_users", [])
+    if not matched_user_ids:
+        return jsonify({"matches": []}), 200  # No matches found
 
-        return jsonify({"error": "User not found"}), 404
+    # Fetch detailed profiles for each matched user
+    matched_profiles = []
+    for match_id in matched_user_ids:
+        match_profile = get_user_profile(match_id)
+        if match_profile:
+            matched_profiles.append(match_profile)
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"matches": matched_profiles}), 200
 
 @match_routes.route('/conversation', methods=['GET'])
 def get_conversation():
@@ -301,3 +299,4 @@ def send_message():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
