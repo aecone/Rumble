@@ -1,124 +1,123 @@
-import { StyleSheet, Image, FlatList, Alert, TouchableOpacity, SafeAreaView, Text, View } from 'react-native';
+import { StyleSheet, Image, FlatList, TouchableOpacity, SafeAreaView, Text, View } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { storage, auth } from '../../FirebaseConfig';
-import { getDownloadURL, ref, uploadBytes, listAll, deleteObject } from 'firebase/storage';
-import * as ImagePicker from 'expo-image-picker';
-import { User, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../FirebaseConfig';
+import { useRouter } from 'expo-router';
+import { onAuthStateChanged } from 'firebase/auth';
+import { API_BASE_URL } from "../../FirebaseConfig";
 
-export default function TabThreeScreen() {
-  const [image, setImage] = useState<any>(null);
-  const [images, setImages] = useState<any[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+export default function MatchesTab() {
+  const router = useRouter();
+  const [user, setUser] = useState(auth.currentUser);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(false);
 
+  // Define type for match
+  type Match = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    profilePictureUrl: string;
+  };
+
+  // Checks if user is authenticated; if not, sets user to null and redirects to login screen
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        fetchImages(currentUser.uid);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        fetchMatches();
+      } else {
+        setUser(null);
+        router.replace('/');
       }
     });
     return unsubscribe;
   }, []);
 
-  const fetchImages = async (userId: any) => {
+  // Fetch matches from the backend
+  const fetchMatches = async () => {
+    if (!user || !API_BASE_URL) return;
+    setLoading(true);
     try {
-      const storageRef = ref(storage, `images/${userId}`);
-      const result = await listAll(storageRef);
-      const urls = await Promise.all(result.items.map((itemRef) => getDownloadURL(itemRef)));
-      setImages(urls);
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/matches`, {
+        headers: { Authorization: token },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Matches fetched successfully:", data);
+
+        // Safely transform the matches data
+        const transformedMatches = data.matches.map((match: any) => {
+
+          const firstName = match?.settings?.firstName || "Unknown"; // Fallback if firstName is missing
+          const lastName = match?.settings?.lastName || "Unknown"; // Fallback if lastName is missing
+          const profilePictureUrl =
+            match?.profile?.profilePictureUrl;
+  
+          return {
+            id: match?.id || "", // Fallback to an empty string if id is missing
+            firstName,
+            lastName,
+            profilePictureUrl,
+          };
+        });
+  
+        setMatches(transformedMatches);
+      } else {
+        const errorData = await response.json();
+        console.error("Error fetching matches:", errorData);
+      }
     } catch (error) {
-      console.error("Error fetching images: ", error);
+      console.error("Failed to fetch matches:", error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const imageUri = result.assets[0].uri;
-      console.log(result, 'the result');
-      setImage(imageUri);
-      console.log("Image picked: ", imageUri);
-    }
-  };
-
-  const uploadImage = async () => {
-    if (!user || !image) {
-      console.log(`User: ${user}, Image: ${image}`); // Add logging to check values
-      Alert.alert('No user or image found!');
-      return;
-    }
-
-    console.log("Attempting to upload image: ", image); // Log the image URI for debugging
-
-    try {
-      const response = await fetch(image);
-      const blob = await response.blob();
-
-      console.log("Blob created: ", blob); // Log the blob for debugging
-
-      const storageRef = ref(storage, `images/${user.uid}/${Date.now()}`);
-      await uploadBytes(storageRef, blob);
-
-      const url = await getDownloadURL(storageRef);
-      setImages(images => [...images, url]);
-      setImage(null); // Reset the image state
-      console.log("Image uploaded and URL retrieved: ", url);
-    } catch (error: any) {
-      console.error("Error uploading image: ", error);
-      Alert.alert('Upload failed!', error.message);
-    }
-  };
-
-  const deleteImage = async (url: any) => {
-    if (!user) {
-      Alert.alert('No user found!');
-      return;
-    }
-
-    try {
-      const storageRef = ref(storage, url);
-      await deleteObject(storageRef);
-      setImages(images.filter((img) => img !== url));
-    } catch (error: any) {
-      console.error("Error deleting image: ", error);
-      Alert.alert('Delete failed!', error.message);
-    }
-  };
+  // Render each match item
+  const renderMatchItem = ({ item }: { item: Match }) => (
+    <TouchableOpacity style={styles.matchItem}>
+      <Image source={{ uri: item.profilePictureUrl }} style={styles.profilePicture} />
+      <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
+      <View style={styles.iconContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          console.log("Navigating to messagingChat with:", {
+            matchId: item.id,
+            matchName: `${item.firstName} ${item.lastName}`,
+          });
+          router.push({
+            pathname: '/messagingChat',
+            params: { matchId: item.id, matchName: `${item.firstName} ${item.lastName}` },
+          });
+        }}
+      >
+        <Image
+          source={require('../../assets/images/messages-icon.png')}
+          style={styles.messagesIcon}
+        />
+      </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Storage</Text>
-        <TouchableOpacity style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick an image from camera roll</Text>
-        </TouchableOpacity>
-        {image && (
-          <>
-            <Image source={{ uri: image }} style={styles.image} />
-            <TouchableOpacity style={styles.button} onPress={uploadImage}>
-              <Text style={styles.buttonText}>Upload Image</Text>
-            </TouchableOpacity>
-          </>
-        )}
-        <FlatList
-          data={images}
-          renderItem={({ item }) => (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: item }} style={styles.image} />
-              <TouchableOpacity style={styles.button} onPress={() => deleteImage(item)}>
-                <Text style={styles.buttonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-        />
+      <View style={styles.header}>
+        <Text style={styles.title}>Matches</Text>
       </View>
+      {loading ? (
+        <Text style={styles.loadingText}>Loading...</Text>
+      ) : matches.length > 0 ? (
+        <FlatList
+          data={matches}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMatchItem}
+          contentContainerStyle={styles.listContainer}
+        />
+      ) : (
+        <Text style={styles.loadingText}>No matches found.</Text>
+      )}
     </SafeAreaView>
   );
 }
@@ -126,42 +125,57 @@ export default function TabThreeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#fff',
   },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   title: {
-    fontSize: 24,
+    fontSize: 30,
+    fontWeight: "bold",
+    paddingHorizontal: 25,
+    paddingTop: 50,
+    paddingBottom: 15,
+  },
+  listContainer: {
+    padding: 30,
+  },
+  matchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
+    padding: 12,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  profilePicture: {
+    width: 80,
+    height: 80,
+    borderRadius: 50,
+    marginRight: 12,
+  },
+  name: {
+    fontSize: 22,
     fontWeight: 'bold',
+    flex: 1, // Allow the name to take up remaining space
   },
-  image: {
-    width: 200,
-    height: 200,
-    marginVertical: 10,
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  button: {
-    padding: 10,
-    borderRadius: 15,
-    alignItems: 'center',
+  iconContainer: {
     justifyContent: 'center',
-    backgroundColor: '#5C6BC0',
-    shadowColor: '#5C6BC0',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 5,
-    marginLeft: 10,
+    alignItems: 'flex-end',
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
+  messagesIcon: {
+    width: 24,
+    height: 24,
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
   },
 });

@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Modal,
-  KeyboardAvoidingView,Alert,
+  KeyboardAvoidingView,
+  Alert,
   Platform,
 } from "react-native";
 import { auth, storage } from "../../FirebaseConfig";
@@ -18,15 +19,18 @@ import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged } from "firebase/auth";
-import { router } from 'expo-router'
+import { router } from 'expo-router';
 import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 import { API_BASE_URL } from "../../FirebaseConfig";
 
-
 export default function TabFourScreen() {
+  // Check if user is authenticated
   getAuth().onAuthStateChanged((user) => {
+    // If user is not authenticated, redirect to login page (temp solution, use global state later)
     if (!user) router.replace('/');
   });
+  
+  // Define types for profile 
   type Profile = {
     bio: string;
     profilePictureUrl: string;
@@ -40,6 +44,7 @@ export default function TabFourScreen() {
     mentorshipAreas: string[];
   };
   
+  // Define the settings type
   type Settings = {
     firstName: string;
     lastName: string;
@@ -50,11 +55,13 @@ export default function TabFourScreen() {
     pronouns: string;
   };
   
+  // Define user profile type - made up of settings and profile types
   type UserProfile = {
     settings: Settings;
     profile: Profile;
   };
   
+  // State variables 
   const [userProfile, setUserProfile] = useState<UserProfile>({
     settings: {
       firstName: "",
@@ -87,48 +94,45 @@ export default function TabFourScreen() {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  const handleUpdateCredentials = async () => {
-    const user = auth.currentUser;
-    if (!user || !API_BASE_URL) return;
-  
+  // Navigation handlers
+  const navigateToSettings = () => {
+    router.push('/settings');
+  };
+
+  const navigateToEditIndustries = () => {
+    router.push('/editIndustries');
+  };
+
+  const navigateToEditHobbies = () => {
+    router.push('/editHobbies');
+  };
+
+  const navigateToEditMentorship = () => {
+    router.push('/editMentorship');
+  };
+
+  const toggleEditing = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleSaveChanges = async () => {
+    setLoading(true);
     try {
-      // Validate Rutgers email
-      if (newEmail !== '' && !newEmail.toLowerCase().endsWith('rutgers.edu')) {
-        alert('Please enter a valid Rutgers email (must end with rutgers.edu)');
-        return;
-      }
-  
-      // Update email if provided
-      if (newEmail !== '') {
-        await updateEmail(user, newEmail);
-        setUserProfile((prev) => ({ ...prev, email: newEmail }));  // <-- Update profile state
-      }
-  
-      // Update password if provided
-      if (newPassword !== '') {
-        await updatePassword(user, newPassword);
-      }
-  
-      alert('Credentials updated successfully');
-  
-      // **Force user refresh**
-      await user.reload();  // <-- Ensures latest user data
-      setUser(auth.currentUser); // <-- Update state with latest user info
-  
-      // Fetch latest profile details
-      fetchProfile();
-  
-      // Reset inputs and close modal
-      setNewEmail('');
-      setNewPassword('');
-      setModalVisible(false);
-  
-    } catch (error: any) {
-      console.error('Error updating credentials: ', error);
-      alert('Error updating credentials: ' + error.message);
+      // Update settings first
+      await updateSettings();
+      // Then update profile
+      await updateProfile();
+      
+      // Provide feedback to the user
+      Alert.alert("Success", "Your profile has been updated successfully!");
+    } catch (error) {
+      console.error("Error during save operation:", error);
+    } finally {
+      setLoading(false);
     }
   };
   
+  // Check if user is authenticated
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -165,7 +169,7 @@ export default function TabFourScreen() {
     return unsubscribe;
   }, []);
   
-
+  // Fetch user profile when the component is focused
   useFocusEffect(
     useCallback(() => {
       if (user) fetchProfile();
@@ -176,28 +180,35 @@ export default function TabFourScreen() {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
-
       const token = await user.getIdToken(true);
       const response = await fetch(`${API_BASE_URL}/profile`, {
         headers: { Authorization: token },
       });
-      const data = await response.json();
+      
       if (response.ok) {
-        setUserProfile({ ...data, email: auth.currentUser?.email || "" });
+        const data = await response.json();
+        console.log("Profile fetched successfully:", data);
+        setUserProfile({ 
+          ...data, 
+          settings: { ...data.settings, email: auth.currentUser?.email || "" } 
+        });
       } else {
-        console.error("Error fetching profile:", data);
+        const errorData = await response.json();
+        console.error("Error fetching profile:", errorData);
       }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+  
   const updateProfile = async () => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
       const token = await user.getIdToken(true);
-      const response = await fetch(`${API_BASE_URL}/profile`, {
+      const response = await fetch(`${API_BASE_URL}/update_profile`, {
 
         method: "PUT",
         headers: {
@@ -268,7 +279,7 @@ export default function TabFourScreen() {
             ...prev,
             profile: { ...prev.profile, profilePictureUrl: downloadURL },
           }));
-                    // Set flag to trigger updateProfile after state change
+          // Set flag to trigger updateProfile after state change
           setPendingImageUpdate(true);
           setLoading(false);
         }
@@ -280,209 +291,251 @@ export default function TabFourScreen() {
   };
 
   // useEffect to trigger updateProfile after profilePictureUrl is updated
-useEffect(() => {
-  if (pendingImageUpdate) {
-    updateProfile();
-    // Reset the flag so it doesn't trigger again
-    setPendingImageUpdate(false);
-  }
-}, [userProfile.profile.profilePictureUrl, pendingImageUpdate]);
-
-  const deleteAccount = async () => {
-    if (!user || !API_BASE_URL) return;
-    setLoading(true);
-    try {
-      const token = await user.getIdToken(true);
-      const response = await fetch(`${API_BASE_URL}/delete_account`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-  
-      const data = await response.json();
-      console.log(data);
-      if (response.ok) {
-        if (response.ok) {
-          console.log("Account deleted, now signing out...");
-          await auth.signOut();
-          console.log("Successfully signed out, navigating...");
-          
-          router.dismissAll();
-          router.replace("/");
-        
-          Alert.alert("Account Deleted", "Your account has been successfully deleted.");
-        }
-        
-      } else {
-        Alert.alert("Error", data.error || "Failed to delete account.");
-      }
-    } catch (error) {
-      console.log("error");
-      Alert.alert("Error", "Could not complete request.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (pendingImageUpdate) {
+      updateProfile();
+      // Reset the flag so it doesn't trigger again
+      setPendingImageUpdate(false);
     }
+  }, [userProfile.profile.profilePictureUrl, pendingImageUpdate]);
+
+  // Format array data for display
+  const formatArrayData = (data: string[]) => {
+    if (!data || data.length === 0) return "N/A";
+    return data.join(", ");
   };
   
-
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Header with Settings and Edit buttons */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.headerButton} 
+          onPress={navigateToSettings}
+        >
+          
+          <Text style={styles.headerButtonText}>⚙️</Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.title}>Profile</Text>
+        
+        <TouchableOpacity 
+          style={styles.headerButton} 
+          onPress={toggleEditing}
+        >
+          <Text style={styles.headerButtonText}>{isEditing ? "Done" : "Edit"}</Text>
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container}>
-            <Text style={styles.title}>Edit Profile</Text>
-            {loading && <ActivityIndicator size="large" color="#5C6BC0" />}
-            <TouchableOpacity 
-  disabled={!isEditing} // Disable touch when not in edit mode
-  onPress={() => {
-    if (!isEditing) return; // Prevent action if not in edit mode
+            {loading && <ActivityIndicator size="large" color="#534E5B" />}
+            
+            {/* Profile Header Section */}
+            <View style={styles.profileHeader}>
+              <TouchableOpacity 
+                disabled={!isEditing}
+                onPress={() => {
+                  if (!isEditing) return;
+                  ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [1, 1],
+                    quality: 0.8,
+                  }).then(result => {
+                    if (!result.canceled) {
+                      uploadImage(result.assets[0].uri);
+                      setUserProfile((prev) => ({
+                        ...prev,
+                        profile: { ...prev.profile, profilePictureUrl: result.assets[0].uri },
+                      }));
+                    }
+                  });
+                }}
+              >
+                <Image
+                  source={userProfile.profile.profilePictureUrl 
+                    ? { uri: userProfile.profile.profilePictureUrl } 
+                    : require('../../assets/images/profile.png')}
+                  style={styles.profileImage}
+                />
+                <Text style={styles.imageText}>
+                  {isEditing ? "Tap to Change" : ""}
+                </Text>
+              </TouchableOpacity>
 
-    ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    }).then(result => {
-      if (!result.canceled) {
-        uploadImage(result.assets[0].uri);
-        setUserProfile((prev) => ({
-          ...prev,
-          profile: { ...prev.profile, profilePictureUrl: result.assets[0].uri },
-        }));
-      }
-    });
-  }}
->
-  <Image
-    source={userProfile.profile.profilePictureUrl 
-      ? { uri: userProfile.profile.profilePictureUrl } 
-      : require('../../assets/images/profile.png')}
-    style={[
-      styles.profileImage, 
-    ]}
-  />
-  <Text style={styles.imageText}>
-    {isEditing ? "Tap to Change" : ""}
-  </Text>
-</TouchableOpacity>
-
-          {Object.keys(userProfile.settings).map((key) => {
-  const typedKey = key as keyof Settings;
-  const formattedKey = key
-  .replace(/([A-Z])/g, " $1") // Insert space before capital letters
-  .replace(/_/g, " ") // Replace underscores with spaces
-  .trim(); // Trim any leading space
-  return (
-    <View key={key} style={styles.infoContainer}>
-      <Text style={styles.label}>{formattedKey.toUpperCase()}:</Text>
-      {isEditing ? (
-        <TextInput
-          style={styles.input}
-          value={userProfile.settings[typedKey]}
-          onChangeText={(text) =>
-            setUserProfile((prev) => ({
-              ...prev,
-              settings: { ...prev.settings, [typedKey]: text },
-            }))
-          }
-          multiline
-        />
-      ) : (
-        <Text style={styles.text}>{userProfile.settings[typedKey] || "N/A"}</Text>
-      )}
-    </View>
-  );
-})}
-{isEditing ? (<TouchableOpacity style={styles.button} onPress={updateSettings}>
-                  <Text style={styles.buttonText}>Save Settings</Text>
-                </TouchableOpacity>) : null}
-{Object.keys(userProfile.profile)
-  .filter((key) => key !== "profilePictureUrl") // Exclude profilePictureUrl
-  .map((key) => {
-    const typedKey = key as keyof Profile;
-    const formattedKey = key
-    .replace(/([A-Z])/g, " $1") // Insert space before capital letters
-    .replace(/_/g, " ") // Replace underscores with spaces
-    .trim(); // Trim any leading space
-
-    return (
-      <View key={key} style={styles.infoContainer}>
-        <Text style={styles.label}>{formattedKey.toUpperCase()}:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={String(userProfile.profile[typedKey])} // Convert to string for safe rendering
-            onChangeText={(text) =>
-              setUserProfile((prev) => ({
-                ...prev,
-                profile: { ...prev.profile, [typedKey]: text },
-              }))
-            }
-            multiline
-          />
-        ) : (
-          <Text style={styles.text}>{String(userProfile.profile[typedKey]) || "N/A"}</Text>
-        )}
-      </View>
-    );
-  })}
-
-            {isEditing ? (
+              {/* Name Display */}
+              <View style={styles.nameContainer}>
+                <Text style={styles.userName}>
+                  {userProfile.settings.firstName} {userProfile.settings.lastName}
+                </Text>
               
-              <TouchableOpacity style={styles.button} onPress={updateProfile}>
-                <Text style={styles.buttonText}>Save Profile</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={() => setIsEditing(true)}>
-                <Text style={styles.buttonText}>Edit Profile</Text>
-              </TouchableOpacity>
-    
-            )}
-            <TouchableOpacity style={[styles.button, { backgroundColor: "#D9534F" }]} onPress={deleteAccount}>
-            <Text style={styles.buttonText}>Delete Account</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Update Email and Password</Text>
-      </TouchableOpacity>
+                
+                {/* User Type (Mentor/Mentee) */}
+                  <Text style={styles.userType}>
+                    {userProfile.profile.userType || "TBD"}
+                  </Text>
+              
+              </View>
+            </View>
 
-      <Modal visible={modalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Update Credentials</Text>
-            <TextInput 
-              placeholder="New Email"
-              value={newEmail}
-              onChangeText={setNewEmail}
-              style={styles.input}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            <TextInput 
-              placeholder="New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
-              <Text style={styles.text}>Save Changes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
-              <Text style={styles.text}>Cancel</Text>
-            </TouchableOpacity>
+            {/* Four dedicated sections */}
+            
+            {/* 1. Bio Section */}
+            <View style={[styles.sectionContainer, styles.bioSectionBackground]}>
+              <Text style={styles.sectionTitle}>Bio</Text>
+              <View style={styles.sectionContent}>
+                {isEditing ? (
+                  <TextInput
+                    style={styles.multilineInput}
+                    value={userProfile.profile.bio}
+                    onChangeText={(text) =>
+                      setUserProfile((prev) => ({
+                        ...prev,
+                        profile: { ...prev.profile, bio: text },
+                      }))
+                    }
+                    multiline
+                    placeholder="Tell us about yourself..."
+                  />
+                ) : (
+                  <Text style={styles.sectionText}>{userProfile.profile.bio || "No bio provided"}</Text>
+                )}
+              </View>
+            </View>
+
+            {/* 2. Hobbies and Interests Section */}
+            <View style={[styles.sectionContainer, styles.hobbiesSectionBackground]}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Hobbies/Interests</Text>
+              {isEditing && (
+                <TouchableOpacity 
+                  style={styles.cornerEditButton} 
+                  onPress={navigateToEditHobbies}
+                >
+                  <Text style={styles.cornerEditButtonText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.sectionContent}>
+              <Text style={[styles.sectionText, styles.sectionTextPadded]}>
+                {/* Check if industries exists and is a non-empty array */}
+                {userProfile.profile.hobbies && userProfile.profile.hobbies.length > 0
+                  ? userProfile.profile.hobbies.map((hobby, index) => (
+                      <View key={index} style={styles.industryChip}>
+                        <Text style={styles.industryChipText}>{hobby}</Text>
+                      </View>
+                    ))
+                  : 'No industries available'}
+              </Text>
+            </View>
           </View>
-        </View>
-      </Modal>
+
+            {/* 3. Mentorship Areas Section */}
+            <View style={[styles.sectionContainer, styles.mentorshipSectionBackground]}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Mentorship Areas</Text>
+              {isEditing && (
+                <TouchableOpacity 
+                  style={styles.cornerEditButton} 
+                  onPress={navigateToEditMentorship}
+                >
+                  <Text style={styles.cornerEditButtonText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.sectionContent}>
+              <Text style={[styles.sectionText, styles.sectionTextPadded]}>
+                {/* Check if mentorshipAreas exists and is a non-empty array */}
+                {userProfile.profile.mentorshipAreas && userProfile.profile.mentorshipAreas.length > 0
+                  ? userProfile.profile.mentorshipAreas.map((mentorship, index) => (
+                      <View key={index} style={styles.industryChip}>
+                        <Text style={styles.industryChipText}>{mentorship}</Text>
+                      </View>
+                    ))
+                  : 'No mentorship areas available'}
+              </Text>
+            </View>
           </View>
-      
-          
+
+
+
+
+            {/* 4. Interested Industries Section */}
+            <View style={[styles.sectionContainer, styles.industriesSectionBackground]}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Interested Industries</Text>
+              {isEditing && (
+                <TouchableOpacity 
+                  style={styles.cornerEditButton} 
+                  onPress={navigateToEditIndustries}
+                >
+                  <Text style={styles.cornerEditButtonText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.sectionContent}>
+              <Text style={[styles.sectionText, styles.sectionTextPadded]}>
+                {/* Check if industries exists and is a non-empty array */}
+                {userProfile.profile.interestedIndustries && userProfile.profile.interestedIndustries.length > 0
+                  ? userProfile.profile.interestedIndustries.map((industry, index) => (
+                      <View key={index} style={styles.industryChip}>
+                        <Text style={styles.industryChipText}>{industry}</Text>
+                      </View>
+                    ))
+                  : 'No industries available'}
+              </Text>
+            </View>
+          </View>
+
+
+
+
+            {/* Action Buttons */}
+            {isEditing ? (
+              <TouchableOpacity style={styles.saveButton} onPress={() => {
+                updateSettings();
+                updateProfile();
+              }}>
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+            ) : null}
+            
+        
+            {/* Credentials Update Modal */}
+            <Modal visible={modalVisible} animationType="slide" transparent={true}>
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Update Credentials</Text>
+                  <TextInput 
+                    placeholder="New Email"
+                    value={newEmail}
+                    onChangeText={setNewEmail}
+                    style={styles.input}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                  <TextInput 
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry
+                    style={styles.input}
+                  />
+                  <TouchableOpacity 
+                    style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} 
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -490,80 +543,244 @@ useEffect(() => {
 }
 
 const styles = StyleSheet.create({
-   safeArea: {
+  safeArea: {
     flex: 1,
+    backgroundColor: "white",
+    fontFamily: 'Montserrat-Regular',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: '#f8f8f8',
+  },
+  headerButton: {
+    padding: 8,
+  },
+  headerButtonText: {
+    color: '#534E5B',
+    fontSize: 16,
+    fontWeight: '600',
   },
   keyboardAvoidingView: {
     flex: 1,
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingBottom: 40, // Prevents overlap with keyboard
-  },
-  infoContainer: {
-    alignSelf: "stretch",
-    paddingHorizontal: 20,
-    marginTop: 20,
+    paddingBottom: 40,
   },
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    padding: 15,
+    width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
+  },
+  
+  // Profile Header Styles
+  profileHeader: {
+    alignItems: "center",
     marginBottom: 20,
+    paddingBottom: 15,
   },
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
     marginBottom: 10,
+    borderWidth: 3,
+    borderColor: "#534E5B",
+  },
+  imageText: {
+    color: "gray",
+    fontSize: 12,
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  nameContainer: {
+    alignItems: "center",
+    marginTop: 5,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  userType: {
+    fontSize: 16,
+    color: "#ffffff",
+    marginTop: 3,
+    fontWeight: "300",
+    textAlign: "center",
+    textTransform: "uppercase",
+  
+    backgroundColor: "#534E5B", // ← light gray background
+    paddingHorizontal: 30,
+    paddingVertical: 8,
+    borderRadius: 30,
+    overflow: "hidden", // ← required in React Native for rounded corners to clip background
+  },
+  
+  // Section Styles
+  sectionContainer: {
+    backgroundColor: "white",
+    borderRadius: 25,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,     
+    alignSelf: "center",     // ← center this box horizontally
+    width: "100%",
+  },
+
+  // Add these to your StyleSheet
+  bioSectionBackground: {
+    backgroundColor: "#C0DEDD", // Light green
+  },
+  hobbiesSectionBackground: {
+    backgroundColor: "#F1DFDE", // Light blue
+  },
+  mentorshipSectionBackground: {
+    backgroundColor: "#E6DFF1", // Light orange
+  },
+  industriesSectionBackground: {
+    backgroundColor: "#F4F0C3", // Light purple
+  },
+  
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 5,
+  },
+  sectionContent: {
+    paddingHorizontal: 5,
+  },
+  sectionText: {
+    fontSize: 16,
+    color: "#000",
+    lineHeight: 22,
+    flexDirection: 'row', // Ensure the text is wrapped in a row
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    
+  },
+  sectionTextPadded: {
+    overflow: "hidden", // ← required in React Native for rounded corners to clip background
+  },
+  industryChip: {
+    backgroundColor: '#fFFFFF', 
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    marginRight: 7,
+    marginBottom: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  industryChipText: {
+    color: '#534E5B',
+    fontSize: 14,
+    fontWeight: '400',
+  },
+
+  commaSeparator: {
+    color: '#534E5B',
+    fontSize: 16,
+    marginHorizontal: 5,
+  },
+  
+  multilineInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    textAlignVertical: "top",
+    minHeight: 50,
+    fontSize: 16,
+  },
+  
+  // Button Styles
+  actionButtonsContainer: {
+    marginTop: 10,
+  },
+  saveButton: {
+    padding: 12,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#534E5B",
+    marginVertical: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: "40%",
+    alignContent: "center",
+    alignSelf: "center",
+  },
+  button: {
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#534E5B",
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4, 
+    elevation: 3,
+    width: "20%",            // ← half the screen width
+    alignSelf: "center", 
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  
+  // Original styles preserved for backwards compatibility
+  infoContainer: {
+    alignSelf: "stretch",
+    paddingHorizontal: 20,
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
-    color: "#5C6BC0",
-  },
-  imageText: {
-    color: "gray",
-    fontSize: 14,
+    color: "#534E5B",
   },
   input: {
-    width: "80%",
-    borderColor: "#5C6BC0",
+    borderColor: "#534E5B",
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
     textAlignVertical: "top",
-    minHeight: 80,
+    minHeight: 50,
+    width: "100%",
+    marginTop: 5,
   },
   text: {
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 20,
+    fontSize: 16,
+    marginTop: 5,
+    marginBottom: 10,
   },
-  button: {
-    padding: 10,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#5C6BC0",
-    marginTop: 10,
-    width: "60%",
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "600",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  
+  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -585,10 +802,26 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     width: '100%',
-    backgroundColor: '#5C6BC0',
-    padding: 10,
+    backgroundColor: '#534E5B',
+    padding: 12,
     borderRadius: 10,
     alignItems: 'center',
     marginVertical: 5,
-  }
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
+  cornerEditButton: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  cornerEditButtonText: {
+    color: '#000000',
+    fontSize: 12,
+    fontWeight: '300',
+  },
 });
