@@ -44,7 +44,7 @@ const SignUpCareer = () => {
           <Picker.Item label="Computer Engineering" value="Computer Engineering" />
           <Picker.Item label="Biomedical Engineering" value="Biomedical Engineering" />
           <Picker.Item label="Electrical Engineering" value="Electrical Engineering" />
-          <Picker.Item label="Data Engineering" value="Data Engineering" />
+          <Picker.Item label="Marketing" value="Marketing" />
           <Picker.Item label="Other" value="Other" />
         </Picker>
       </View>

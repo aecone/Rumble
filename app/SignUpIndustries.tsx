@@ -6,7 +6,8 @@ const predefinedIndustries = [
   "Technology", "Healthcare", "Finance", "Education", "Entertainment",
   "Retail", "Manufacturing", "Real Estate", "Transportation", "Energy",
   "Agriculture", "Media", "Telecommunications", "Hospitality", "Automotive",
-  "Aerospace", "Pharmaceuticals", "Consulting", "Non-Profit", "Government",
+  "Aerospace", "Pharmaceuticals", "Consulting", "Non-Profit", "Government", 
+  "Marketing", "Consulting", "Engineering"
 ];
 
 const SignUpIndustries = () => {
