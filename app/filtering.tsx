@@ -15,16 +15,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define filter interface
 interface FilterOptions {
-  gradYearMin?: string;
-  gradYearMax?: string;
   major?: string;
-  ethnicity?: string;
-  gender?: string;
+  gradYear?: string;
+  //ethnicity?: string;
+  //gender?: string;
   interestedIndustries?: string[];
   mentorshipAreas?: string[];
   orgs?: string[];
   hobbies?: string[];
-  careerPath?: string[];
+  careerPath?: string;  // Changed from string[] to string
   userType?: string;
   [key: string]: any; // For any additional properties
 }
@@ -45,23 +44,20 @@ const filtering = () => {
   
   // Initialize filter state with current filters or defaults
   const [filters, setFilters] = useState<FilterOptions>({
-    gradYearMin: currentFilters?.gradYearMin || '',
-    gradYearMax: currentFilters?.gradYearMax || '',
     major: currentFilters?.major || '',
-    ethnicity: currentFilters?.ethnicity || '',
-    gender: currentFilters?.gender || '',
+    gradYear: currentFilters?.gradYear || '',
+    //ethnicity: currentFilters?.ethnicity || '',
+    //gender: currentFilters?.gender || '',
     interestedIndustries: currentFilters?.interestedIndustries || [],
     mentorshipAreas: currentFilters?.mentorshipAreas || [],
     orgs: currentFilters?.orgs || [],
     hobbies: currentFilters?.hobbies || [],
-    careerPath: currentFilters?.careerPath || [],
+    careerPath: currentFilters?.careerPath || '',  // Changed from array to string
     userType: currentFilters?.userType || ''
   });
 
   const gradYears = [
-    '', 
-    '2025', '2026', '2027', 
-    '2028', '2029'
+    '', '2025', '2026', '2027', '2028', '2029'
   ];
   
   const majors = [
@@ -71,7 +67,6 @@ const filtering = () => {
     'Information Technology', 'Biomedical Engineering', 'Communications', 'Civil Engineering', 
     'Engineering (other)', 'Psychology', 'Public Health', 'Biology', 'English', 'History',
     'Political Science', 'Arts', 'Other'
-    
   ];
 
   const ethnicities = [
@@ -113,10 +108,14 @@ const filtering = () => {
   ];
 
   const careerPath = [
-    'UI/UX', 'Medicine', 'Politics', 'Law', 'Design', 'Research', 
+    '', 'UI/UX', 'Medicine', 'Politics', 'Law', 'Design', 'Research', 
     'Finance', 'Data Science', 'Data Engineering', 'Software Engineering',
     'Computer Engineering', 'Biomedical Engineering', 'Electrical Engineering',
     'Marketing'
+  ];
+
+  const userTypes = [
+    "Mentor", "Mentee"
   ];
 
 
@@ -159,16 +158,15 @@ const filtering = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      gradYearMin: '',
-      gradYearMax: '',
       major: '',
-      ethnicity: '',
-      gender: '',
+      gradYear: '',
+      //ethnicity: '',
+      //gender: '',
       interestedIndustries: [],
       mentorshipAreas: [],
       orgs: [],
       hobbies: [],
-      careerPath: [],
+      careerPath: '',  // Changed from array to empty string
       userType: ''
     });
   };
@@ -207,38 +205,19 @@ const filtering = () => {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        {/* Graduation Year Range */}
+        {/* Single Graduation Year */}
         <View style={styles.filterSection}>
           <Text style={styles.sectionTitle}>Graduation Year</Text>
-          <View style={styles.rowContainer}>
-            <View style={styles.halfInput}>
-              <Text style={styles.inputLabel}>Min</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={filters.gradYearMin}
-                  onValueChange={(itemValue) => setFilters({...filters, gradYearMin: itemValue})}
-                  style={styles.picker}
-                >
-                  {gradYears.map((year, index) => (
-                    <Picker.Item key={`min-${index}`} label={year || "Any Year"} value={year} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-            <View style={styles.halfInput}>
-              <Text style={styles.inputLabel}>Max</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={filters.gradYearMax}
-                  onValueChange={(itemValue) => setFilters({...filters, gradYearMax: itemValue})}
-                  style={styles.picker}
-                >
-                  {gradYears.map((year, index) => (
-                    <Picker.Item key={`max-${index}`} label={year || "Any Year"} value={year} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={filters.gradYear}
+              onValueChange={(itemValue) => setFilters({...filters, gradYear: itemValue})}
+              style={styles.picker}
+            >
+              {gradYears.map((year, index) => (
+                <Picker.Item key={index} label={year || "Any Year"} value={year} />
+              ))}
+            </Picker>
           </View>
         </View>
 
@@ -258,33 +237,32 @@ const filtering = () => {
           </View>
         </View>
 
-        {/* Ethnicity */}
+        {/* Career Path - Changed from multi-select to dropdown */}
         <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>Ethnicity</Text>
+          <Text style={styles.sectionTitle}>Career Path</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={filters.ethnicity}
-              onValueChange={(itemValue) => setFilters({...filters, ethnicity: itemValue})}
+              selectedValue={filters.careerPath}
+              onValueChange={(itemValue) => setFilters({...filters, careerPath: itemValue})}
               style={styles.picker}
             >
-              {ethnicities.map((ethnicity, index) => (
-                <Picker.Item key={index} label={ethnicity || "Any Ethnicity"} value={ethnicity} />
+              {careerPath.map((path, index) => (
+                <Picker.Item key={index} label={path || "Any Career Path"} value={path} />
               ))}
             </Picker>
           </View>
         </View>
 
-        {/* Gender */}
         <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>Gender</Text>
+          <Text style={styles.sectionTitle}>User Type</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={filters.gender}
-              onValueChange={(itemValue) => setFilters({...filters, gender: itemValue})}
+              selectedValue={filters.userType}
+              onValueChange={(itemValue) => setFilters({...filters, userType: itemValue})}
               style={styles.picker}
             >
-              {genders.map((gender, index) => (
-                <Picker.Item key={index} label={gender || "Any Gender"} value={gender} />
+              {userTypes.map((type, index) => (
+                <Picker.Item key={index} label={type || "Any Type"} value={type} />
               ))}
             </Picker>
           </View>
@@ -301,9 +279,6 @@ const filtering = () => {
 
         {/* Hobbies */}
         {renderMultiSelect('Hobbies', hobbies, 'hobbies')}
-
-        {/* Career Path */}
-        {renderMultiSelect('Career Path', careerPath, 'careerPath')}
 
       </ScrollView>
 

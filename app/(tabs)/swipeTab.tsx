@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -13,7 +14,7 @@ import {
 } from 'react-native';
 import { auth, API_BASE_URL } from "../../FirebaseConfig";
 import { GestureHandlerRootView, PanGestureHandler, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
-import { useRouter, useFocusEffect } from 'expo-router'; // Import useFocusEffect
+import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -23,6 +24,7 @@ type UserCard = {
   id: string;
   firstName: string;
   lastName: string;
+  userType: string;
   email?: string;
   birthday?: string;
   ethnicity?: string;
@@ -41,8 +43,7 @@ type UserCard = {
 
 // Define filter type
 interface FilterOptions {
-  gradYearMin?: string;
-  gradYearMax?: string;
+  gradYear?: string;
   major?: string;
   ethnicity?: string;
   gender?: string;
@@ -96,18 +97,21 @@ export default function SwipeTab() {
   // Load filters and fetch users when screen gains focus
   useFocusEffect(
     React.useCallback(() => {
+      // In useFocusEffect callback in swipeTab.tsx
       const loadSavedFilters = async () => {
         try {
           setIsLoading(true);
           const savedFilters = await AsyncStorage.getItem('userFilters');
+          let parsedFilters = {};
+          
           if (savedFilters) {
-            const parsedFilters = JSON.parse(savedFilters);
+            parsedFilters = JSON.parse(savedFilters);
             console.log("Loaded saved filters:", parsedFilters);
             setFilters(parsedFilters);
-            await fetchSuggestedUsers(parsedFilters);
-          } else {
-            await fetchSuggestedUsers({});
           }
+          
+          // Only fetch users after filters are processed
+          await fetchSuggestedUsers(parsedFilters);
         } catch (error) {
           console.error('Failed to load filters:', error);
           await fetchSuggestedUsers({});
@@ -132,8 +136,8 @@ export default function SwipeTab() {
   const transformFiltersForAPI = (frontendFilters: FilterOptions) => {
     return {
       major: frontendFilters.major || "",
-      // Use the minimum grad year as the filter if provided
-      gradYear: frontendFilters.gradYearMin ? parseInt(frontendFilters.gradYearMin) : undefined,
+      // Use the single grad year as the filter if provided
+      gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : undefined,
       ethnicity: frontendFilters.ethnicity || "",
       gender: frontendFilters.gender || "",
       hobbies: frontendFilters.hobbies || [],
@@ -154,6 +158,7 @@ export default function SwipeTab() {
         Alert.alert('Error', 'You must be logged in.');
         return;
       }
+      
   
       // Transform filters to API format
       const apiFilters = transformFiltersForAPI(newFilters);
@@ -170,6 +175,7 @@ export default function SwipeTab() {
       });
     
       const data = await response.json();
+      //console.log("Fetched user:", data.users[0]);
       console.log("API Response users:", data.users?.length || 0);
   
       if (response.ok) {
@@ -181,6 +187,7 @@ export default function SwipeTab() {
       console.error('Fetch error:', error);
       Alert.alert('Error', 'Could not load users.');
     }
+    
   };
 
   // Animation handling code
@@ -611,9 +618,11 @@ const styles = StyleSheet.create({
   infoScrollView: {
     width: '100%',
     flex: 1,
+    maxHeight:200,
     marginTop: 10,
   },
   infoScrollViewContent: {
     paddingBottom: 10,
+    alignItems: 'center'
   },
 });
