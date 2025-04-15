@@ -115,7 +115,7 @@ const filtering = () => {
   ];
 
   const userTypes = [
-    "Mentor", "Mentee"
+    "mentor", "mentee"
   ];
 
 
