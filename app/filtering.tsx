@@ -253,20 +253,6 @@ const filtering = () => {
           </View>
         </View>
 
-        <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>User Type</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={filters.userType}
-              onValueChange={(itemValue) => setFilters({...filters, userType: itemValue})}
-              style={styles.picker}
-            >
-              {userTypes.map((type, index) => (
-                <Picker.Item key={index} label={type || "Any Type"} value={type} />
-              ))}
-            </Picker>
-          </View>
-        </View>
 
         {/* Industries */}
         {renderMultiSelect('Interested Industries', industries, 'interestedIndustries')}

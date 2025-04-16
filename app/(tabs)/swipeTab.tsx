@@ -95,34 +95,59 @@ export default function SwipeTab() {
   });
 
   // Load filters and fetch users when screen gains focus
-  useFocusEffect(
-    React.useCallback(() => {
-      // In useFocusEffect callback in swipeTab.tsx
-      const loadSavedFilters = async () => {
-        try {
-          setIsLoading(true);
-          const savedFilters = await AsyncStorage.getItem('userFilters');
-          let parsedFilters = {};
-          
-          if (savedFilters) {
-            parsedFilters = JSON.parse(savedFilters);
-            console.log("Loaded saved filters:", parsedFilters);
-            setFilters(parsedFilters);
-          }
-          
-          // Only fetch users after filters are processed
-          await fetchSuggestedUsers(parsedFilters);
-        } catch (error) {
-          console.error('Failed to load filters:', error);
-          await fetchSuggestedUsers({});
-        } finally {
-          setIsLoading(false);
+useFocusEffect(
+  React.useCallback(() => {
+    const loadSavedFilters = async () => {
+      try {
+        setIsLoading(true);
+        const savedFilters = await AsyncStorage.getItem('userFilters');
+        // Initialize with proper type annotation
+        let parsedFilters: FilterOptions = {};
+        
+        if (savedFilters) {
+          parsedFilters = JSON.parse(savedFilters) as FilterOptions;
+          console.log("Loaded saved filters:", parsedFilters);
         }
-      };
-      
-      loadSavedFilters();
-    }, [])
-  );
+        
+        // Get current user profile to determine their type
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const token = await currentUser.getIdToken(true);
+          const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
+            method: "GET",
+            headers: {
+              Authorization: token,
+            },
+          });
+          
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            const currentUserType = profileData.profile?.userType || '';
+            
+            if (currentUserType === 'mentor') {
+              parsedFilters.userType = 'mentee';
+            } else if (currentUserType === 'mentee') {
+              parsedFilters.userType = 'mentor';
+            }
+            
+            await AsyncStorage.setItem('userFilters', JSON.stringify(parsedFilters));
+          }
+        }
+        
+        setFilters(parsedFilters);
+        // Only fetch users after filters are processed
+        await fetchSuggestedUsers(parsedFilters);
+      } catch (error) {
+        console.error('Failed to load filters:', error);
+        await fetchSuggestedUsers({});
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadSavedFilters();
+  }, [])
+);
 
   // Navigate to filters screen and pass current filters
   const navigateToFilters = () => {
