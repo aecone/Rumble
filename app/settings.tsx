@@ -64,7 +64,7 @@ export default function Settings() {
   // Check if email is valid Rutgers address and not already registered
   const checkEmail = async (email: string) => {
     try {
-      if (!email.toLowerCase().endsWith("rutgers.edu")) {
+      if (!(email.toLowerCase().endsWith("@rutgers.edu") || email.toLowerCase().endsWith("@scarletmail.rutgers.edu"))) {
         alert("Please use a valid Rutgers email address.");
         return false;
       }
@@ -137,7 +137,8 @@ export default function Settings() {
   // Form validation
   const isFormValid = () => {
     const validBirthday = isValidDate(settings.birthday);
-    const validEmailFormat = newEmail.toLowerCase().endsWith("rutgers.edu") || !emailChanged;
+    const lowerEmail = newEmail.toLowerCase();
+    const validEmailFormat = lowerEmail.endsWith("@rutgers.edu") || lowerEmail.endsWith("@scarletmail.rutgers.edu") || !emailChanged;
     return validBirthday && validEmailFormat;
   };
   
