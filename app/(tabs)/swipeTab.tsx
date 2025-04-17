@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -19,7 +18,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
+// Type definitions remain the same
 type UserCard = {
   id: string;
   firstName: string;
@@ -41,7 +42,6 @@ type UserCard = {
   mentorshipAreas?: string[];
 };
 
-// Define filter type
 interface FilterOptions {
   gradYear?: string;
   major?: string;
@@ -94,62 +94,58 @@ export default function SwipeTab() {
     extrapolate: 'clamp',
   });
 
-  // Load filters and fetch users when screen gains focus
-useFocusEffect(
-  React.useCallback(() => {
-    const loadSavedFilters = async () => {
-      try {
-        setIsLoading(true);
-        const savedFilters = await AsyncStorage.getItem('userFilters');
-        // Initialize with proper type annotation
-        let parsedFilters: FilterOptions = {};
-        
-        if (savedFilters) {
-          parsedFilters = JSON.parse(savedFilters) as FilterOptions;
-          console.log("Loaded saved filters:", parsedFilters);
-        }
-        
-        // Get current user profile to determine their type
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          const token = await currentUser.getIdToken(true);
-          const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
-            method: "GET",
-            headers: {
-              Authorization: token,
-            },
-          });
+  // Keep original functionality but update the UI rendering
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadSavedFilters = async () => {
+        try {
+          setIsLoading(true);
+          const savedFilters = await AsyncStorage.getItem('userFilters');
+          let parsedFilters: FilterOptions = {};
           
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            const currentUserType = profileData.profile?.userType || '';
-            
-            if (currentUserType === 'mentor') {
-              parsedFilters.userType = 'mentee';
-            } else if (currentUserType === 'mentee') {
-              parsedFilters.userType = 'mentor';
-            }
-            
-            await AsyncStorage.setItem('userFilters', JSON.stringify(parsedFilters));
+          if (savedFilters) {
+            parsedFilters = JSON.parse(savedFilters) as FilterOptions;
+            console.log("Loaded saved filters:", parsedFilters);
           }
+          
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            const token = await currentUser.getIdToken(true);
+            const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
+              method: "GET",
+              headers: {
+                Authorization: token,
+              },
+            });
+            
+            if (profileResponse.ok) {
+              const profileData = await profileResponse.json();
+              const currentUserType = profileData.profile?.userType || '';
+              
+              if (currentUserType === 'mentor') {
+                parsedFilters.userType = 'mentee';
+              } else if (currentUserType === 'mentee') {
+                parsedFilters.userType = 'mentor';
+              }
+              
+              await AsyncStorage.setItem('userFilters', JSON.stringify(parsedFilters));
+            }
+          }
+          
+          setFilters(parsedFilters);
+          await fetchSuggestedUsers(parsedFilters);
+        } catch (error) {
+          console.error('Failed to load filters:', error);
+          await fetchSuggestedUsers({});
+        } finally {
+          setIsLoading(false);
         }
-        
-        setFilters(parsedFilters);
-        // Only fetch users after filters are processed
-        await fetchSuggestedUsers(parsedFilters);
-      } catch (error) {
-        console.error('Failed to load filters:', error);
-        await fetchSuggestedUsers({});
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadSavedFilters();
-  }, [])
-);
+      };
+      
+      loadSavedFilters();
+    }, [])
+  );
 
-  // Navigate to filters screen and pass current filters
   const navigateToFilters = () => {
     router.push({
       pathname: '/filtering',
@@ -157,11 +153,9 @@ useFocusEffect(
     });
   };
 
-  // Transform frontend filters to API-compatible format
   const transformFiltersForAPI = (frontendFilters: FilterOptions) => {
     return {
       major: frontendFilters.major || "",
-      // Use the single grad year as the filter if provided
       gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : undefined,
       ethnicity: frontendFilters.ethnicity || "",
       gender: frontendFilters.gender || "",
@@ -184,8 +178,6 @@ useFocusEffect(
         return;
       }
       
-  
-      // Transform filters to API format
       const apiFilters = transformFiltersForAPI(newFilters);
       console.log("Sending filters to API:", apiFilters);
   
@@ -200,7 +192,6 @@ useFocusEffect(
       });
     
       const data = await response.json();
-      //console.log("Fetched user:", data.users[0]);
       console.log("API Response users:", data.users?.length || 0);
   
       if (response.ok) {
@@ -212,10 +203,9 @@ useFocusEffect(
       console.error('Fetch error:', error);
       Alert.alert('Error', 'Could not load users.');
     }
-    
   };
 
-  // Animation handling code
+  // Animation handlers remain the same
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: position.x, translationY: position.y } }],
     { useNativeDriver: false }
@@ -256,7 +246,6 @@ useFocusEffect(
     console.log(`Swiped ${direction} on item:`, item?.id);
     
     if (direction === 'right' && item) {
-      // Handle the like logic
       const currentUser = auth.currentUser;
       if (!currentUser) return;
   
@@ -289,7 +278,6 @@ useFocusEffect(
       }
     }
     
-    // Remove the first card and reset position
     setUsers(users.slice(1));
     position.setValue({ x: 0, y: 0 });
   };
@@ -310,6 +298,7 @@ useFocusEffect(
     swipeLeft();
   };
 
+  // Updated card rendering to include scrollable content
   const renderCards = () => {
     if (isLoading) {
       return (
@@ -364,37 +353,154 @@ useFocusEffect(
                 <Text style={styles.dislikeText}>NOPE</Text>
               </Animated.View>
               
-              {user.profilePictureUrl ? (
-                <Image
-                  source={{ uri: user.profilePictureUrl }}
-                  style={styles.profileImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.profileImagePlaceholder}>
-                  <Text style={styles.placeholderText}>
-                    {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                  </Text>
+              <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                contentContainerStyle={styles.scrollContent}
+              >
+                <View style={styles.profileHeader}>
+                  <View style={styles.profileSection}>
+                    {user.profilePictureUrl ? (
+                      <Image
+                        source={{ uri: user.profilePictureUrl }}
+                        style={styles.profileImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.profileImagePlaceholder}>
+                        <Text style={styles.placeholderText}>
+                          {user.firstName.charAt(0)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              )}
-              <Text style={styles.name}>
-                {user.firstName} {user.lastName} {user.pronouns ? `| ${user.pronouns}` : ''}
-              </Text>
-              
-              <ScrollView style={styles.infoScrollView} contentContainerStyle={styles.infoScrollViewContent}>
-                {user.major && <Text style={styles.info}>{user.major} major</Text>}
-                {user.gradYear && <Text style={styles.info}>Class of {user.gradYear}</Text>}
-                {user.bio && <Text style={styles.info}>{user.bio}</Text>}
-                {user.ethnicity && <Text style={styles.info}>{user.ethnicity}</Text>}
+                
+                <View style={styles.nameSection}>
+                  <Text style={styles.name}>
+                    {user.firstName} {user.lastName}
+                  </Text>
+                  {user.pronouns && (
+                    <View style={styles.pronounsTag}>
+                      <Text style={styles.pronounsText}>{user.pronouns}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>About Me</Text>
+                  <View style={styles.aboutMeBox}>
+                    <Text style={styles.bioText}>
+                      {user.bio || `Hi! my name is ${user.firstName} and I am looking for a ${user.userType === 'mentor' ? 'mentee' : 'mentor'} with similar career aspirations, hobbies, and interests`}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Hobbies & Interests</Text>
+                  <View style={styles.tagsContainer}>
+                    {user.hobbies && user.hobbies.length > 0 ? (
+                      user.hobbies.map((hobby, idx) => (
+                        <View key={idx} style={styles.interestTag}>
+                          <Text style={styles.interestText}>
+                            {getEmojiForInterest(hobby)} {hobby}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <>
+                        <View style={styles.interestTag}>
+                          <Text style={styles.interestText}>🎨 Art</Text>
+                        </View>
+                        <View style={styles.interestTag}>
+                          <Text style={styles.interestText}>🎵 Music</Text>
+                        </View>
+                        <View style={styles.interestTag}>
+                          <Text style={styles.interestText}>😺 Cats</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Areas I'd Love Mentorship In</Text>
+                  <View style={styles.tagsContainer}>
+                    {user.mentorshipAreas && user.mentorshipAreas.length > 0 ? (
+                      user.mentorshipAreas.map((area, idx) => (
+                        <View key={idx} style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>{area}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <>
+                        <View style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>Professional Development</Text>
+                        </View>
+                        <View style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>Friendship</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </View>
+
+                {user.major && (
+                  <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Education</Text>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoText}>
+                        <Text style={styles.infoLabel}>Major: </Text>
+                        {user.major}
+                      </Text>
+                      {user.gradYear && (
+                        <Text style={styles.infoText}>
+                          <Text style={styles.infoLabel}>Expected Graduation: </Text>
+                          {user.gradYear}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+
                 {user.orgs && user.orgs.length > 0 && (
-                  <Text style={styles.info}>Organizations: {Array.isArray(user.orgs) ? user.orgs.join(', ') : user.orgs}</Text>
+                  <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Organizations</Text>
+                    <View style={styles.tagsContainer}>
+                      {user.orgs.map((org, idx) => (
+                        <View key={idx} style={styles.orgTag}>
+                          <Text style={styles.orgText}>🏢 {org}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 )}
-                {user.mentorshipAreas && user.mentorshipAreas.length > 0 && (
-                  <Text style={styles.info}>Can mentor in: {Array.isArray(user.mentorshipAreas) ? user.mentorshipAreas.join(', ') : user.mentorshipAreas}</Text>
+
+                {user.interestedIndustries && user.interestedIndustries.length > 0 && (
+                  <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Industries of Interest</Text>
+                    <View style={styles.tagsContainer}>
+                      {user.interestedIndustries.map((industry, idx) => (
+                        <View key={idx} style={styles.industryTag}>
+                          <Text style={styles.industryText}>{industry}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 )}
-                {user.hobbies && user.hobbies.length > 0 && (
-                  <Text style={styles.info}>Hobbies: {Array.isArray(user.hobbies) ? user.hobbies.join(', ') : user.hobbies}</Text>
+
+                {user.careerPath && (
+                  <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Career Path</Text>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoText}>{user.careerPath}</Text>
+                    </View>
+                  </View>
                 )}
+                
+                {/* Add padding at the bottom for better scrolling */}
+                <View style={styles.bottomPadding} />
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
@@ -414,7 +520,7 @@ useFocusEffect(
               }
             ]}
           >
-            {/* Next card preview */}
+            {/* Next card preview - keeping empty for background card effect */}
           </Animated.View>
         );
       }
@@ -423,11 +529,48 @@ useFocusEffect(
     }).reverse();
   };
 
+  // Helper function to get emoji for interests
+  const getEmojiForInterest = (interest: string): string => {
+    const interestEmojis: {[key: string]: string} = {
+      'art': '🎨',
+      'music': '🎵',
+      'sports': '⚽',
+      'reading': '📚',
+      'writing': '✍️',
+      'cooking': '🍳',
+      'travel': '✈️',
+      'gaming': '🎮',
+      'photography': '📷',
+      'hiking': '🥾',
+      'cats': '😺',
+      'dogs': '🐕',
+      'animals': '🐾',
+      'dance': '💃',
+      'coding': '💻',
+      'movies': '🎬',
+      'fashion': '👗',
+      'yoga': '🧘',
+      'fitness': '💪',
+      'science': '🔬'
+    };
+    
+    // Case-insensitive matching
+    const lowerInterest = interest.toLowerCase();
+    for (const key in interestEmojis) {
+      if (lowerInterest.includes(key) || key.includes(lowerInterest)) {
+        return interestEmojis[key];
+      }
+    }
+    
+    // Default emoji if no match
+    return '🌟';
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Swipe Stack</Text>
+          <Text style={styles.title}>SwipeConnect</Text>
           <TouchableOpacity 
             style={styles.filterButton} 
             onPress={navigateToFilters}
@@ -442,12 +585,12 @@ useFocusEffect(
           
         {users.length > 0 && (
           <View style={styles.cardActionButtons}>
-            <TouchableOpacity onPress={handleManualSkip} style={styles.likeButton}>
-              <Text style={styles.likeButtonText}>✕</Text>
+            <TouchableOpacity onPress={handleManualSkip} style={styles.skipButton}>
+              <Text style={styles.actionButtonText}>✕</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleManualSwipeRight} style={styles.likeButton}>
-              <Text style={styles.likeButtonText}>✓</Text>
+              <Text style={styles.actionButtonText}>✓</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -463,38 +606,37 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     backgroundColor: '#FAFAFA',
   },
-  infoContainer: {
-    width: '100%',
-    alignItems: 'center',
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 35,
-    fontWeight: '600',
-    marginBottom: 20,
-  },
   header: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center', // Center the title
     alignItems: 'center',
     paddingHorizontal: 20,
     marginBottom: 20,
+    position: 'relative', // For absolute positioning of filter button
+  },
+  title: {
+    fontSize: Math.min(SCREEN_WIDTH * 0.07, 28),
+    fontWeight: '700', // Made slightly bolder
+    color: '#333',
+    textAlign: 'center',
   },
   filterButton: {
-    backgroundColor: '#534E5B',
+    position: 'absolute',
+    right: 20,
+    backgroundColor: '#4A474C', // Changed to a purple color that matches the profile placeholder
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     borderRadius: 25,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
   },
   filterButtonText: {
     color: '#FFF',
-    fontSize: 30,
+    fontSize: Math.min(SCREEN_WIDTH * 0.04, 16),
     fontWeight: '600',
   },
   cardsContainer: {
@@ -505,105 +647,207 @@ const styles = StyleSheet.create({
   },
   card: {
     position: 'absolute',
-    width: '60%',
-    height: '90%',
-    padding: 20,
-    paddingTop: 45,
-    paddingBottom: 25,
-    borderRadius: 40,
-    backgroundColor: '#F9F5F2',
-    elevation: 4,
-    alignItems: 'center',
+    width: SCREEN_WIDTH * 0.92,
+    height: SCREEN_HEIGHT * 0.77,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 5,
-    marginBottom: 20
+    shadowRadius: 10,
+    padding: 0,
+    overflow: 'hidden',
   },
-  profileImage: {
-    width: 300,
-    height: 300,
-    borderRadius: 45,
-    marginBottom: 15,
-  },
-  profileImagePlaceholder: {
-    width: 300,
-    height: 300,
-    borderRadius: 45,
-    backgroundColor: '#534E5B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  placeholderText: {
-    color: 'white',
-    fontSize: 40,
-    fontWeight: 'bold',
-  },
-  scrollContainer: {
-    width: '100%',
-    marginTop: 10,
+  scrollView: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   scrollContent: {
     paddingBottom: 20,
+  },
+  profileHeader: {
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 20,
+  },
+  profileSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileImage: {
+    width: SCREEN_WIDTH * 0.65, // Slightly smaller to fit better in scrollable content
+    height: SCREEN_WIDTH * 0.65, // Keep aspect ratio square
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#FFF',
+  },
+  profileImagePlaceholder: {
+    width: SCREEN_WIDTH * 0.65,
+    height: SCREEN_WIDTH * 0.65,
+    borderRadius: 20,
+    backgroundColor: '#4A474C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
+  },
+  placeholderText: {
+    color: 'white',
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
+  nameSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+    paddingHorizontal: 10,
   },
   name: {
-    fontSize: 40,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#333',
+    textAlign: 'center',
   },
-  info: {
-    fontSize: 20,
-    color: '#444',
-    marginBottom: 6,
-    alignItems: 'center',
-    textAlign: 'center'
+  pronounsTag: {
+    backgroundColor: '#4A474C', // Matching the profile placeholder color
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    borderRadius: 30,
+    marginTop: 8,
   },
-  buttonRow: {
+  pronounsText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sectionContainer: {
+    padding: 15,
+    paddingTop: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  aboutMeBox: {
+    backgroundColor: '#E0F2F1',
+    padding: 14,
+    borderRadius: 12,
+  },
+  bioText: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+  },
+  tagsContainer: {
     flexDirection: 'row',
-    marginBottom: 30,
+    flexWrap: 'wrap',
+    marginTop: 5,
+  },
+  interestTag: {
+    backgroundColor: '#FCE4EC',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  interestText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  mentorshipTag: {
+    backgroundColor: '#E8EAF6',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  mentorshipText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  orgTag: {
+    backgroundColor: '#F3E5F5',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  orgText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  industryTag: {
+    backgroundColor: '#E0F7FA',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  industryText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  infoBox: {
+    backgroundColor: '#FFF8E1',
+    padding: 14,
+    borderRadius: 12,
+  },
+  infoText: {
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 6,
+  },
+  infoLabel: {
+    fontWeight: '600',
+  },
+  bottomPadding: {
+    height: 30,  // Extra space at the bottom for better scrolling experience
+  },
+  cardActionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginBottom: 0,
+    marginTop: 10,
   },
   skipButton: {
-    backgroundColor: '#E57373',
-    padding: 12,
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  empty: {
-    fontSize: 18,
-    marginTop: 50,
-    color: '#888',
+    backgroundColor: '#4A474C',
+    width: 80,
+    height: 80,
+    borderRadius: 45,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   likeButton: {
-    backgroundColor: '#534E5B',
-    width: 110,
-    height: 110,
-    borderRadius: 60,
+    backgroundColor: '#4A474C',
+    width: 80,
+    height: 80,
+    borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
     shadowRadius: 3,
-    marginBottom: 30
+    elevation: 5,
   },
-  likeButtonText: {
+  actionButtonText: {
     color: '#FFF',
-    fontSize: 45,
-    fontWeight: '700',
-  },
-  noMoreCardsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    fontSize: 30,
+    fontWeight: '400',
   },
   likeContainer: {
     position: 'absolute',
@@ -613,10 +857,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   likeText: {
-    color: '#C0DEDD',
-    fontSize: 45,
+    color: '#4CAF50',
+    fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
   dislikeContainer: {
     position: 'absolute',
@@ -626,28 +873,21 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dislikeText: {
-    color: '#F1DFDE',
-    fontSize: 45,
+    color: '#F44336',
+    fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
-  cardActionButtons: {
-    position: 'absolute',
-    bottom: 15,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 500,
-  },
-  infoScrollView: {
-    width: '100%',
+  noMoreCardsContainer: {
     flex: 1,
-    maxHeight:200,
-    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  infoScrollViewContent: {
-    paddingBottom: 10,
-    alignItems: 'center'
+  empty: {
+    fontSize: 18,
+    color: '#888',
   },
 });
