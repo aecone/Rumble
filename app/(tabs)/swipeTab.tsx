@@ -17,6 +17,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as emoji from 'node-emoji';
+import { get, find, search, emojify } from 'node-emoji';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -556,37 +558,21 @@ export default function SwipeTab() {
 
 //emoji for interests
   const getEmojiForInterest = (interest: string): string => {
-    const interestEmojis: {[key: string]: string} = {
-      'art': '🎨',
-      'music': '🎵',
-      'sports': '⚽',
-      'reading': '📚',
-      'writing': '✍️',
-      'cooking': '🍳',
-      'travel': '✈️',
-      'gaming': '🎮',
-      'photography': '📷',
-      'hiking': '🥾',
-      'animals': '🐾',
-      'dance': '💃',
-      'coding': '💻',
-      'movies': '🎬',
-      'fashion': '👗',
-      'yoga': '🧘',
-      'fitness': '💪',
-      'science': '🔬'
-    };
-    
-    // Case-insensitive matching
-    const lowerInterest = interest.toLowerCase();
-    for (const key in interestEmojis) {
-      if (lowerInterest.includes(key) || key.includes(lowerInterest)) {
-        return interestEmojis[key];
-      }
-    }
-    
-    // Default emoji if no match
-    return '🌟';
+    const DEFAULT_EMOJI = '🌟';
+    if (!interest?.trim()) return DEFAULT_EMOJI;
+    const lowerInterest = interest.toLowerCase().trim();
+    return [
+      // Direct get
+      () => {
+        const result = get(lowerInterest);
+        return result !== lowerInterest ? result : undefined;
+      },
+      () => find(lowerInterest)?.emoji,
+      () => search(lowerInterest)[0]?.emoji
+    ].reduce<string>(
+      (result, getter) => result || getter() || '',
+      ''
+    ) || DEFAULT_EMOJI;
   };
 
   return (
