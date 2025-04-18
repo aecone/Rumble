@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
-from services.firebase_service import get_convo_id, get_user_profile, send_push_notification, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
+from services.firebase_service import get_convo_id, get_user_profile, send_notification, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
 from google.cloud.firestore_v1 import FieldFilter
 
@@ -162,9 +162,9 @@ def swipe():
                 name = target_settings['firstName'] + ' ' + target_settings['lastName']
                 if not notification_token:
                     return jsonify({"error": "User has no notification token"}), 400
-                result = send_push_notification(notification_token, "RUmble", "You matched with " + name + '.', {'userID': user_id, 'screen': '/(tabs)/matchesTab'})
+                result = send_notification(notification_token, "RUmble", "You matched with " + name + '.', {'userID': user_id, 'matchName': name,'screen': '/messagingChat'})
                 
-                return jsonify({"match": True})
+                return jsonify({"match": True, "notified": True}), 200
 
         return jsonify({"match": False})
 
@@ -259,6 +259,7 @@ def send_message():
     POST /message
 
     Sends a message from the authenticated user to a matched user.
+    Notifies the recipient user.
     Only allowed if the users are matched.
 
     Request JSON:
@@ -302,6 +303,21 @@ def send_message():
         }
         
         _, message_doc = db.collection('conversations').document(convo_id).collection('messages').add(message_data)
+
+        target_doc = db.document(f'users/{target_id}').get()
+        if target_doc.exists:
+            target_data = target_doc.to_dict()
+            token = target_data.get("notification_token")
+
+            sender_name = user_data.get("settings", {}).get("firstName", "Someone")
+
+            if token:
+                send_notification(
+                    token=token,
+                    title="New Message from " + sender_name + '!',
+                    body=message.strip,
+                    data={'userID': user_id,'matchName': sender_name,"screen": "/messagingChat"}
+                )
 
         return jsonify({
             'success': True,

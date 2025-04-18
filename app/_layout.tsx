@@ -72,9 +72,16 @@ export default function RootLayout() {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
 
-      if (data?.screen) {
-        console.log('Navigating to:', data.screen);
-        router.push(data.screen);
+      if (data?.screen && data?.matchId && data?.matchName) {
+        console.log('Navigating to:', data.screen, 'with', data.matchId, data.matchName);
+    
+        router.push({
+          pathname: data.screen,
+          params: {
+            matchId: data.matchId,
+            matchName: data.matchName
+          }
+        });
       }
     });
 
