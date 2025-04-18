@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
-from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
+from services.firebase_service import get_convo_id, get_user_profile, send_push_notification, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
 from google.cloud.firestore_v1 import FieldFilter
 
@@ -147,13 +147,23 @@ def swipe():
                 user_doc.update({'matched_users': firestore.ArrayUnion([swiped_id])})
                 swiped_doc.update({'matched_users': firestore.ArrayUnion([user_id])})
                 
-                new_convo_id = "_".join(sorted([user_id, swiped_id]))
+                # create a convo
+                new_convo_id = get_convo_id(user_id, swiped_id)
                 new_convo_data = {
                     'participants': [user_id, swiped_id],
                     'lastMessage': None,
                     'lastUpdated': firestore.SERVER_TIMESTAMP
                 }
                 db.collection('conversations').document(new_convo_id).set(new_convo_data)
+                
+                # notify other user
+                notification_token = swiped_doc.to_dict().get('notification_token')
+                target_settings = swiped_doc.to_dict().get('settings')
+                name = target_settings['firstName'] + ' ' + target_settings['lastName']
+                if not notification_token:
+                    return jsonify({"error": "User has no notification token"}), 400
+                result = send_push_notification(notification_token, "RUmble", "You matched with " + name + '.', {'userID': user_id, 'screen': '/(tabs)/matchesTab'})
+                
                 return jsonify({"match": True})
 
         return jsonify({"match": False})
@@ -231,7 +241,7 @@ def get_conversation():
             return jsonify({"error": "You are not matched with target user"}), 404
 
         messages = []
-        convo_id = "_".join(sorted((user_id, target_id)))
+        convo_id = get_convo_id(user_id, target_id)
         conversation = db.collection('conversations').document(convo_id).collection('messages').stream()
         for message in conversation:
             content = message.to_dict()
@@ -284,7 +294,7 @@ def send_message():
         if target_id not in user_data.get('matched_users', []):
             return jsonify({"error": "You are not matched with target user"}), 404
         
-        convo_id = "_".join(sorted((user_id, target_id)))
+        convo_id = get_convo_id(user_id, target_id)
         message_data = {
             'text': message.strip(),
             'sender_id': user_id,

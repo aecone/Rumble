@@ -5,6 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  
 from logger import logger  # Import the logger
+import requests
 
 # Load Firebase credentials from environment variable
 if FIREBASE_CREDENTIALS:
@@ -19,6 +20,39 @@ else:
 
 # Initialize Firestore client
 db = firestore.client()
+
+def send_push_notification(token, title, body, data=None):
+    """
+    Creates a notification
+    Args:
+        token (string): target user's notification token
+        title (string): Bold title of notification
+        body (string): text content of notification
+        data (json, optional): payload for navigation/other actions. Defaults to None.
+    """
+    payload = {
+        "to": token,
+        "title": title,
+        "body": body,
+        "sound": "default",
+        "data": data or {}  # used for routing/navigation
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post("https://exp.host/--/api/v2/push/send", json=payload, headers=headers)
+    return response.json()
+
+def get_convo_id(user_id_1: str, user_id_2: str, prefix: str = "") -> str:
+    """
+    Returns a deterministic conversation ID between two users.
+    Always returns them in sorted order so it's consistent with no duplicates.
+    Optional prefix (e.g., prefix = convo: returns convo_id1_id2)
+    """
+    parts = sorted([user_id_1, user_id_2])
+    return f"{prefix}_" + "_".join(parts)
 
 def get_user_profile(user_id):
     """Retrieve a user's profile from Firestore."""
