@@ -373,7 +373,7 @@ export default function SwipeTab() {
                   { opacity: likeOpacity }
                 ]}
               >
-                <Text style={styles.likeText}>LIKE</Text>
+                <Text style={styles.likeText}>CONNECT</Text>
               </Animated.View>
               <Animated.View
                 style={[
@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   likeText: {
-    color: '#4CAF50',
+    color: '#C0DEDD',
     fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
@@ -877,7 +877,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dislikeText: {
-    color: '#F44336',
+    color: '#F1DFDE',
     fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
