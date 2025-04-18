@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { useColorScheme } from '@/components/useColorScheme';
 import '@/firebase'; // make sure firebase is initialized here
@@ -108,6 +108,10 @@ function RootLayoutNav() {
 }
 
 async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'web') {
+    console.log("Push notifications are not supported on web.");
+    return;
+  }
   if (!Device.isDevice) {
     Alert.alert('Must use physical device for Push Notifications');
     return;
