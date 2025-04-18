@@ -651,8 +651,8 @@ const styles = StyleSheet.create({
   },
   card: {
     position: 'absolute',
-    width: SCREEN_WIDTH * 0.92,
-    height: SCREEN_HEIGHT * 0.77,
+    width: 400,
+    height: 750,
     borderRadius: 30,
     backgroundColor: '#F9F5F2',
     elevation: 5,
