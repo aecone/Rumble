@@ -21,7 +21,7 @@ else:
 # Initialize Firestore client
 db = firestore.client()
 
-def send_push_notification(token, title, body, data=None):
+def send_notification(token, title, body, data=None):
     """
     Creates a notification
     Args:
