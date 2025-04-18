@@ -1,24 +1,23 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
-
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { Alert } from 'react-native';
+import { getAuth } from 'firebase/auth';
 import { useColorScheme } from '@/components/useColorScheme';
+import '@/firebase'; // make sure firebase is initialized here
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -27,7 +26,9 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -38,10 +39,57 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  useEffect(() => {
+    let mounted = true;
 
+    // Register device and send token to Flask
+    registerForPushNotificationsAsync().then(async token => {
+      if (!token || !mounted) return;
+
+      console.log('Expo Push Token:', token);
+
+      const user = getAuth().currentUser;
+      if (user) {
+        const idToken = await user.getIdToken();
+
+        await fetch('http://127.0.0.1:5000/api/set_notification_token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({ token }),
+        });
+      }
+    });
+
+    // Foreground notifications
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      Alert.alert('📬 Notification', notification.request.content.body || 'You received a message!');
+    });
+
+    // Tap/Interaction notifications
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+
+      if (data?.screen) {
+        console.log('Navigating to:', data.screen);
+        router.push(data.screen);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
+
+  if (!loaded) return null;
   return <RootLayoutNav />;
 }
 
@@ -57,4 +105,27 @@ function RootLayoutNav() {
       </Stack>
     </ThemeProvider>
   );
+}
+
+async function registerForPushNotificationsAsync() {
+  if (!Device.isDevice) {
+    Alert.alert('Must use physical device for Push Notifications');
+    return;
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    Alert.alert('Notification permissions not granted');
+    return;
+  }
+
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  return token;
 }

@@ -1,8 +1,10 @@
-from flask import Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
 from logger import logger  # Import the logger
+from firebase_admin import firestore
 
+db = firestore.client()
 user_routes = Blueprint("user_routes", __name__)
 
 @user_routes.route("/profile", methods=["GET"])
@@ -102,6 +104,7 @@ def delete_account():
     if "error" in result:
         return jsonify(result), 500
     return jsonify(result), 200
+
 @user_routes.route("/create_user", methods=["POST"])
 def create_user():
     """
@@ -110,6 +113,9 @@ def create_user():
     - Initializes `liked_users` as an empty HashMap.
     - Initializes `matched_users` as an empty List.
     """
+    decoded_token, error = verify_token()
+    if error:
+        return error
     try:
         data = request.json or {}
         email = data.get("email")
@@ -158,6 +164,50 @@ def create_user():
             return jsonify(result), 500
 
         return jsonify(result), 201
+
+    except Exception as e:
+        #logger.warning(f"Error processing request: {str(e)}")
+        print(f"Error processing request: {str(e)}")
+
+        return jsonify({"error": "Internal server error"}), 500
+
+@user_routes.route("/set_notification_token", methods=["POST"])
+def set_notification_token():
+    """
+    Stores or updates the Expo push notification token for the authenticated user.
+
+    Expects a valid Firebase ID token in the Authorization header (handled by verify_token()).
+    The request body must include:
+      - `token` (string): The Expo push token to associate with the user.
+
+    The user ID is derived from the Firebase decoded token.
+    The token is saved under the `notification_token` field in the user's Firestore document.
+
+    Returns:
+        201 Created: If the token was successfully saved.
+        400 Bad Request: If the token is missing from the request.
+        404 Not Found: If the user document does not exist in Firestore.
+        500 Internal Server Error: If an unexpected error occurs.
+    """
+    decoded_token, error = verify_token()
+    if error:
+        return error
+    try:
+        data = request.json or {}
+        user_id = data.get("userID")
+        token = decoded_token['uid']
+        if not user_id or not token:
+            return jsonify({'error': 'user_id and token required'}), 400
+        
+        # Assemble Firestore document
+        user_data = db.collection('users').document(user_id)
+        if not user_data.get():
+            return jsonify({'fail': 'user not found'}), 404
+        user_data.update({"notification_token": token})
+        #logger.info("Writing user data to Firestore:")
+        print("Writing token to Firestore:")
+
+        return jsonify({'notice': 'success!'}), 201
 
     except Exception as e:
         #logger.warning(f"Error processing request: {str(e)}")
