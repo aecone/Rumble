@@ -15,6 +15,8 @@ import { auth, API_BASE_URL } from "../../FirebaseConfig";
 import { GestureHandlerRootView, PanGestureHandler, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useWindowDimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -24,7 +26,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 type UserCard = {
   id: string;
   firstName: string;
-  lastName: string;
+  lastName: string
   userType: string;
   email?: string;
   birthday?: string;
@@ -56,11 +58,40 @@ interface FilterOptions {
   [key: string]: any;
 }
 
+
+
 export default function SwipeTab() {
+  const { width: screenWidth } = useWindowDimensions();
   const [users, setUsers] = useState<UserCard[]>([]);
   const router = useRouter();
   const [filters, setFilters] = useState<FilterOptions>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const dynamicStyles = StyleSheet.create({
+    profileImage: {
+      width: screenWidth * 0.65,
+      //maxWidth: screenWidth * 0.35,
+      //maxHeight: screenWidth * 0.35,
+      height: screenWidth * 0.65,
+      borderRadius: screenWidth * 0.325,
+      padding: screenWidth * 0.04,
+    },
+    profileImagePlaceholder: {
+      width: screenWidth * 0.65,
+      height: screenWidth * 0.65,
+      //maxWidth: screenWidth * 0.35,
+      //maxHeight: screenWidth * 0.35,
+      aspectRatio: 1,
+      borderRadius: 20,
+      backgroundColor: '#4A474C',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 3,
+      borderColor: '#FFF',
+      //padding: screenWidth * 0.04,
+    }
+  });
+  
 
   // Animation values
   const position = useRef(new Animated.ValueXY()).current;
@@ -364,11 +395,11 @@ export default function SwipeTab() {
                     {user.profilePictureUrl ? (
                       <Image
                         source={{ uri: user.profilePictureUrl }}
-                        style={styles.profileImage}
+                        style={dynamicStyles.profileImage}
                         resizeMode="cover"
                       />
                     ) : (
-                      <View style={styles.profileImagePlaceholder}>
+                      <View style={dynamicStyles.profileImagePlaceholder}>
                         <Text style={styles.placeholderText}>
                           {user.firstName.charAt(0)}
                         </Text>
@@ -389,67 +420,18 @@ export default function SwipeTab() {
                 </View>
 
                 <View style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>About Me</Text>
                   <View style={styles.aboutMeBox}>
+                  <Text style={styles.sectionTitle}>About Me</Text>
                     <Text style={styles.bioText}>
-                      {user.bio || `Hi! my name is ${user.firstName} and I am looking for a ${user.userType === 'mentor' ? 'mentee' : 'mentor'} with similar career aspirations, hobbies, and interests`}
+                      {user.bio || `Hi! I'm ${user.firstName} and I am looking to ${user.userType === 'mentor' ? 'mentee' : 'mentor'} with similar career aspirations, hobbies, and interests`}
                     </Text>
-                  </View>
-                </View>
-
-                <View style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>Hobbies & Interests</Text>
-                  <View style={styles.tagsContainer}>
-                    {user.hobbies && user.hobbies.length > 0 ? (
-                      user.hobbies.map((hobby, idx) => (
-                        <View key={idx} style={styles.interestTag}>
-                          <Text style={styles.interestText}>
-                            {getEmojiForInterest(hobby)} {hobby}
-                          </Text>
-                        </View>
-                      ))
-                    ) : (
-                      <>
-                        <View style={styles.interestTag}>
-                          <Text style={styles.interestText}>🎨 Art</Text>
-                        </View>
-                        <View style={styles.interestTag}>
-                          <Text style={styles.interestText}>🎵 Music</Text>
-                        </View>
-                        <View style={styles.interestTag}>
-                          <Text style={styles.interestText}>😺 Cats</Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                </View>
-
-                <View style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>Areas I'd Love Mentorship In</Text>
-                  <View style={styles.tagsContainer}>
-                    {user.mentorshipAreas && user.mentorshipAreas.length > 0 ? (
-                      user.mentorshipAreas.map((area, idx) => (
-                        <View key={idx} style={styles.mentorshipTag}>
-                          <Text style={styles.mentorshipText}>{area}</Text>
-                        </View>
-                      ))
-                    ) : (
-                      <>
-                        <View style={styles.mentorshipTag}>
-                          <Text style={styles.mentorshipText}>Professional Development</Text>
-                        </View>
-                        <View style={styles.mentorshipTag}>
-                          <Text style={styles.mentorshipText}>Friendship</Text>
-                        </View>
-                      </>
-                    )}
                   </View>
                 </View>
 
                 {user.major && (
                   <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Education</Text>
                     <View style={styles.infoBox}>
+                    <Text style={styles.sectionTitle}>Education</Text>
                       <Text style={styles.infoText}>
                         <Text style={styles.infoLabel}>Major: </Text>
                         {user.major}
@@ -477,6 +459,15 @@ export default function SwipeTab() {
                   </View>
                 )}
 
+                {user.careerPath && (
+                  <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Career Path</Text>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoText}>{user.careerPath}</Text>
+                    </View>
+                  </View>
+                )}
+
                 {user.interestedIndustries && user.interestedIndustries.length > 0 && (
                   <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Industries of Interest</Text>
@@ -490,14 +481,48 @@ export default function SwipeTab() {
                   </View>
                 )}
 
-                {user.careerPath && (
-                  <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Career Path</Text>
-                    <View style={styles.infoBox}>
-                      <Text style={styles.infoText}>{user.careerPath}</Text>
-                    </View>
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Mentorship Areas</Text>
+                  <View style={styles.tagsContainer}>
+                    {user.mentorshipAreas && user.mentorshipAreas.length > 0 ? (
+                      user.mentorshipAreas.map((area, idx) => (
+                        <View key={idx} style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>{area}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <>
+                        <View style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>Professional Development</Text>
+                        </View>
+                        <View style={styles.mentorshipTag}>
+                          <Text style={styles.mentorshipText}>Friendship</Text>
+                        </View>
+                      </>
+                    )}
                   </View>
-                )}
+                </View>
+
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Hobbies & Interests</Text>
+                  <View style={styles.tagsContainer}>
+                    {user.hobbies && user.hobbies.length > 0 ? (
+                      user.hobbies.map((hobby, idx) => (
+                        <View key={idx} style={styles.interestTag}>
+                          <Text style={styles.interestText}>
+                            {getEmojiForInterest(hobby)} {hobby}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <>
+                        <View style={styles.interestTag}>
+                          <Text style={styles.interestText}>None Listed</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </View>
                 
                 {/* Add padding at the bottom for better scrolling */}
                 <View style={styles.bottomPadding} />
@@ -529,7 +554,7 @@ export default function SwipeTab() {
     }).reverse();
   };
 
-  // Helper function to get emoji for interests
+//emoji for interests
   const getEmojiForInterest = (interest: string): string => {
     const interestEmojis: {[key: string]: string} = {
       'art': '🎨',
@@ -542,8 +567,6 @@ export default function SwipeTab() {
       'gaming': '🎮',
       'photography': '📷',
       'hiking': '🥾',
-      'cats': '😺',
-      'dogs': '🐕',
       'animals': '🐾',
       'dance': '💃',
       'coding': '💻',
@@ -570,12 +593,13 @@ export default function SwipeTab() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>SwipeConnect</Text>
+          <Text key="bold" style={styles.title}>Swipe</Text>
+          <Text style={styles.title2}>Connect</Text>
           <TouchableOpacity 
             style={styles.filterButton} 
             onPress={navigateToFilters}
           >
-            <Text style={styles.filterButtonText}>Filters</Text>
+            <Ionicons name="filter" size={30} color="EDEDEDF" />
           </TouchableOpacity>
         </View>
 
@@ -609,48 +633,45 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'center', // Center the title
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
-    position: 'relative', // For absolute positioning of filter button
+    marginBottom: 30,
+    position: 'relative',
   },
   title: {
     fontSize: Math.min(SCREEN_WIDTH * 0.07, 28),
-    fontWeight: '700', // Made slightly bolder
+    fontWeight: '700',
+    color: '#333',
+    textAlign: 'center',
+  },
+  title2: {
+    fontSize: Math.min(SCREEN_WIDTH * 0.07, 28),
+    fontWeight: '400',
     color: '#333',
     textAlign: 'center',
   },
   filterButton: {
     position: 'absolute',
     right: 20,
-    backgroundColor: '#4A474C', // Changed to a purple color that matches the profile placeholder
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 25,
+    backgroundColor: '#EDEDED',
+    padding: 12,
+    borderRadius: 30,
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-  },
-  filterButtonText: {
-    color: '#FFF',
-    fontSize: Math.min(SCREEN_WIDTH * 0.04, 16),
-    fontWeight: '600',
   },
   cardsContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    paddingTop: 60,
   },
   card: {
     position: 'absolute',
     width: SCREEN_WIDTH * 0.92,
     height: SCREEN_HEIGHT * 0.77,
     borderRadius: 30,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F9F5F2',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -676,23 +697,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileImage: {
-    width: SCREEN_WIDTH * 0.65, // Slightly smaller to fit better in scrollable content
-    height: SCREEN_WIDTH * 0.65, // Keep aspect ratio square
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#FFF',
-  },
-  profileImagePlaceholder: {
-    width: SCREEN_WIDTH * 0.65,
-    height: SCREEN_WIDTH * 0.65,
-    borderRadius: 20,
-    backgroundColor: '#4A474C',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#FFF',
-  },
   placeholderText: {
     color: 'white',
     fontSize: 50,
@@ -711,14 +715,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pronounsTag: {
-    backgroundColor: '#4A474C', // Matching the profile placeholder color
-    paddingVertical: 4,
+    backgroundColor: '#E6DFF1',
+    paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 30,
     marginTop: 8,
   },
   pronounsText: {
-    color: 'white',
+    color: '#333',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -735,7 +739,7 @@ const styles = StyleSheet.create({
   aboutMeBox: {
     backgroundColor: '#E0F2F1',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 20,
   },
   bioText: {
     fontSize: 15,
@@ -751,7 +755,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FCE4EC',
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 15,
+    borderRadius: 20,
     marginRight: 8,
     marginBottom: 8,
   },
@@ -784,7 +788,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   industryTag: {
-    backgroundColor: '#E0F7FA',
+    backgroundColor: '#FCE4EC',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 15,
@@ -798,7 +802,7 @@ const styles = StyleSheet.create({
   infoBox: {
     backgroundColor: '#FFF8E1',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 20,
   },
   infoText: {
     fontSize: 15,
@@ -809,13 +813,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   bottomPadding: {
-    height: 30,  // Extra space at the bottom for better scrolling experience
+    height: 30,
   },
   cardActionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '80%',
-    marginBottom: 0,
+    marginBottom: 10,
     marginTop: 10,
   },
   skipButton: {
@@ -825,10 +829,10 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 3,
     elevation: 5,
   },
   likeButton: {
@@ -838,10 +842,10 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 3,
     elevation: 5,
   },
   actionButtonText: {
@@ -861,9 +865,9 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
+    // textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    // textShadowOffset: { width: 1, height: 1 },
+    // textShadowRadius: 1,
   },
   dislikeContainer: {
     position: 'absolute',
@@ -877,9 +881,9 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     padding: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
+    // textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    // textShadowOffset: { width: 1, height: 1 },
+    // textShadowRadius: 1,
   },
   noMoreCardsContainer: {
     flex: 1,
