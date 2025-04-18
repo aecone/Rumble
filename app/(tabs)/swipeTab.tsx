@@ -495,10 +495,7 @@ export default function SwipeTab() {
                     ) : (
                       <>
                         <View style={styles.mentorshipTag}>
-                          <Text style={styles.mentorshipText}>Professional Development</Text>
-                        </View>
-                        <View style={styles.mentorshipTag}>
-                          <Text style={styles.mentorshipText}>Friendship</Text>
+                          <Text style={styles.mentorshipText}>None listed</Text>
                         </View>
                       </>
                     )}
