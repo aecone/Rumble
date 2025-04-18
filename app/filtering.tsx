@@ -201,7 +201,7 @@ const filtering = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Filter Users</Text>
+        <Text style={styles.headerText}>Filters</Text>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -354,10 +354,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
     borderRadius: 20,
-    padding: 8,
+    padding: 10,
     paddingHorizontal: 12,
-    margin: 4,
-    backgroundColor: '#FFF',
+    margin: 5,
+    backgroundColor: '#E8EAF6',
   },
   multiSelectItemSelected: {
     backgroundColor: '#534E5B',
