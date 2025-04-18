@@ -71,16 +71,16 @@ export default function SwipeTab() {
 
   const dynamicStyles = StyleSheet.create({
     profileImage: {
-      width: screenWidth * 0.65,
+      width: 300,
       //maxWidth: screenWidth * 0.35,
       //maxHeight: screenWidth * 0.35,
-      height: screenWidth * 0.65,
+      height: 300,
       borderRadius: screenWidth * 0.325,
       padding: screenWidth * 0.04,
     },
     profileImagePlaceholder: {
-      width: screenWidth * 0.65,
-      height: screenWidth * 0.65,
+      width: 300,
+      height: 300,
       //maxWidth: screenWidth * 0.35,
       //maxHeight: screenWidth * 0.35,
       aspectRatio: 1,
