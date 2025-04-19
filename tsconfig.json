@@ -1,7 +1,12 @@
 {
+  "allowSyntheticDefaultImports": true,
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "baseUrl": ".",
     "strict": true,
+    "jsx": "react-native",
+    "types": ["jest"],
+    "skipLibCheck": true,
     "paths": {
       "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"],
       "@/*": [
@@ -14,5 +19,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "components/__tests__/signup-test.js"  ]
 }

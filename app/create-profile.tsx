@@ -1,8 +1,9 @@
-import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native'
+import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router'
 import { auth } from '../FirebaseConfig'
 import { fetchSignInMethodsForEmail } from "firebase/auth";
+import { Alert } from 'react-native';
 
 const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
@@ -24,17 +25,17 @@ export default function CreateProfile() {
       const emailExists = await checkEmailExists(email); // Check if email exists
   
       if (emailExists) {
-        alert("This email is already registered. Please sign in or use a different email.");
+        Alert.alert("This email is already registered. Please sign in or use a different email.");
         return;
       }
 
       if(password.length <= 6){
-        alert("Password length must be greater than 6 characters.");
+        Alert.alert("Password length must be greater than 6 characters.");
         return;
       }
   
       if (!(email.toLowerCase().endsWith("@rutgers.edu") || email.toLowerCase().endsWith("@scarletmail.rutgers.edu"))) {
-        alert("Please use a valid Rutgers email address.");
+        Alert.alert("Please use a valid Rutgers email address.");
         return;
       }
   
@@ -45,7 +46,7 @@ export default function CreateProfile() {
       });
     } catch (error) {
       console.error("Error checking email:", error);
-      alert("An error occurred while checking the email. Please try again.");
+      Alert.alert("An error occurred while checking the email. Please try again.");
     }
   };
   
