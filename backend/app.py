@@ -78,12 +78,20 @@ def get_logs():
             parts = line.strip().split(" - ")
             if len(parts) >= 5:
                 timestamp, level, _, ip, message = parts[:5]
+                
+                # Try to extract HTTP method (GET, POST, etc.)
+                method = ""
+                if message.startswith(("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS")):
+                    method = message.split(" ")[0]
+
                 log_entries.append({
                     "timestamp": timestamp,
                     "level": level,
                     "ip": ip,
+                    "method": method,
                     "message": message
                 })
+
 
 
         log_entries.reverse()
@@ -129,6 +137,7 @@ def get_logs():
                             <th>Timestamp</th>
                             <th>Level</th>
                             <th>IP Address</th>
+                            <th>Method</th>
                             <th>Message</th>
                         </tr>
                     </thead>
@@ -138,11 +147,13 @@ def get_logs():
                             <td>{{ entry.timestamp }}</td>
                             <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
                             <td>{{ entry.ip }}</td>
+                            <td>{{ entry.method }}</td>
                             <td>{{ entry.message }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
 
                 <script>
                         const clearFilterBtn = document.getElementById('clearFilterBtn');
@@ -218,12 +229,20 @@ def get_logs():
                                 const newRow = document.createElement('tr');
                                 newRow.setAttribute('data-ip', ip);
                                 newRow.classList.add('new-log');
+                                let method = "";
+                                if (message.startsWith("GET") || message.startsWith("POST") || message.startsWith("PUT") ||
+                                    message.startsWith("DELETE") || message.startsWith("HEAD") || message.startsWith("PATCH") || message.startsWith("OPTIONS")) {
+                                    method = message.split(" ")[0];
+                                }
+
                                 newRow.innerHTML = `
                                     <td>${timestamp}</td>
                                     <td class="${level.toLowerCase()}">${level}</td>
                                     <td>${ip}</td>
+                                    <td>${method}</td>
                                     <td>${message}</td>
                                 `;
+
 
                                 applyRowColor(newRow, ip);
 
