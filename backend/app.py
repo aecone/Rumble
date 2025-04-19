@@ -124,6 +124,11 @@ def get_logs():
                     #clearFilterBtn:hover {
                         background-color: #0056b3;
                     }
+                    .na-ip {
+                        font-style: italic;
+                        color: #888888;
+                    }
+
                 </style>
             </head>
             <body>
@@ -174,8 +179,13 @@ def get_logs():
                         }
 
                         function applyRowColor(row, ip) {
-                            row.style.backgroundColor = getColorForIp(ip);
+                            if (ip === "N/A") {
+                                row.style.backgroundColor = "#eeeeee"; // Light gray for missing IP
+                            } else {
+                                row.style.backgroundColor = getColorForIp(ip); // Color by IP otherwise
+                            }
                         }
+
 
                         function filterRowsByIp(ip) {
                             currentFilterIp = ip;
@@ -235,13 +245,15 @@ def get_logs():
                                     method = message.split(" ")[0];
                                 }
 
+                                const ipClass = ip === "N/A" ? "na-ip" : "";
                                 newRow.innerHTML = `
                                     <td>${timestamp}</td>
                                     <td class="${level.toLowerCase()}">${level}</td>
-                                    <td>${ip}</td>
+                                    <td class="${ipClass}">${ip}</td>
                                     <td>${method}</td>
                                     <td>${message}</td>
                                 `;
+
 
 
                                 applyRowColor(newRow, ip);
