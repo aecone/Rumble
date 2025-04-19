@@ -113,9 +113,6 @@ def create_user():
     - Initializes `liked_users` as an empty HashMap.
     - Initializes `matched_users` as an empty List.
     """
-    decoded_token, error = verify_token()
-    if error:
-        return error
     try:
         data = request.json or {}
         email = data.get("email")
