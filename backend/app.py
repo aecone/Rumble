@@ -8,12 +8,15 @@ import logging
 import os
 from flask import Response
 import time
-
 log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to make requests
+
+
+# Allow any origin (full access)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 
 # Load Firebase credentials from environment variable
 firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
@@ -41,10 +44,19 @@ logging.basicConfig(
 
 logger = logging.getLogger("FlaskApp")
 logger.info(" Flask App Started - Logging Initialized")
+# Helper to inject IP into each log record
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        record.ip = getattr(request, 'real_ip', 'N/A')
+        return super().format(record)
 
 @app.before_request
 def log_request():
-    logger.info(f"{request.method} {request.path} - IP: {request.remote_addr}")
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    request.real_ip = ip  # Save it into Flask's request object
+    logger.info(f"{request.method} {request.path}")
+
+
 
 @app.after_request
 def log_response(response):
@@ -64,18 +76,24 @@ def get_logs():
         log_entries = []
         for line in log_lines:
             parts = line.strip().split(" - ")
-            if len(parts) >= 4:
-                timestamp, level, _, message = parts[:4]
-                log_entries.append({"timestamp": timestamp, "level": level, "message": message})
+            if len(parts) >= 5:
+                timestamp, level, _, ip, message = parts[:5]
+                log_entries.append({
+                    "timestamp": timestamp,
+                    "level": level,
+                    "ip": ip,
+                    "message": message
+                })
+
 
         log_entries.reverse()
 
         return render_template_string("""
-            <!DOCTYPE html>
-            <html lang="en">
+        <!DOCTYPE html>
+        <html lang="en">
             <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <title>Flask Logs (Live)</title>
                 <style>
                     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
@@ -92,23 +110,34 @@ def get_logs():
                         from { background-color: yellow; }
                         to { background-color: white; }
                     }
+                    td:hover {
+                        background-color: #e0f7fa;
+                    }
+                    #clearFilterBtn:hover {
+                        background-color: #0056b3;
+                    }
                 </style>
             </head>
             <body>
                 <h2>Flask Logs (Live)</h2>
+                <button id="clearFilterBtn" style="display:none; margin-bottom: 10px; padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Clear Filter
+                </button>
                 <table id="logTable">
                     <thead>
                         <tr>
                             <th>Timestamp</th>
                             <th>Level</th>
+                            <th>IP Address</th>
                             <th>Message</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for entry in log_entries %}
-                        <tr>
+                        <tr data-ip="{{ entry.ip }}">
                             <td>{{ entry.timestamp }}</td>
                             <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
+                            <td>{{ entry.ip }}</td>
                             <td>{{ entry.message }}</td>
                         </tr>
                         {% endfor %}
@@ -116,51 +145,124 @@ def get_logs():
                 </table>
 
                 <script>
-                    const tableBody = document.getElementById('logTable').querySelector('tbody');
-                    const eventSource = new EventSource('/stream-logs');
-                    const maxRows = 500; // Max rows to keep
+                        const clearFilterBtn = document.getElementById('clearFilterBtn');
 
-                    eventSource.onmessage = function(event) {
-                        const parts = event.data.split(" - ");
-                        if (parts.length >= 4) {
-                            const timestamp = parts[0];
-                            const level = parts[1];
-                            const message = parts[3];
+                        const tableBody = document.getElementById('logTable').querySelector('tbody');
+                        const eventSource = new EventSource('/stream-logs');
+                        const maxRows = 500;
 
-                            const newRow = document.createElement('tr');
-                            newRow.classList.add('new-log');
-                            newRow.innerHTML = `
-                                <td>${timestamp}</td>
-                                <td class="${level.toLowerCase()}">${level}</td>
-                                <td>${message}</td>
-                            `;
+                        const ipColors = {};  // Map IP → color
+                        let currentFilterIp = null;
 
-                            // Insert at the top
-                            if (tableBody.firstChild) {
-                                tableBody.insertBefore(newRow, tableBody.firstChild);
-                            } else {
-                                tableBody.appendChild(newRow);
+                        function getColorForIp(ip) {
+                            if (!ipColors[ip]) {
+                                const hue = Math.floor(Math.random() * 360);
+                                ipColors[ip] = `hsl(${hue}, 70%, 90%)`;
                             }
+                            return ipColors[ip];
+                        }
 
-                            // Remove highlight after animation
-                            setTimeout(() => {
-                                newRow.classList.remove('new-log');
-                            }, 1000);
+                        function applyRowColor(row, ip) {
+                            row.style.backgroundColor = getColorForIp(ip);
+                        }
 
-                            // Trim old rows if too many
-                            while (tableBody.rows.length > maxRows) {
-                                tableBody.deleteRow(tableBody.rows.length - 1);
+                        function filterRowsByIp(ip) {
+                            currentFilterIp = ip;
+                            document.querySelectorAll('tr[data-ip]').forEach(row => {
+                                if (ip === null || row.getAttribute('data-ip') === ip) {
+                                    row.style.display = '';
+                                } else {
+                                    row.style.display = 'none';
+                                }
+                            });
+
+                            // Show or hide the Clear Filter button
+                            if (ip) {
+                                clearFilterBtn.style.display = 'inline-block';
+                            } else {
+                                clearFilterBtn.style.display = 'none';
                             }
                         }
-                    };
 
-                    eventSource.onerror = function(err) {
-                        console.error("EventSource failed:", err);
-                        eventSource.close();
-                    };
+
+                        // Add click listeners to IP cells
+                        function makeIpClickable(td, ip) {
+                            td.style.cursor = 'pointer';
+                            td.title = 'Click to filter by this IP';
+                            td.addEventListener('click', (e) => {
+                                if (currentFilterIp === ip) {
+                                    filterRowsByIp(null);  // Unfilter
+                                } else {
+                                    filterRowsByIp(ip);    // Filter
+                                }
+                            });
+                        }
+
+                        // Initial page load: color and make IPs clickable
+                        document.querySelectorAll('tr[data-ip]').forEach(row => {
+                            const ip = row.getAttribute('data-ip');
+                            applyRowColor(row, ip);
+                            const ipCell = row.cells[2]; // 3rd column = IP
+                            makeIpClickable(ipCell, ip);
+                        });
+
+                        // Handle new logs from SSE
+                        eventSource.onmessage = function(event) {
+                            const parts = event.data.split(" - ");
+                            if (parts.length >= 5) {
+                                const timestamp = parts[0];
+                                const level = parts[1];
+                                const ip = parts[3];
+                                const message = parts[4];
+
+                                const newRow = document.createElement('tr');
+                                newRow.setAttribute('data-ip', ip);
+                                newRow.classList.add('new-log');
+                                newRow.innerHTML = `
+                                    <td>${timestamp}</td>
+                                    <td class="${level.toLowerCase()}">${level}</td>
+                                    <td>${ip}</td>
+                                    <td>${message}</td>
+                                `;
+
+                                applyRowColor(newRow, ip);
+
+                                // Make the new IP cell clickable
+                                const ipCell = newRow.cells[2];
+                                makeIpClickable(ipCell, ip);
+
+                                if (tableBody.firstChild) {
+                                    tableBody.insertBefore(newRow, tableBody.firstChild);
+                                } else {
+                                    tableBody.appendChild(newRow);
+                                }
+
+                                setTimeout(() => {
+                                    newRow.classList.remove('new-log');
+                                }, 1000);
+
+                                while (tableBody.rows.length > maxRows) {
+                                    tableBody.deleteRow(tableBody.rows.length - 1);
+                                }
+
+                                // If filtering is active, re-apply it
+                                if (currentFilterIp) {
+                                    filterRowsByIp(currentFilterIp);
+                                }
+                            }
+                        };
+
+                        eventSource.onerror = function(err) {
+                            console.error("EventSource failed:", err);
+                            eventSource.close();
+                        };
+                        clearFilterBtn.addEventListener('click', () => {
+                        filterRowsByIp(null);
+                    });
                 </script>
             </body>
-            </html>
+        </html>
+
         """, log_entries=log_entries)
 
     except Exception as e:
