@@ -6,8 +6,8 @@ from routes.user_routes import user_routes
 from routes.match_routes import match_routes
 import logging
 import os
-import json
-import base64
+from flask import Response
+import time
 
 log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
@@ -61,25 +61,22 @@ def get_logs():
         with open(LOG_FILE, "r") as file:
             log_lines = file.readlines()
 
-        # Convert log lines into structured data
         log_entries = []
         for line in log_lines:
-            parts = line.strip().split(" - ")  # Split by " - " separator
+            parts = line.strip().split(" - ")
             if len(parts) >= 4:
-                timestamp, level, _, message = parts[:4]  # Extract log details
+                timestamp, level, _, message = parts[:4]
                 log_entries.append({"timestamp": timestamp, "level": level, "message": message})
 
-        # **Reverse order (most recent logs at the top)**
         log_entries.reverse()
 
-        # Render logs as an HTML table (recent logs first)
         return render_template_string("""
             <!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Flask Logs</title>
+                <title>Flask Logs (Live)</title>
                 <style>
                     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
                     table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); }
@@ -88,30 +85,105 @@ def get_logs():
                     .info { color: #007bff; }
                     .warning { color: #ffa500; }
                     .error { color: #dc3545; }
+                    .new-log {
+                        animation: flash 1s ease;
+                    }
+                    @keyframes flash {
+                        from { background-color: yellow; }
+                        to { background-color: white; }
+                    }
                 </style>
             </head>
             <body>
-                <h2>Flask Logs (Recent First)</h2>
-                <table>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Level</th>
-                        <th>Message</th>
-                    </tr>
-                    {% for entry in log_entries %}
-                    <tr>
-                        <td>{{ entry.timestamp }}</td>
-                        <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
-                        <td>{{ entry.message }}</td>
-                    </tr>
-                    {% endfor %}
+                <h2>Flask Logs (Live)</h2>
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Level</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in log_entries %}
+                        <tr>
+                            <td>{{ entry.timestamp }}</td>
+                            <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
+                            <td>{{ entry.message }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
+
+                <script>
+                    const tableBody = document.getElementById('logTable').querySelector('tbody');
+                    const eventSource = new EventSource('/stream-logs');
+                    const maxRows = 500; // Max rows to keep
+
+                    eventSource.onmessage = function(event) {
+                        const parts = event.data.split(" - ");
+                        if (parts.length >= 4) {
+                            const timestamp = parts[0];
+                            const level = parts[1];
+                            const message = parts[3];
+
+                            const newRow = document.createElement('tr');
+                            newRow.classList.add('new-log');
+                            newRow.innerHTML = `
+                                <td>${timestamp}</td>
+                                <td class="${level.toLowerCase()}">${level}</td>
+                                <td>${message}</td>
+                            `;
+
+                            // Insert at the top
+                            if (tableBody.firstChild) {
+                                tableBody.insertBefore(newRow, tableBody.firstChild);
+                            } else {
+                                tableBody.appendChild(newRow);
+                            }
+
+                            // Remove highlight after animation
+                            setTimeout(() => {
+                                newRow.classList.remove('new-log');
+                            }, 1000);
+
+                            // Trim old rows if too many
+                            while (tableBody.rows.length > maxRows) {
+                                tableBody.deleteRow(tableBody.rows.length - 1);
+                            }
+                        }
+                    };
+
+                    eventSource.onerror = function(err) {
+                        console.error("EventSource failed:", err);
+                        eventSource.close();
+                    };
+                </script>
             </body>
             </html>
         """, log_entries=log_entries)
 
     except Exception as e:
         return f"<p>Error reading logs: {str(e)}</p>", 500
+
+
+@app.route("/stream-logs")
+def stream_logs():
+    def generate():
+        if not os.path.exists(LOG_FILE):
+            yield "data: No logs yet.\n\n"
+            return
+        
+        with open(LOG_FILE, 'r') as f:
+            f.seek(0, os.SEEK_END)  # Go to the end of the file (only new lines)
+            while True:
+                line = f.readline()
+                if line:
+                    yield f"data: {line.strip()}\n\n"
+                else:
+                    time.sleep(1)  # Sleep briefly then check again
+
+    return Response(generate(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":
