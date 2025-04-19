@@ -38,7 +38,7 @@ const SignUpHobbies = () => {
         <View style={styles.listContainer}>
           <FlatList
             data={predefinedHobbies}
-            numColumns={5}
+            numColumns={3}
             keyExtractor={(item) => item}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#534E5B',
-    paddingHorizontal: 100,
+    paddingHorizontal: 20,
   },
   contentWrapper: {
     flex: 1,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   title: {
-    fontSize: 36,
+    fontSize: 26,
     fontWeight: '700',
     marginBottom: 30,
     color: '#FFFFFF',
@@ -103,8 +103,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chip: {
-    paddingVertical: 20,
-    paddingHorizontal: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 20,
     margin: 6,
     alignItems: 'center',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#534E5B',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
   },
   chipText: {

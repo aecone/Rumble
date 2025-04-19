@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const predefinedOrgs = [
-  "USACS", "RUMAD", "Women in Computer Science", "Women in ITI", "Women in Product",
-  "Hack4Impact", "Out In Tech", 
+  "Women in Product", "USACS", "WiCS", "RUMAD",
+  "Hack4Impact", "Out In Tech", "Women in ITI", "Blueprint", 
+  "RUPA", "Creative X", "Ethitech", "3D Club",
+  "RUFP", "Culture Clubs", "Sports Clubs", "RAD", "WRSU", "COGS"
 ];
 
 const SignUpOrgs = () => {
@@ -37,7 +39,7 @@ const SignUpOrgs = () => {
           <View style={styles.listContainer}>
             <FlatList
               data={predefinedOrgs}
-              numColumns={5}
+              numColumns={3}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#534E5B',
-    paddingHorizontal: 100,
+    paddingHorizontal: 20,
   },
   contentWrapper: {
     flex: 1,
@@ -90,9 +92,9 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   title: {
-    fontSize: 36,
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 30,
+    marginBottom: 0,
     color: '#FFFFFF',
     textAlign: 'center',
   },
@@ -101,8 +103,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chip: {
-    paddingVertical: 20,
-    paddingHorizontal: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 20,
     margin: 6,
     alignItems: 'center',

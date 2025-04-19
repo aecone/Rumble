@@ -1,13 +1,36 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
-import { Picker } from '@react-native-picker/picker';
-import { router, useLocalSearchParams } from "expo-router";
+import DropDownPicker from 'react-native-dropdown-picker';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const SignUpGenderPronouns = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity } =
-    useLocalSearchParams();
-  const [gender, setGender] = useState("");
-  const [pronouns, setPronouns] = useState("");
+  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity } = useLocalSearchParams();
+  const [gender, setGender] = useState('');
+  const [pronouns, setPronouns] = useState('');
+  const [genderOpen, setGenderOpen] = useState(false);
+  const [pronounsOpen, setPronounsOpen] = useState(false);
+  
+  const genderItems = [
+    { label: 'Woman', value: 'Woman' },
+    { label: 'Man', value: 'Man' },
+    { label: 'Non-binary', value: 'Non-binary' },
+    { label: 'Genderfluid', value: 'Genderfluid' },
+    { label: 'Prefer not to say', value: 'Prefer not to say' },
+    { label: 'Other', value: 'Other' },
+  ];
+  
+  const pronounsItems = [
+    { label: 'He/Him', value: 'He/Him' },
+    { label: 'She/Her', value: 'She/Her' },
+    { label: 'They/Them', value: 'They/Them' },
+    { label: 'He/They', value: 'He/They' },
+    { label: 'She/They', value: 'She/They' },
+    { label: 'Ze/Hir', value: 'Ze/Hir' },
+    { label: 'Ze/Zir', value: 'Ze/Zir' },
+    { label: 'Xe/Xem', value: 'Xe/Xem' },
+    { label: 'Prefer not to say', value: 'Prefer not to say' },
+    { label: 'Other', value: 'Other' },
+  ];
 
   const proceed = () => {
     // Navigate to the next page
@@ -18,52 +41,76 @@ const SignUpGenderPronouns = () => {
   };
   
   // Check if both fields are filled
-  const isFormValid = gender.trim() !== '' && pronouns.trim() !== '';
+  const isFormValid = gender !== '' && pronouns !== '';
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Please select your gender & pronouns</Text>
       
       {/* Gender Dropdown */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={gender}
-          onValueChange={(itemValue) => setGender(itemValue)}
-          style={[styles.picker, { backgroundColor: '#534E5B' }]}
-          mode="dropdown"
-          dropdownIconColor={"#534E5B"}
-        >
-          <Picker.Item label="Select Gender" value="" />
-          <Picker.Item label="Woman" value="Woman" />
-          <Picker.Item label="Man" value="Man" />
-          <Picker.Item label="Non-binary" value="Non-binary" />
-          <Picker.Item label="Genderfluid" value="Genderfluid" />
-          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
-          <Picker.Item label="Other" value="Other" />
-        </Picker>
+      <View style={[styles.pickerWrapper, { zIndex: 3 }]}>
+        <DropDownPicker
+          open={genderOpen}
+          value={gender}
+          items={genderItems}
+          setOpen={setGenderOpen}
+          setValue={setGender}
+          placeholder="Select Gender"
+          style={styles.dropdownStyle}
+          textStyle={styles.dropdownTextStyle}
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+          placeholderStyle={styles.placeholderStyle}
+          listItemContainerStyle={styles.listItemContainerStyle}
+          selectedItemContainerStyle={styles.selectedItemContainerStyle}
+          selectedItemLabelStyle={styles.selectedItemLabelStyle}
+          maxHeight={300}
+          autoScroll={true}
+          showTickIcon={true}
+          onOpen={() => setPronounsOpen(false)}
+          tickIconStyle={{
+            width: 15,
+            height: 15,
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+          arrowIconStyle={{
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+        />
       </View>
       
       {/* Pronouns Dropdown */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={pronouns}
-          onValueChange={(itemValue) => setPronouns(itemValue)}
-          style={[styles.picker, { backgroundColor: '#534E5B' }]}
-          mode="dropdown"
-          dropdownIconColor={"#534E5B"}
-        >
-          <Picker.Item label="Select Pronouns" value="" />
-          <Picker.Item label="He/Him" value="He/Him" />
-          <Picker.Item label="She/Her" value="She/Her" />
-          <Picker.Item label="They/Them" value="They/Them" />
-          <Picker.Item label="He/They" value="He/They" />
-          <Picker.Item label="She/They" value="She/They" />
-          <Picker.Item label="Ze/Hir" value="Ze/Hir" />
-          <Picker.Item label="Ze/Zir" value="Ze/Zir" />
-          <Picker.Item label="Xe/Xem" value="Xe/Xem" />
-          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
-          <Picker.Item label="Other" value="Other" />
-        </Picker>
+      <View style={[styles.pickerWrapper, { zIndex: 2 }]}>
+        <DropDownPicker
+          open={pronounsOpen}
+          value={pronouns}
+          items={pronounsItems}
+          setOpen={setPronounsOpen}
+          setValue={setPronouns}
+          placeholder="Select Pronouns"
+          style={styles.dropdownStyle}
+          textStyle={styles.dropdownTextStyle}
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+          placeholderStyle={styles.placeholderStyle}
+          listItemContainerStyle={styles.listItemContainerStyle}
+          selectedItemContainerStyle={styles.selectedItemContainerStyle}
+          selectedItemLabelStyle={styles.selectedItemLabelStyle}
+          maxHeight={300}
+          autoScroll={true}
+          showTickIcon={true}
+          onOpen={() => setGenderOpen(false)}
+          tickIconStyle={{
+            width: 15,
+            height: 15,
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+          arrowIconStyle={{
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+        />
       </View>
 
       <TouchableOpacity
@@ -85,6 +132,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#534E5B',
+    paddingHorizontal: 20,
+    zIndex: 1, // Important for the dropdown to show properly
   },
   title: {
     fontSize: 26,
@@ -92,35 +141,61 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: '#FFFFFF',
     textAlign: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
   },
-  pickerContainer: {
-    height: 50,
+  pickerWrapper: {
     width: '90%',
-    backgroundColor: '#534E5B',
-    borderRadius: 40,
+    maxWidth: 350,
     marginVertical: 10,
-    justifyContent: 'center',
+  },
+  dropdownStyle: {
+    backgroundColor: '#534E5B',
     borderColor: '#E8EAF6',
     borderWidth: 1,
+    borderRadius: 40,
+    height: 50,
   },
-  picker: {
-    width: '100%',
+  dropdownTextStyle: {
     color: '#FFFFFF',
-    alignContent: 'center',
-    fontSize: 22,
-    borderColor: '#534E5B',
-    borderRadius: 40
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  dropDownContainerStyle: {
+    backgroundColor: '#534E5B',
+    borderColor: '#E8EAF6',
+    borderWidth: 1,
+    maxHeight: 300,
+  },
+  placeholderStyle: {
+    color: '#FFFFFF',
+    opacity: 0.7,
+    fontSize: 18,
+  },
+  listItemContainerStyle: {
+    height: 50,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+  },
+  selectedItemContainerStyle: {
+    backgroundColor: 'rgba(146, 199, 197, 0.2)', // Light teal background for selected item
+  },
+  selectedItemLabelStyle: {
+    color: '#92C7C5', // Teal text for selected item
+    fontWeight: 'bold',
   },
   button: {
     width: '90%',
+    maxWidth: 350,
     marginVertical: 20,
     padding: 15,
     borderRadius: 50,
     alignItems: 'center',
+    zIndex: 0, // Ensure button stays below dropdown
   },
   text: {
     color: '#534E5B',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '500',
   },
 });

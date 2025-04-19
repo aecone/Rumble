@@ -17,7 +17,6 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as emoji from 'node-emoji';
 import { get, find, search, emojify } from 'node-emoji';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;

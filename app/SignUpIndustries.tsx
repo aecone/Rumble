@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const predefinedIndustries = [
-  "Technology", "Healthcare", "Finance", "Education", "Entertainment",
-  "Retail", "Manufacturing", "Real Estate", "Transportation", "Energy",
-  "Agriculture", "Media", "Telecommunications", "Hospitality", "Automotive",
+  "Technology", "Healthcare", "Finance", "Education",
+  "Manufacturing", "Energy",
+  "Agriculture", "Telecom", "Media", "Hospitality", 
   "Aerospace", "Pharmaceuticals", "Consulting", "Non-Profit", "Government", 
-  "Marketing", "Consulting", "Engineering"
+  "Marketing", "Consulting", "Engineering", "Law", "Other"
 ];
 
 const SignUpIndustries = () => {
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#534E5B',
-    paddingHorizontal: 100,
+    paddingHorizontal: 20,
   },
   contentWrapper: {
     flex: 1,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    marginBottom: 30,
+    marginBottom: -5,
     color: '#FFFFFF',
     textAlign: 'center',
   },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 25,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: -10,
   },
   text: {
     color: '#534E5B',

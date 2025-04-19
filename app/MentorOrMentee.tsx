@@ -98,7 +98,9 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         marginBottom: 30,
         color: "#FFFFFF",
-        alignItems: "center"
+        alignItems: "center",
+        textAlign: 'center',
+        marginHorizontal: 20
     },
     buttonContainer: {
         flexDirection: "row",

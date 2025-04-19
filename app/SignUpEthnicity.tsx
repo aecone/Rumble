@@ -1,50 +1,73 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
-import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const SignUpEthnicity = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear} = useLocalSearchParams();
+  const { firstName, lastName, email, password, birthday, major, gradYear } = useLocalSearchParams();
   const [ethnicity, setEthnicity] = useState('');
+  const [open, setOpen] = useState(false);
+  
+  const ethnicityItems = [
+    { label: 'Asian', value: 'Asian' },
+    { label: 'East Asian', value: 'East Asian' },
+    { label: 'South Asian', value: 'South Asian' },
+    { label: 'Southeast Asian', value: 'Southeast Asian' },
+    { label: 'Middle Eastern/Arab', value: 'Middle Eastern/Arab' },
+    { label: 'American Indian/Alaskan Native', value: 'American Indian/Alaskan Native' },
+    { label: 'African American', value: 'African American' },
+    { label: 'Native Hawaiian or Pacific Islander', value: 'Native Hawaiian or Pacific Islander' },
+    { label: 'Hispanic or Latino', value: 'Hispanic or Latino' },
+    { label: 'White', value: 'White' },
+    { label: 'Multiracial', value: 'Multiracial' },
+    { label: 'Prefer not to say', value: 'Prefer not to say' },
+    { label: 'Other', value: 'Other' },
+  ];
 
   const proceed = () => {
-    // Navigate to the next page (Email/Password entry)
+    // Navigate to the next page
     router.push({
       pathname: '/SignUpGenderPronouns',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }  // Pass name info to the next page
+      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }
     });
   };
 
-  const isFormValid = ethnicity.trim();
+  const isFormValid = ethnicity !== '';
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Please select your race/ethnicity</Text>
 
       {/* DropDown Picker */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={ethnicity}
-          onValueChange={(itemValue) => setEthnicity(itemValue)}
-          style={[styles.picker, { backgroundColor: '#534E5B' }]}
-          mode="dropdown"
-          dropdownIconColor={"#534E5B"}
-        >
-          <Picker.Item label="Select Race/Ethnicity" value="" />
-          <Picker.Item label="Asian" value="Asian" />
-          <Picker.Item label="East Asian" value="East Asian" />
-          <Picker.Item label="South Asian" value="South Asian" />
-          <Picker.Item label="Southeast Asian" value="Southeast Asian" />
-          <Picker.Item label="Middle Eastern/Arab" value="Middle Eastern/Arab" />
-          <Picker.Item label="American Indian/Alaskan Native" value="American Indian/Alaskan Native" />
-          <Picker.Item label="African American" value="African American" />
-          <Picker.Item label="Native Hawaiian or Pacific Islander" value="Native Hawaiian or Pacific Islander" />
-          <Picker.Item label="Hispanic or Latino" value="Hispanic or Latino" />
-          <Picker.Item label="White" value="White" />
-          <Picker.Item label="Multiracial" value="Multiracial" />
-          <Picker.Item label="Prefer not to say" value="Prefer not to say" />
-          <Picker.Item label="Other" value="Other" />
-        </Picker>
+      <View style={styles.pickerWrapper}>
+        <DropDownPicker
+          open={open}
+          value={ethnicity}
+          items={ethnicityItems}
+          setOpen={setOpen}
+          setValue={setEthnicity}
+          placeholder="Select Race/Ethnicity"
+          style={styles.dropdownStyle}
+          textStyle={styles.dropdownTextStyle}
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+          placeholderStyle={styles.placeholderStyle}
+          listItemContainerStyle={styles.listItemContainerStyle}
+          selectedItemContainerStyle={styles.selectedItemContainerStyle}
+          selectedItemLabelStyle={styles.selectedItemLabelStyle}
+          maxHeight={300}
+          autoScroll={true}
+          showTickIcon={true}
+          tickIconStyle={{
+            width: 15,
+            height: 15,
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+          arrowIconStyle={{
+            backgroundColor: '#92C7C5',
+            borderRadius: 50
+          }}
+        />
       </View>
 
       <TouchableOpacity
@@ -66,42 +89,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#534E5B',
+    paddingHorizontal: 20,
+    zIndex: 1, // Important for the dropdown to show properly
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 30,
     color: '#FFFFFF',
+    textAlign: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
   },
-  pickerContainer: {
-    height: 50,
+  pickerWrapper: {
     width: '90%',
-    backgroundColor: '#534E5B',
-    borderRadius: 40,
+    maxWidth: 350,
     marginVertical: 10,
-    justifyContent: 'center',
+    zIndex: 2, // Important for the dropdown to show above other elements
+  },
+  dropdownStyle: {
+    backgroundColor: '#534E5B',
     borderColor: '#E8EAF6',
     borderWidth: 1,
+    borderRadius: 40,
+    height: 50,
   },
-  picker: {
-    width: '100%',
+  dropdownTextStyle: {
     color: '#FFFFFF',
-    alignContent: 'center',
-    fontSize: 22,
-    borderColor: '#534E5B',
-    borderRadius: 40
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  dropDownContainerStyle: {
+    backgroundColor: '#534E5B',
+    borderColor: '#E8EAF6',
+    borderWidth: 1,
+    maxHeight: 300,
+  },
+  placeholderStyle: {
+    color: '#FFFFFF',
+    opacity: 0.7,
+    fontSize: 18,
+  },
+  listItemContainerStyle: {
+    height: 50,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+  },
+  selectedItemContainerStyle: {
+    backgroundColor: 'rgba(146, 199, 197, 0.2)', // Light teal background for selected item
+  },
+  selectedItemLabelStyle: {
+    color: '#92C7C5', // Teal text for selected item
+    fontWeight: 'bold',
   },
   button: {
     width: '90%',
+    maxWidth: 350,
     marginVertical: 20,
     padding: 15,
     borderRadius: 50,
     alignItems: 'center',
+    zIndex: 0, // Ensure button stays below dropdown
   },
   text: {
     color: '#534E5B',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '500',
   },
 });
-

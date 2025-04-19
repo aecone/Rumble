@@ -3,50 +3,91 @@ import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const Birthday = () => {
-  const { firstName, lastName, email, password } = useLocalSearchParams(); // Retrieve passed params
+  const { firstName, lastName, email, password } = useLocalSearchParams();
   const [birthday, setBirthday] = useState('');
+  const [error, setError] = useState('');
 
-  // Function to check if the date is valid
-  const isValidDate = (date: string) => {
-    const regex = /^(0[1-9]|1[0-2])\/([0-2][0-9]|3[01])\/\d{4}$/;
-    if (!regex.test(date)) return false; // Return false if the format doesn't match MM/DD/YYYY
-    const [month, day, year] = date.split('/').map((num: string) => parseInt(num, 10));
-    const dateObj = new Date(year, month - 1, day);
+  // Auto-format with forward slashes
+  const formatDate = (text: string) => {
+    // Remove all non-digit characters
+    let cleaned = text.replace(/\D/g, '');
     
-    // Check if the entered date is a valid date
-    if (dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day || dateObj.getFullYear() !== year) {
+    // Add slashes at positions 2 and 5 (MM/DD/YYYY)
+    if (cleaned.length > 2 && cleaned.length <= 4) {
+      cleaned = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    } else if (cleaned.length > 4) {
+      cleaned = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
+    }
+    
+    setBirthday(cleaned);
+    validateDate(cleaned);
+  };
+
+  const validateDate = (date: string) => {
+    if (!date) {
+      setError('Please enter your birthday');
       return false;
     }
-
-    // Check if the entered date is in the future
-    const currentDate = new Date();
-    if (dateObj > currentDate) return false;
-
+    
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!regex.test(date)) {
+      setError('Please use MM/DD/YYYY format');
+      return false;
+    }
+    
+    const [month, day, year] = date.split('/').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    
+    // Check if date is valid
+    if (
+      dateObj.getMonth() + 1 !== month ||
+      dateObj.getDate() !== day ||
+      dateObj.getFullYear() !== year
+    ) {
+      setError('Please enter a valid date');
+      return false;
+    }
+    
+    // Check if date is in the future
+    if (dateObj > new Date()) {
+      setError('Birthday cannot be in the future');
+      return false;
+    }
+    
+    setError('');
     return true;
   };
 
   const proceed = () => {
-    router.push({
-      pathname: '/SignUpMajor', // Replace with your next screen
-      params: { firstName, lastName, email, password, birthday },
-    });
+    if (validateDate(birthday)) {
+      router.push({
+        pathname: '/SignUpMajor',
+        params: { firstName, lastName, email, password, birthday },
+      });
+    }
   };
 
-  const isFormValid = isValidDate(birthday); // Check if the entered birthday is valid
+  const isFormValid = !error && birthday.length === 10;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>What's Your Birthday?</Text>
+      
       <TextInput
-        style={styles.textInput}
+        style={[styles.textInput, error ? styles.errorInput : null]}
         placeholder="MM/DD/YYYY"
         value={birthday}
-        onChangeText={setBirthday}
+        onChangeText={formatDate}
+        keyboardType="number-pad"
+        maxLength={10}
       />
+      
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]} // Change button color based on validity
+        style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]}
         onPress={proceed}
-        disabled={!isFormValid} // Disable button if form is not valid
+        disabled={!isFormValid}
       >
         <Text style={styles.text}>Next</Text>
       </TouchableOpacity>
@@ -94,5 +135,13 @@ const styles = StyleSheet.create({
     color: '#534E5B',
     fontSize: 18,
     fontWeight: '500',
+  },
+  errorInput: {
+    borderColor: '#FF6B6B',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
