@@ -34,6 +34,9 @@ const SignUpGenderPronouns = () => {
 
   const proceed = () => {
     // Navigate to the next page
+    if(!gender || !pronouns){
+      return;
+    }
     router.push({
       pathname: '/SignUpHobbies',
       params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns }

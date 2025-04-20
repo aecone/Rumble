@@ -26,6 +26,7 @@ const SignUpEthnicity = () => {
 
   const proceed = () => {
     // Navigate to the next page
+    if (!ethnicity) return; 
     router.push({
       pathname: '/SignUpGenderPronouns',
       params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity }
