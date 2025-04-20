@@ -20,6 +20,8 @@ const index = () => {
   let [fontsLoaded] = useFonts({
     "Montserrat-Regular": require("../assets/fonts/Montserrat-Regular.ttf"),
   });
+
+  // Early return for loading state
   if (!fontsLoaded) {
     return null; // Or a loading spinner
   }
@@ -56,6 +58,7 @@ const index = () => {
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={signIn}>
+        <Text style={styles.text}>Log In</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToCreateProfile}>
         <Text style={styles.createAccountText}>
