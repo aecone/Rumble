@@ -102,8 +102,9 @@ const MentorAreas = () => {
             }
 
             if (response.ok) {
-                Alert.alert("Success", "Account created successfully!");
-                router.push("/");
+                router.push({
+                    pathname: "/SuccessProfileCreation",
+                });
             } else {
                 Alert.alert("Error", data.error || `Sign up failed (${response.status}). Please try again.`);
             }

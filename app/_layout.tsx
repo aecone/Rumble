@@ -14,8 +14,10 @@ import '@/firebase'; // make sure firebase is initialized here
 
 export { ErrorBoundary } from 'expo-router';
 
+SplashScreen.preventAutoHideAsync();
+
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  initialRouteName: 'Splash',
 };
 
 SplashScreen.preventAutoHideAsync();
