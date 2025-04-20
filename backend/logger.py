@@ -21,17 +21,26 @@ class RequestIPFilter(logging.Filter):
     def filter(self, record):
         try:
             from flask import request
-            record.ip = request.headers.get('X-Forwarded-For', request.remote_addr) or 'N/A'
+            forwarded_for = request.headers.get('X-Forwarded-For', '')
+            if forwarded_for:
+                # Take only the first IP
+                record.ip = forwarded_for.split(',')[0].strip()
+            else:
+                record.ip = request.remote_addr or 'N/A'
         except RuntimeError:
             record.ip = 'N/A'
         return True
+class FlushFileHandler(logging.FileHandler):
+    def emit(self, record):
+        super().emit(record)
+        self.flush()
 
 formatter = NewYorkFormatter(
     "%(asctime)s - %(levelname)s - %(name)s - %(ip)s - %(message)s",
     datefmt="%Y-%m-%d %I:%M:%S %p %Z"
 )
 
-handler = logging.FileHandler(LOG_FILE)
+handler = FlushFileHandler(LOG_FILE)
 handler.setFormatter(formatter)
 
 logger = logging.getLogger("FlaskApp")

@@ -45,10 +45,6 @@ logging.basicConfig(
 logger = logging.getLogger("FlaskApp")
 logger.info(" Flask App Started - Logging Initialized")
 # Helper to inject IP into each log record
-class RequestFormatter(logging.Formatter):
-    def format(self, record):
-        record.ip = getattr(request, 'real_ip', 'N/A')
-        return super().format(record)
 
 @app.before_request
 def log_request():
@@ -76,21 +72,29 @@ def get_logs():
         log_entries = []
         for line in log_lines:
             parts = line.strip().split(" - ")
-            if len(parts) >= 5:
-                timestamp, level, _, ip, message = parts[:5]
-                
-                # Try to extract HTTP method (GET, POST, etc.)
-                method = ""
-                if message.startswith(("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS")):
-                    method = message.split(" ")[0]
+            
+            if len(parts) == 5:
+                timestamp, level, _, ip, message = parts
+            elif len(parts) == 4:
+                # If no IP (older or system logs), fake it
+                timestamp, level, _, message = parts
+                ip = 'N/A'
+            else:
+                continue  # Skip weird badly formatted lines
 
-                log_entries.append({
-                    "timestamp": timestamp,
-                    "level": level,
-                    "ip": ip,
-                    "method": method,
-                    "message": message
-                })
+            # Extract HTTP method from message if it exists
+            method = ""
+            if message.startswith(("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS")):
+                method = message.split(" ")[0]
+
+            log_entries.append({
+                "timestamp": timestamp,
+                "level": level,
+                "ip": ip,
+                "method": method,
+                "message": message
+            })
+
 
 
 
@@ -230,20 +234,25 @@ def get_logs():
                         // Handle new logs from SSE
                         eventSource.onmessage = function(event) {
                             const parts = event.data.split(" - ");
-                            if (parts.length >= 5) {
-                                const timestamp = parts[0];
-                                const level = parts[1];
-                                const ip = parts[3];
-                                const message = parts[4];
+                            let timestamp = parts[0] || "";
+                            let level = parts[1] || "";
+                            let ip = "N/A";
+                            let message = "";
 
-                                const newRow = document.createElement('tr');
-                                newRow.setAttribute('data-ip', ip);
-                                newRow.classList.add('new-log');
-                                let method = "";
-                                if (message.startsWith("GET") || message.startsWith("POST") || message.startsWith("PUT") ||
-                                    message.startsWith("DELETE") || message.startsWith("HEAD") || message.startsWith("PATCH") || message.startsWith("OPTIONS")) {
-                                    method = message.split(" ")[0];
-                                }
+                            if (parts.length === 5) {
+                                ip = parts[3];
+                                message = parts[4];
+                            } else if (parts.length === 4) {
+                                message = parts[3];
+                            }
+
+                            // Extract method
+                            let method = "";
+                            if (message.startsWith("GET") || message.startsWith("POST") || message.startsWith("PUT") ||
+                                message.startsWith("DELETE") || message.startsWith("HEAD") || message.startsWith("PATCH") || message.startsWith("OPTIONS")) {
+                                method = message.split(" ")[0];
+                            }
+
 
                                 const ipClass = ip === "N/A" ? "na-ip" : "";
                                 newRow.innerHTML = `
@@ -308,15 +317,18 @@ def stream_logs():
             return
         
         with open(LOG_FILE, 'r') as f:
-            f.seek(0, os.SEEK_END)  # Go to the end of the file (only new lines)
+            f.seek(0, os.SEEK_END)
             while True:
                 line = f.readline()
                 if line:
                     yield f"data: {line.strip()}\n\n"
                 else:
-                    time.sleep(1)  # Sleep briefly then check again
+                    # send empty heartbeat every 15 seconds
+                    yield f": keep-alive\n\n"
+                    time.sleep(15)
 
     return Response(generate(), mimetype="text/event-stream")
+
 
 
 if __name__ == "__main__":
