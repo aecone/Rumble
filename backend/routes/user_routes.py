@@ -145,7 +145,8 @@ def create_user():
                 "mentorshipAreas": data.get("mentorshipAreas", [])
             },
             "liked_users": {},
-            "matched_users": []
+            "matched_users": [],
+            "notification_token": None
         }
         #logger.info("Writing user data to Firestore:")
         print("Writing user data to Firestore:")
@@ -192,7 +193,7 @@ def set_notification_token():
     try:
         data = request.json or {}
         user_id = data.get("userID")
-        token = decoded_token['uid']
+        token = data.get("token")
         if not user_id or not token:
             return jsonify({'error': 'user_id and token required'}), 400
         

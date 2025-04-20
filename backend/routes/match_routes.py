@@ -157,9 +157,9 @@ def swipe():
                 db.collection('conversations').document(new_convo_id).set(new_convo_data)
                 
                 # notify other user
-                notification_token = swiped_doc.to_dict().get('notification_token')
-                target_settings = swiped_doc.to_dict().get('settings')
-                name = target_settings['firstName'] + ' ' + target_settings['lastName']
+                notification_token = swiped_user_data.get('notification_token')
+                target_settings = swiped_user_data.get('settings', {})
+                name = f"{target_settings.get('firstName', 'Someone')} {target_settings.get('lastName', '')}"
                 if not notification_token:
                     return jsonify({"error": "User has no notification token"}), 400
                 result = send_notification(notification_token, "RUmble", "You matched with " + name + '.', {'userID': user_id, 'matchName': name,'screen': '/messagingChat'})
@@ -318,6 +318,7 @@ def send_message():
                     body=message.strip,
                     data={'userID': user_id,'matchName': sender_name,"screen": "/messagingChat"}
                 )
+                db.collection('conversations').document(convo_id).update({'lastMessage': message.strip(), 'lastUpdated': firestore.SERVER_TIMESTAMP})
 
         return jsonify({
             'success': True,
