@@ -1,4 +1,4 @@
-import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native'
+import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Alert, } from 'react-native'
 import React, { useState } from 'react'
 import { auth, db } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
@@ -11,16 +11,28 @@ const index = () => {
   let [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
   });
+
+  // Early return for loading state
   if (!fontsLoaded) {
     return null; // Or a loading spinner
   } 
+
   const signIn = async () => {
     try {
-      const user = await signInWithEmailAndPassword(auth, email, password)
+      if (!email) {
+        Alert.alert('Sign in failed: Email is required');
+        return;
+      }
+      if (!password) {
+        Alert.alert('Sign in failed: Password is required');
+        return;
+      }
+      
+      const user = await signInWithEmailAndPassword(auth, email, password);
       if (user) router.replace('/(tabs)/profileTab');
     } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
+      console.log(error);
+      Alert.alert('Sign in failed: ' + error.message);
     }
   }
 
@@ -29,7 +41,6 @@ const index = () => {
     router.push('/create-profile' as any);
   };
 
-
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
@@ -37,6 +48,7 @@ const index = () => {
       <TextInput style={styles.textInput} placeholder="Email" value={email} onChangeText={setEmail} />
       <TextInput style={styles.textInput} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={signIn}>
+        <Text style={styles.text}>Log In</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToCreateProfile}>
         <Text style={styles.createAccountText}>Don't have an account? Sign up</Text>
