@@ -1,15 +1,23 @@
 import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View } from 'react-native';
 import React from 'react';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { useFonts, Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 
 const AllSetScreen = () => {
+
+
   let [fontsLoaded] = useFonts({
     Montserrat_400Regular,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
   });
   
+  const navigation = useNavigation();
+  
+  // Hide the header for this screen
+  React.useLayoutEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
   if (!fontsLoaded) {
     return null;
   }
