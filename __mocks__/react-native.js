@@ -1,3 +1,5 @@
+
+
 // __mocks__/react-native.js
 export const Text = 'Text';
 export const TextInput = 'TextInput';
@@ -20,6 +22,7 @@ export const StyleSheet = {
 // Add other components you need
 export const View = 'View';
 export const Button = 'Button';
+export const FlatList = 'FlatList';
 export const Alert = {
   alert: jest.fn(),
 };
@@ -40,4 +43,5 @@ export default {
   Button,
   Alert,
   Platform,
+  FlatList
 };

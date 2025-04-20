@@ -56,7 +56,6 @@ const index = () => {
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={signIn}>
-        <Text style={styles.text}>Sign In</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToCreateProfile}>
         <Text style={styles.createAccountText}>

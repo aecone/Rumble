@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 import CreateProfile from '../../app/create-profile';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 
-describe('CreateProfile', () => {
+describe('CreateProfile T002', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
