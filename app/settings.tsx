@@ -255,34 +255,64 @@ export default function Settings() {
 
   // Delete user account
   const deleteAccount = async () => {
-    if (!user || !API_BASE_URL) return;
-    setLoading(true);
-    try {
-      const token = await user.getIdToken(true);
-      const response = await fetch(`${API_BASE_URL}/delete_account`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        console.log("Account deleted, now signing out...");
-        await auth.signOut();
-        router.dismissAll();
-        router.replace("/");
-        Alert.alert("Account Deleted", "Your account has been successfully deleted.");
-      } else {
-        Alert.alert("Error", data.error || "Failed to delete account.");
-      }
-    } catch (error) {
-      console.log("error");
-      Alert.alert("Error", "Could not complete request.");
-    } finally {
-      setLoading(false);
+    console.log("Delete button pressed"); 
+    if (!user || !API_BASE_URL) {
+      console.log("Missing user or API_BASE_URL");  
+      return;
     }
+    console.log("Ready to show confirmation alert"); 
+
+  
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to permanently delete your account?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              const token = await user.getIdToken(true);
+              const response = await fetch(`${API_BASE_URL}/delete_account`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `${token}`,
+                },
+              });
+  
+              const data = await response.json();
+              if (response.ok) {
+                console.log("Account deleted, now signing out...");
+                await auth.signOut();
+  
+                router.dismissAll();
+                router.replace("/");
+  
+                Alert.alert(
+                  "Account Deleted",
+                  "Your account has been successfully deleted."
+                );
+              } else {
+                Alert.alert("Error", data.error || "Failed to delete account.");
+              }
+            } catch (error) {
+              console.log("error", error);
+              Alert.alert("Error", "Could not complete request.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
+  
 
   // Validate date format and value
   const isValidDate = (date: string) => {
