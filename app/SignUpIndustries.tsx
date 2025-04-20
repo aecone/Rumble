@@ -23,6 +23,7 @@ const SignUpIndustries = () => {
   };
 
   const proceed = () => {
+    if (!isFormValid) return;
     router.push({
       pathname: '/SignUpOrgs',
       params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries: selectedIndustries.join(', ') }
@@ -40,8 +41,8 @@ const SignUpIndustries = () => {
           <FlatList
             data={predefinedIndustries}
             numColumns={3}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
+            keyExtractor={(item: string) => item}
+            renderItem={({ item }: { item: string }) => (
               <TouchableOpacity
                 style={[
                   styles.chip,

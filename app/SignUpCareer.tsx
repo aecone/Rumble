@@ -27,6 +27,7 @@ const SignUpCareer = () => {
   ];
 
   const proceed = () => {
+    if(!career) return;
     router.push({
       pathname: '/SignUpIndustries',
       params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career }

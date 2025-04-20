@@ -9,11 +9,13 @@ const SignUpName = () => {
   const [lastName, setLastName] = useState('');
 
   const proceed = () => {
+    if (firstName.trim() === '' || lastName.trim() === '') return; // guard clause
     router.push({
       pathname: '/SignUpBirthday',
-      params: { firstName, lastName, email, password }  // Pass name info to the next page
+      params: { firstName, lastName, email, password },
     });
   };
+  
 
   // Check if both fields are filled
   const isFormValid = firstName.trim() !== '' && lastName.trim() !== '';
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
     alignItems: 'center',
-    backgroundColor: '#534E5'
+    backgroundColor: '#534E5B'
   },
   text: {
     color: '#534E5B',

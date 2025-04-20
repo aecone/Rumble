@@ -30,6 +30,8 @@ const SignUpMajor = () => {
   ];
 
   const proceed = () => {
+    if (!major) return; // Add this line to prevent navigation with empty major
+    
     router.push({
       pathname: '/SignUpGradYear',
       params: { firstName, lastName, email, password, birthday, major },

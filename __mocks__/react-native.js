@@ -27,6 +27,16 @@ export const Alert = {
   alert: jest.fn(),
 };
 
+export const Dimensions = {
+  get: (dim) => {
+    if (dim === 'window') {
+      return { width: 375, height: 667 }; // iPhone 8 size as a safe default
+    }
+    return { width: 0, height: 0 };
+  }
+};
+
+
 export const Platform = {
   OS: 'ios',
   select: (specifics) => specifics.ios,
@@ -43,5 +53,6 @@ export default {
   Button,
   Alert,
   Platform,
-  FlatList
+  FlatList,
+  Dimensions
 };

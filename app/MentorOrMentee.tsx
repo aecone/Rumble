@@ -7,6 +7,7 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { API_BASE_URL } from "../FirebaseConfig";
+import { Alert } from "react-native";
 
 
 
@@ -17,7 +18,7 @@ const MentorOrMentee = () => {
 
     const handleRoleSelection = () => {
         if (!role) {
-            alert("Please select Mentor or Mentee before proceeding.");
+            Alert.alert("Please select Mentor or Mentee before proceeding.");
             return;
         }
 

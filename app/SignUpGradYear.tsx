@@ -18,6 +18,9 @@ const SignUpGradYear = () => {
   ];
 
   const proceed = () => {
+    // Add explicit validation
+    if (!gradYear) return; // Prevent navigation if empty
+    
     router.push({
       pathname: '/SignUpEthnicity',
       params: { firstName, lastName, email, password, birthday, major, gradYear }

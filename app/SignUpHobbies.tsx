@@ -22,6 +22,7 @@ const SignUpHobbies = () => {
   };
 
   const proceed = () => {
+    if (!isFormValid) return;
     router.push({
       pathname: '/SignUpCareer',
       params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies: selectedHobbies }
@@ -39,8 +40,8 @@ const SignUpHobbies = () => {
           <FlatList
             data={predefinedHobbies}
             numColumns={3}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
+            keyExtractor={(item: string) => item}
+            renderItem={({ item }: { item: string }) => (
               <TouchableOpacity
                 style={[
                   styles.chip,
@@ -72,7 +73,6 @@ const SignUpHobbies = () => {
       </View>
     </View>
   );
-  
 };
 
 export default SignUpHobbies;
@@ -111,10 +111,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedChip: {
-    backgroundColor: '#92C7C5', // Orange when selected
+    backgroundColor: '#92C7C5',
   },
   unselectedChip: {
-    backgroundColor: '#E8EAF6', // Light gray when unselected
+    backgroundColor: '#E8EAF6',
   },
   selectedChipText: {
     color: '#FFFFFF',
