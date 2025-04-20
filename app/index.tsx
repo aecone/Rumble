@@ -37,7 +37,6 @@ const index = () => {
       <TextInput style={styles.textInput} placeholder="Email" value={email} onChangeText={setEmail} />
       <TextInput style={styles.textInput} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={signIn}>
-        <Text style={styles.text}>Sign In</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToCreateProfile}>
         <Text style={styles.createAccountText}>Don't have an account? Sign up</Text>

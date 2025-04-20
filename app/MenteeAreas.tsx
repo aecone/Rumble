@@ -9,13 +9,14 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 
-const predefinedMentorshipAreas = [
+const predefinedMentorshipAreas: string[] = [
     "Career Advice", "Resume Review", "Interview Prep", "Networking", "Leadership",
     "Technical Skills", "Project Management", "Public Speaking", "Time Management", "Course Advisement",
     "Personal Branding", "Work-Life Balance", "Teamwork",
     "Career Transition", "Job Search", "Professional Development", "Industry Insights", "Skill Building",
 ];
 
+// Changed component name from MentorAreas to MenteeAreas
 const MenteeAreas = () => {
     // Retrieve user data passed from the previous screen
     const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies, career, industries, orgs } =
@@ -69,6 +70,7 @@ const MenteeAreas = () => {
                 orgs: orgsArray,
                 careerPath: Array.isArray(career) ? career[0] : career || "",
                 interestedIndustries: industriesArray,
+                // Changed userType from "mentor" to "mentee"
                 userType: "mentee",
                 mentorshipAreas: selectedMentorshipAreas,
             };
@@ -117,30 +119,33 @@ const MenteeAreas = () => {
         <View style={styles.container}>
             <Text style={styles.title}>What areas would you like mentorship in?</Text>
             <Text style={styles.subtitle}>
-                Please select your areas of mentorship
+                Please select your areas of interest
             </Text>
 
             <View style={styles.listContainer}>
                 <FlatList
                     data={predefinedMentorshipAreas}
+                    testID="mentorship-areas-list"
                     numColumns={3}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
+                    keyExtractor={(item: string) => item}
+                    // In both MentorAreas.tsx and MenteeAreas.tsx, update the renderItem in FlatList:
+                    renderItem={({ item }: { item: string }) => (
                         <TouchableOpacity
-                            style={[
-                                styles.chip,
-                                selectedMentorshipAreas.includes(item) ? styles.selectedChip : styles.unselectedChip
-                            ]}
-                            onPress={() => toggleMentorshipArea(item)}
+                        testID={`mentorship-area-${item}`}
+                        style={[
+                            styles.chip,
+                            selectedMentorshipAreas.includes(item) ? styles.selectedChip : styles.unselectedChip
+                        ]}
+                        onPress={() => toggleMentorshipArea(item)}
                         >
-                            <Text
-                                style={[
-                                    styles.chipText,
-                                    selectedMentorshipAreas.includes(item) ? styles.selectedChipText : styles.unselectedChipText
-                                ]}
-                            >
-                                {item}
-                            </Text>
+                        <Text
+                            style={[
+                            styles.chipText,
+                            selectedMentorshipAreas.includes(item) ? styles.selectedChipText : styles.unselectedChipText
+                            ]}
+                        >
+                            {item}
+                        </Text>
                         </TouchableOpacity>
                     )}
                     contentContainerStyle={styles.chipContainer}
@@ -158,6 +163,7 @@ const MenteeAreas = () => {
     );
 };
 
+// Changed export from MentorAreas to MenteeAreas
 export default MenteeAreas;
 
 const styles = StyleSheet.create({

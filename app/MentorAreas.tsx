@@ -9,7 +9,7 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 
-const predefinedMentorshipAreas = [
+const predefinedMentorshipAreas: string[] = [
     "Career Advice", "Resume Review", "Interview Prep", "Networking", "Leadership",
     "Technical Skills", "Project Management", "Public Speaking", "Time Management", "Course Advisement",
     "Personal Branding", "Work-Life Balance", "Teamwork",
@@ -123,24 +123,27 @@ const MentorAreas = () => {
             <View style={styles.listContainer}>
                 <FlatList
                     data={predefinedMentorshipAreas}
+                    testID="mentorship-areas-list"
                     numColumns={3}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
+                    keyExtractor={(item: string) => item}
+                    // In both MentorAreas.tsx and MenteeAreas.tsx, update the renderItem in FlatList:
+                    renderItem={({ item }: { item: string }) => (
                         <TouchableOpacity
-                            style={[
-                                styles.chip,
-                                selectedMentorshipAreas.includes(item) ? styles.selectedChip : styles.unselectedChip
-                            ]}
-                            onPress={() => toggleMentorshipArea(item)}
+                        testID={`mentorship-area-${item}`}
+                        style={[
+                            styles.chip,
+                            selectedMentorshipAreas.includes(item) ? styles.selectedChip : styles.unselectedChip
+                        ]}
+                        onPress={() => toggleMentorshipArea(item)}
                         >
-                            <Text
-                                style={[
-                                    styles.chipText,
-                                    selectedMentorshipAreas.includes(item) ? styles.selectedChipText : styles.unselectedChipText
-                                ]}
-                            >
-                                {item}
-                            </Text>
+                        <Text
+                            style={[
+                            styles.chipText,
+                            selectedMentorshipAreas.includes(item) ? styles.selectedChipText : styles.unselectedChipText
+                            ]}
+                        >
+                            {item}
+                        </Text>
                         </TouchableOpacity>
                     )}
                     contentContainerStyle={styles.chipContainer}

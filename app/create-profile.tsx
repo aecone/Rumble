@@ -20,37 +20,57 @@ export default function CreateProfile() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const proceed = async () => {
-    try {
-      const emailExists = await checkEmailExists(email); // Check if email exists
-  
-      if (emailExists) {
-        Alert.alert("This email is already registered. Please sign in or use a different email.");
-        return;
-      }
-
-      if(password.length <= 6){
-        Alert.alert("Password length must be greater than 6 characters.");
-        return;
-      }
-  
-      if (!(email.toLowerCase().endsWith("@rutgers.edu") || email.toLowerCase().endsWith("@scarletmail.rutgers.edu"))) {
-        Alert.alert("Please use a valid Rutgers email address.");
-        return;
-      }
-  
-      // Navigate to the next page (Email/Password entry)
-      router.push({
-        pathname: '/SignUpName',
-        params: { email, password }  // Pass name info to the next page
-      });
-    } catch (error) {
-      console.error("Error checking email:", error);
-      Alert.alert("An error occurred while checking the email. Please try again.");
+  // Add this at the start of your proceed function
+const proceed = async () => {
+  try {
+    // Validate required fields first
+    const errors = [];
+    if (!email.trim()) errors.push('Email is required');
+    if (!password) errors.push('Password is required');
+    
+    // Show all validation errors at once
+    if (errors.length > 0) {
+      Alert.alert(
+        'Missing Information',
+        errors.join('\n'),
+        //[{ text: 'OK' }]
+      );
+      return;
     }
-  };
-  
 
+    // Rest of your existing validation...
+    if (!email.toLowerCase().endsWith("@rutgers.edu") && 
+        !email.toLowerCase().endsWith("@scarletmail.rutgers.edu")) {
+      Alert.alert("Please use a valid Rutgers email address.");
+      return;
+    }
+
+    if (password.length <= 6) {
+      Alert.alert("Password length must be greater than 6 characters.");
+      return;
+    }
+
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
+      Alert.alert("This email is already registered. Please sign in or use a different email.");
+      return;
+    }
+
+    // Success case - navigate with success message
+    router.push({
+      pathname: '/SignUpName',
+      params: { 
+        email,
+        password,
+        successMessage: "Account created successfully!" 
+      }
+    });
+    
+  } catch (error) {
+    console.error("Error checking email:", error);
+    Alert.alert("An error occurred while checking the email. Please try again.");
+  }
+};
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>

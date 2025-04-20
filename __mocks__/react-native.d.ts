@@ -4,6 +4,7 @@ declare module 'react-native' {
   export const TextInput: React.ComponentType<any>;
   export const TouchableOpacity: React.ComponentType<any>;
   export const SafeAreaView: React.ComponentType<any>;
+  export const FlatList: React.ComponentType<any>;
   
   export const StyleSheet: {
     create: (styles: any) => any;

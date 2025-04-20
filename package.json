@@ -16,7 +16,6 @@
     "@expo-google-fonts/montserrat": "^0.3.0",
     "@expo/vector-icons": "^14.0.2",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
-    "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/datetimepicker": "github:react-native-community/datetimepicker",
     "@react-native-firebase/app": "^21.12.0",
     "@react-native-firebase/auth": "^21.12.0",
@@ -58,6 +57,7 @@
   "devDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.2.0",
     "@types/jest": "^29.5.14",
