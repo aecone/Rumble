@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   TextInput,
   SafeAreaView,
 } from 'react-native';
@@ -28,7 +27,7 @@ interface FilterOptions {
   [key: string]: any; // For any additional properties
 }
 
-const filtering = () => {
+const Filtering = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   
@@ -77,7 +76,7 @@ const filtering = () => {
 
   const genders = ['', 'Male', 'Female', 'Non-binary', 'Genderfluid,', 'Other'];
 
-  // Sample industries - adjust as needed
+
   const industries = [
     'Technology', 'Finance', 'Healthcare', 'Education', 'Entertainment',
     'Consulting', 'Marketing', 'Engineering', 'Research', 'Non-profit',
@@ -86,7 +85,7 @@ const filtering = () => {
     "Aerospace", "Pharmaceuticals", "Consulting", "Non-Profit", "Government", 
   ];
 
-  // Sample mentorship areas - adjust as needed
+
   const mentorshipAreas = [
     "Career Advice", "Resume Review", "Interview Prep", "Networking", "Leadership",
     "Technical Skills", "Project Management", "Public Speaking", "Time Management", "Course Advisement",
@@ -94,12 +93,15 @@ const filtering = () => {
     "Career Transition", "Job Search", "Professional Development", "Industry Insights", "Skill Building",
   ];
 
-  // Sample organizations - adjust as needed
+
   const organizations = [
-    'WiCS', 'USACS', 'RUFP', 'RUMAD',
+    "Women in Product", "USACS", "WiCS", "RUMAD",
+    "Hack4Impact", "Out In Tech", "Women in ITI", "Blueprint", 
+    "RUPA", "Creative X", "Ethitech", "3D Club",
+    "RUFP", "Culture Clubs", "Sports Clubs", "RAD", "WRSU", "COGS"
   ];
 
-  // Sample organizations - adjust as needed
+
   const hobbies = [
     'Reading', 'Gaming', 'Hiking', 'Cooking', 'Music',
     'Photography', 'Dancing', 'Traveling', 'Tennis', 'Coding',
@@ -403,4 +405,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default filtering;
+export default Filtering;
