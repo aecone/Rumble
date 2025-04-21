@@ -20,17 +20,7 @@ const SignUpGradYear = () => {
   ];
 
   const proceed = () => {
-<<<<<<< HEAD:app/signup/SignUpGradYear.tsx
     router.push(Routes.SignUpEthnicity);
-=======
-    // Add explicit validation
-    if (!gradYear) return; // Prevent navigation if empty
-    
-    router.push({
-      pathname: '/SignUpEthnicity',
-      params: { firstName, lastName, email, password, birthday, major, gradYear }
-    });
->>>>>>> 6ef8b82 (tests T034 to T055, T046, T050, T034 failing-- need to properly mock flatlist/chipgroup):app/SignUpGradYear.tsx
   };
 
   const isFormValid = gradYear !== "";

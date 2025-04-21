@@ -34,20 +34,9 @@ const SignUpGenderPronouns = () => {
   ];
 
   const proceed = () => {
-<<<<<<< HEAD:app/signup/SignUpGenderPronouns.tsx
 
             router.push(Routes.SignUpHobbies);
     
-=======
-    // Navigate to the next page
-    if(!gender || !pronouns){
-      return;
-    }
-    router.push({
-      pathname: '/SignUpHobbies',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns }
-    });
->>>>>>> 6ef8b82 (tests T034 to T055, T046, T050, T034 failing-- need to properly mock flatlist/chipgroup):app/SignUpGenderPronouns.tsx
   };
 
   // Check if both fields are filled
