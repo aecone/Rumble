@@ -8,12 +8,15 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
+import { Routes } from "../utils/routes";
 
 const SignUpName = () => {
   const { firstName, lastName, setField } = useSignupStore();
 
   const proceed = () => {
-    router.push("/signup/SignUpBirthday");
+
+            router.push(Routes.SignUpBirthday);
+    
   };
 
   // Check if both fields are filled

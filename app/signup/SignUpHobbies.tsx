@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
+import { Routes } from "../utils/routes";
 
 const predefinedHobbies = [
   "Reading",
@@ -43,7 +44,9 @@ const SignUpHobbies = () => {
   };
 
   const proceed = () => {
-    router.push("/signup/SignUpCareer");
+
+        router.push(Routes.SignUpCareer);
+    
   };
 
   const isFormValid = hobbiesArray.length > 0;

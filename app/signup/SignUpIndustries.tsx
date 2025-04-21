@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
+import { Routes } from "../utils/routes";
 
 const predefinedIndustries = [
   "Technology",
@@ -44,7 +45,7 @@ const SignUpIndustries = () => {
   };
 
   const proceed = () => {
-    router.push("/signup/SignUpOrgs");
+    router.push(Routes.SignUpOrgs);
   };
 
   const isFormValid = industriesArray.length > 0;

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
+import { Routes } from "../utils/routes";
 
 const SignUpEthnicity = () => {
   const { ethnicity, setField } = useSignupStore();
@@ -32,7 +33,9 @@ const SignUpEthnicity = () => {
   ];
 
   const proceed = () => {
-    router.push("/signup/SignUpGenderPronouns");
+
+        router.push(Routes.SignUpGenderPronouns);
+    
   };
 
   const isFormValid = ethnicity !== "";

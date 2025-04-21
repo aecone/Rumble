@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { auth } from "../../FirebaseConfig";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { useSignupStore } from "../utils/useSignupStore";
+import { Routes } from "../utils/routes";
 
 const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
@@ -52,8 +53,8 @@ export default function CreateProfile() {
       }
 
       // Navigate to the next page (Email/Password entry)
-      router.push("/signup/SignUpName" as any);
-    } catch (error) {
+      router.push(Routes.SignUpName);
+        } catch (error) {
       console.error("Error checking email:", error);
       alert("An error occurred while checking the email. Please try again.");
     }

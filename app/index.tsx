@@ -35,7 +35,7 @@ const index = () => {
 
   // Button to navigate to create a profile
   const goToCreateProfile = () => {
-    router.push("/signup/create-profile" as any);
+    router.push("/signup/CreateProfile" as any);
   };
 
   return (

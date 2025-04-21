@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
+import { Routes } from "../utils/routes";
 
 const SignUpCareer = () => {
   const { careerPath, setField } = useSignupStore();
@@ -28,7 +29,7 @@ const SignUpCareer = () => {
   ];
 
   const proceed = () => {
-    router.push("/signup/SignUpIndustries");
+    router.push(Routes.SignUpIndustries);
   };
 
   const isFormValid = careerPath !== "";

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
+import { Routes } from "../utils/routes";
 
 const SignUpMajor = () => {
   const { major, setField } = useSignupStore();
@@ -30,7 +31,9 @@ const SignUpMajor = () => {
   ];
 
   const proceed = () => {
-    router.push("/signup/SignUpGradYear");
+
+        router.push(Routes.SignUpGradYear);
+    
   };
 
   const isFormValid = major !== "";
