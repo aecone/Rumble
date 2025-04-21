@@ -14,32 +14,25 @@ import {
   Platform,
 } from "react-native";
 import { auth, storage } from "../FirebaseConfig";
-import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "@react-navigation/native";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, updateEmail, updatePassword, fetchSignInMethodsForEmail } from "firebase/auth";
 import { router } from 'expo-router';
-import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 import { API_BASE_URL } from "../FirebaseConfig";
-import { fetchSignInMethodsForEmail } from "firebase/auth";
 
-
-const checkEmailExists = async (email: string): Promise<boolean> => {
-    try {
-      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-      return signInMethods.length > 0; 
-    } catch (error) {
-      console.error("Error checking email:", error);
-      return false;
-    }
+// Helper function to check if email already exists in Firebase
+const checkEmailExists = async (email: string) => {
+  try {
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    return signInMethods.length > 0;
+  } catch (error) {
+    console.error("Error checking email:", error);
+    return false;
+  }
 };
 
 export default function Settings() {
-  // Check if user is authenticated
-  getAuth().onAuthStateChanged((user) => {
-    if (!user) router.replace('/');
-  });
-
-  // Define the settings type
+  // Define types for settings and profile
   type Settings = {
     firstName: string;
     lastName: string;
@@ -49,65 +42,17 @@ export default function Settings() {
     gender: string;
     pronouns: string;
   };
-  type Profile = {
-    bio: string;
-    profilePictureUrl: string;
-    major: string;
-    gradYear: number | null;
-    hobbies: string[];
-    orgs: string[];
-    careerPath: string;
-    interestedIndustries: string[];
-    userType: string;
-    mentorshipAreas: string[];
-  };
 
-  // State variables
-    const checkEmail = async (email: string): Promise<boolean> => {
-        try {
-          const emailExists = await checkEmailExists(email); // Check if email exists
-      
-          if (emailExists) {
-            alert("This email is already registered. Please sign in or use a different email.");
-            return false; // Return false if the email already exists
-          }
-      
-          if (!email.toLowerCase().endsWith("rutgers.edu")) {
-            alert("Please use a valid Rutgers email address.");
-            return false; // Return false if it's not a valid Rutgers email
-          }
-      
-          return true; // Return true if the email is valid
-        } catch (error) {
-          console.error("Error checking email:", error);
-          alert("An error occurred while checking the email. Please try again.");
-          return false; // Return false in case of any error
-        }
-      };
-      
+  // State management
   const [settings, setSettings] = useState<Settings>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        birthday: "",
-        ethnicity: "",
-        gender: "",
-        pronouns: "",
-    
+    firstName: "",
+    lastName: "",
+    email: "",
+    birthday: "",
+    ethnicity: "",
+    gender: "",
+    pronouns: "",
   });
-  const [userProfile, setUserProfile] = useState<Profile>({
-    bio: "",
-      profilePictureUrl: "",
-      major: "",
-      gradYear: null,
-      hobbies: [],
-      orgs: [],
-      careerPath: "",
-      interestedIndustries: [],
-      userType: "TBD",
-      mentorshipAreas: [],
-    });
-  
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(auth.currentUser);
@@ -115,82 +60,118 @@ export default function Settings() {
   const [newEmail, setNewEmail] = useState('');
   const [emailChanged, setEmailChanged] = useState(false);
   const [newPassword, setNewPassword] = useState('');
-  const [refresh, setRefresh] = useState(false);
 
-  // Navigation handlers
+  // Check if email is valid Rutgers address and not already registered
+  const checkEmail = async (email: string) => {
+    try {
+      if (!(email.toLowerCase().endsWith("@rutgers.edu") || email.toLowerCase().endsWith("@scarletmail.rutgers.edu"))) {
+        alert("Please use a valid Rutgers email address.");
+        return false;
+      }
+      
+      const emailExists = await checkEmailExists(email);
+      if (emailExists) {
+        alert("This email is already registered. Please sign in or use a different email.");
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      alert("An error occurred while checking the email. Please try again.");
+      return false;
+    }
+  };
+
+  // Toggle between view and edit modes
   const toggleEditing = () => {
+    if (isEditing) {
+      // Cancel editing - restore original values
+      fetchProfile();
+      setNewEmail('');
+      setEmailChanged(false);
+      setNewPassword('');
+    } else {
+      // Start editing - prefill email field
+      setNewEmail(user?.email || '');
+    }
     setIsEditing(!isEditing);
   };
 
+  // Save updated settings
   const handleSaveChanges = async () => {
+    if (!isValidDate(settings.birthday)) {
+      alert('Please enter a valid date in MM/DD/YYYY format.');
+      return;
+    }
+  
+    if (emailChanged && !newEmail) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+  
     setLoading(true);
     try {
-      // Only validate email if it's actually changed
+      // Handle email update if changed
       if (emailChanged && newEmail !== settings.email) {
         const emailValid = await checkEmail(newEmail);
         if (!emailValid) {
-          // If email is invalid, revert back to previous email
-          setNewEmail(settings.email); // Revert to settings email
-          setEmailChanged(false); // Reset email changed flag
+          setNewEmail(settings.email);
+          setEmailChanged(false);
           return;
         }
-        // Update the email in Firebase Auth
-        const user = auth.currentUser;
-        if (user) {
-          await updateEmail(user, newEmail);
-          console.log("Email updated successfully");
-        }
-        // Update the email in settings state
-        setSettings((prevSettings) => ({
-          ...prevSettings,
-          email: newEmail, // Update the email
-        }));
+  
+        if (user) await updateEmail(user, newEmail);
+        setSettings((prev) => ({ ...prev, email: newEmail }));
       }
   
-      // Update settings in the backend
       await updateSettings();
-  
-      // Provide feedback to the user
       Alert.alert("Success", "Your settings have been updated successfully!");
+      setIsEditing(false);
     } catch (error) {
       console.error("Error during save operation:", error);
     } finally {
       setLoading(false);
-      setIsEditing(false); // Disable editing mode
     }
   };
   
+  // Form validation
+  const isFormValid = () => {
+    const validBirthday = isValidDate(settings.birthday);
+    const lowerEmail = newEmail.toLowerCase();
+    const validEmailFormat = lowerEmail.endsWith("@rutgers.edu") || lowerEmail.endsWith("@scarletmail.rutgers.edu") || !emailChanged;
+    return validBirthday && validEmailFormat;
+  };
   
-  
+  // Authentication listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    return onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
         fetchProfile();
       } else {
         setUser(null);
         setSettings({
-            firstName: '',
-            lastName: '',
-            email: '',
-            birthday: '',
-            ethnicity: '',
-            gender: '',
-            pronouns: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          birthday: '',
+          ethnicity: '',
+          gender: '',
+          pronouns: '',
         });
       }
     });
+    }, []);
   
-    return unsubscribe;
-  }, []);
-  
+  // Fetch profile when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (user) fetchProfile();
     }, [user])
   );
 
-    const fetchProfile = async () => {
+  // Fetch user profile data from API
+  const fetchProfile = async () => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
     try {
@@ -203,7 +184,8 @@ export default function Settings() {
         const data = await response.json();
         console.log("Profile fetched successfully:", data);
         setSettings({ 
-           ...data.settings, email: auth.currentUser?.email || "" 
+          ...data.settings, 
+          email: auth.currentUser?.email || "" 
         });
       } else {
         const errorData = await response.json();
@@ -216,6 +198,7 @@ export default function Settings() {
     }
   };
 
+  // Update settings in the backend
   const updateSettings = async () => {
     if (!user) return;
     try {
@@ -229,7 +212,6 @@ export default function Settings() {
         body: JSON.stringify(settings),
       });
       if (response.ok) {
-        setRefresh((prev) => !prev);
         setIsEditing(false);
         console.log("Settings updated successfully");
       } else {
@@ -240,91 +222,340 @@ export default function Settings() {
     }
   };
 
+  // Update user password
   const handleUpdateCredentials = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL) return;
   
     try {
-      // Update password if provided
-      if (newPassword !== '' && newPassword.length >= 6) {
+      // Validate password
+      if (newPassword && newPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+      if (newPassword) {
         await updatePassword(user, newPassword);
-        alert('Credentials updated successfully');
-        } else if(newPassword !== '') {
-            alert('Password must be at least 6 characters long');
-            return;
-        }
-        else if(newPassword.length < 6) {
-            alert('Password must be at least 6 characters long');
-            return;
-        }
+      }
   
-      // **Force user refresh**
-      await user.reload();  // <-- Ensures latest user data
-      setUser(auth.currentUser); // <-- Update state with latest user info
-  
-      // Fetch latest profile details
+      // Refresh user data
+      await user.reload();
+      setUser(auth.currentUser);
       fetchProfile();
-
       setNewPassword('');
       setModalVisible(false);
-  
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating credentials: ', error);
-      alert('Error updating credentials: ' + error.message);
+      if (error instanceof Error) {
+        alert('Error updating credentials: ' + error.message);
+      } else {
+        alert('Error updating credentials: An unknown error occurred.');
+      }
     }
   };
 
+  // Delete user account
   const deleteAccount = async () => {
-    if (!user || !API_BASE_URL) return;
-    setLoading(true);
-    try {
-      const token = await user.getIdToken(true);
-      const response = await fetch(`${API_BASE_URL}/delete_account`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-  
-      const data = await response.json();
-      console.log(data);
-      if (response.ok) {
-        if (response.ok) {
-          console.log("Account deleted, now signing out...");
-          await auth.signOut();
-          console.log("Successfully signed out, navigating...");
-          
-          router.dismissAll();
-          router.replace("/");
-        
-          Alert.alert("Account Deleted", "Your account has been successfully deleted.");
-        }
-        
-      } else {
-        Alert.alert("Error", data.error || "Failed to delete account.");
-      }
-    } catch (error) {
-      console.log("error");
-      Alert.alert("Error", "Could not complete request.");
-    } finally {
-      setLoading(false);
+    console.log("Delete button pressed"); 
+    if (!user || !API_BASE_URL) {
+      console.log("Missing user or API_BASE_URL");  
+      return;
     }
+    console.log("Ready to show confirmation alert"); 
+
+  
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to permanently delete your account?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              const token = await user.getIdToken(true);
+              const response = await fetch(`${API_BASE_URL}/delete_account`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `${token}`,
+                },
+              });
+  
+              const data = await response.json();
+              if (response.ok) {
+                console.log("Account deleted, now signing out...");
+                await auth.signOut();
+  
+                router.dismissAll();
+                router.replace("/");
+  
+                Alert.alert(
+                  "Account Deleted",
+                  "Your account has been successfully deleted."
+                );
+              } else {
+                Alert.alert("Error", data.error || "Failed to delete account.");
+              }
+            } catch (error) {
+              console.log("error", error);
+              Alert.alert("Error", "Could not complete request.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
+  
+
+  // Validate date format and value
+  const isValidDate = (date: string) => {
+    const regex = /^(0[1-9]|1[0-2])\/([0-2][0-9]|3[01])\/\d{4}$/;
+    if (!regex.test(date)) return false;
+    
+    const [month, day, year] = date.split('/').map((num: string) => parseInt(num, 10));
+    const dateObj = new Date(year, month - 1, day);
+    
+    // Check if date is valid
+    if (dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day || dateObj.getFullYear() !== year) {
+      return false;
+    }
+
+    // Ensure date is not in the future
+    const currentDate = new Date();
+    if (dateObj > currentDate) return false;
+
+    return true;
+  };
+
+  // Render picker options for ethnicity
+  const renderEthnicityOptions = () => (
+    <>
+      <Picker.Item label="Select Race/Ethnicity" value="" />
+      <Picker.Item label="Asian" value="Asian" />
+      <Picker.Item label="East Asian" value="East Asian" />
+      <Picker.Item label="South Asian" value="South Asian" />
+      <Picker.Item label="Southeast Asian" value="Southeast Asian" />
+      <Picker.Item label="Middle Eastern/Arab" value="Middle Eastern/Arab" />
+      <Picker.Item label="American Indian/Alaskan Native" value="American Indian/Alaskan Native" />
+      <Picker.Item label="African American" value="African American" />
+      <Picker.Item label="Native Hawaiian or Pacific Islander" value="Native Hawaiian or Pacific Islander" />
+      <Picker.Item label="Hispanic or Latino" value="Hispanic or Latino" />
+      <Picker.Item label="White" value="White" />
+      <Picker.Item label="Multiracial" value="Multiracial" />
+      <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+      <Picker.Item label="Other" value="Other" />
+    </>
+  );
+
+  // Render picker options for gender
+  const renderGenderOptions = () => (
+    <>
+      <Picker.Item label="Select Gender" value="" />
+      <Picker.Item label="Woman" value="Woman" />
+      <Picker.Item label="Man" value="Man" />
+      <Picker.Item label="Non-binary" value="Non-binary" />
+      <Picker.Item label="Genderfluid" value="Genderfluid" />
+      <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+      <Picker.Item label="Other" value="Other" />
+    </>
+  );
+
+  // Render picker options for pronouns
+  const renderPronounOptions = () => (
+    <>
+      <Picker.Item label="Select Pronouns" value="" />
+      <Picker.Item label="He/Him" value="He/Him" />
+      <Picker.Item label="She/Her" value="She/Her" />
+      <Picker.Item label="They/Them" value="They/Them" />
+      <Picker.Item label="He/They" value="He/They" />
+      <Picker.Item label="She/They" value="She/They" />
+      <Picker.Item label="Ze/Hir" value="Ze/Hir" />
+      <Picker.Item label="Ze/Zir" value="Ze/Zir" />
+      <Picker.Item label="Xe/Xem" value="Xe/Xem" />
+      <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+      <Picker.Item label="Other" value="Other" />
+    </>
+  );
+
+  // Render edit form fields
+  const renderEditForm = () => (
+    <>
+      <Text style={styles.settingLabel}>First Name:</Text>
+      <TextInput
+        style={styles.input}
+        value={settings.firstName || ''}
+        onChangeText={(text) => setSettings({ ...settings, firstName: text })}
+      />
+      
+      <Text style={styles.settingLabel}>Last Name:</Text>
+      <TextInput
+        style={styles.input}
+        value={settings.lastName || ''}
+        onChangeText={(text) => setSettings({ ...settings, lastName: text })}
+      />
+      
+      <Text style={styles.settingLabel}>Email:</Text>
+      <TextInput
+        style={styles.input}
+        value={newEmail || settings.email}
+        onChangeText={(text) => {
+          setNewEmail(text);
+          setEmailChanged(text !== settings.email);
+        }}
+        keyboardType="email-address"
+      />
+
+      <Text style={styles.settingLabel}>Birthday:</Text>
+      <TextInput
+        style={styles.input}
+        value={settings.birthday || ''}
+        onChangeText={(text) => setSettings({ ...settings, birthday: text })}
+        placeholder="MM/DD/YYYY"
+      />
+      
+      <Text style={styles.settingLabel}>Ethnicity:</Text>
+      <View style={styles.input}>
+        <Picker
+          selectedValue={settings.ethnicity || ''}
+          onValueChange={(itemValue) => setSettings({ ...settings, ethnicity: itemValue })}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          >
+          {renderEthnicityOptions()}
+        </Picker>
+      </View>
+      
+      <Text style={styles.settingLabel}>Gender:</Text>
+      <View style={styles.input}>
+        <Picker
+          selectedValue={settings.gender || ''}
+          onValueChange={(itemValue) => setSettings({ ...settings, gender: itemValue })}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          >
+          {renderGenderOptions()}
+        </Picker>
+      </View>
+
+      <Text style={styles.settingLabel}>Pronouns:</Text>
+      <View style={styles.input}>
+        <Picker
+          selectedValue={settings.pronouns || ''}
+          onValueChange={(itemValue) => setSettings({ ...settings, pronouns: itemValue })}
+          style={[styles.dropdownSettingContent, { borderWidth: 0, backgroundColor: 'transparent', outline: 'none', color: '#000000'}]}
+          >
+          {renderPronounOptions()}
+        </Picker>
+      </View>
+      
+      <TouchableOpacity 
+        style={[styles.saveButton, { backgroundColor: isFormValid() ? '#534E5B' : '#B0BEC5' }]}
+        onPress={handleSaveChanges}
+        disabled={!isFormValid()}
+      >
+        <Text style={styles.buttonText}>Save Changes</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  // Render view-only profile fields
+  const renderProfile = () => (
+    <>
+      <Text style={styles.settingLabel}>First Name:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.firstName}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Last Name:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.lastName}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Email:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.email}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Birthday:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.birthday}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Ethnicity:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.ethnicity}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Gender:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.gender}</Text>
+      </View>
+      
+      <Text style={styles.settingLabel}>Pronouns:</Text>
+      <View style={styles.displayField}>
+        <Text style={styles.settingContent}>{settings.pronouns}</Text>
+      </View>
+    </>
+  );
+
+  // Render account management buttons
+  const renderAccountButtons = () => (
+    <View style={styles.buttonsContainer}>
+      <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <Text style={styles.buttonText}>Update Password</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.deleteAccount} onPress={deleteAccount}>
+        <Text style={styles.deleteAccountText}>Delete Account</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Password update modal
+  const renderPasswordModal = () => (
+    <Modal visible={modalVisible} animationType="slide" transparent={true}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Update Password</Text>
+          <TextInput 
+            placeholder="New Password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry
+            style={styles.input}
+          />
+          <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
+            <Text style={styles.text}>Save Changes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} 
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.text}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header with Settings and Edit buttons */}
+      {/* Header with Edit/Cancel button */}
       <View style={styles.header}>
-        <TouchableOpacity 
-                  style={styles.headerButton} 
-        ></TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.headerButton} 
-          onPress={toggleEditing}
-        >
-        {!isEditing && (
-        <Text style={styles.headerButtonText}>Edit</Text>
-        )}
+        <TouchableOpacity style={styles.headerButton}></TouchableOpacity>
+        <TouchableOpacity onPress={toggleEditing}>
+          <Text style={styles.headerButtonText}>
+            {isEditing ? 'Cancel' : 'Edit'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -336,153 +567,26 @@ export default function Settings() {
           <View style={styles.container}>
             {loading && <ActivityIndicator size="large" color="#534E5B" />}
             
-            {/* Display settings */}
-            {isEditing ? (
-              <>
-                <Text style={styles.settingLabel}> First Name: </Text>
-                <TextInput
-                style={styles.input}
-                value={settings.firstName || ''}
-                onChangeText={(text) =>
-                    setSettings({ ...settings, firstName: text })
-                }
-                />
-                <Text style={styles.settingLabel}> Last Name: </Text>
-                <TextInput
-                style={styles.input}
-                value={settings.lastName || ''}
-                onChangeText={(text) =>
-                    setSettings({ ...settings, lastName: text })
-                }
-                />
-                <Text style={styles.settingLabel}>Email:</Text>
-                <TextInput
-                style={styles.input}
-                value={newEmail || settings.email} // Use newEmail for input value; fall back to settings.email if newEmail is empty
-                onChangeText={(text) => {
-                    setNewEmail(text); // Update newEmail to the entered text
-                    if (text !== settings.email) {
-                    setEmailChanged(true); // If email is modified, mark it as changed
-                    } else {
-                    setEmailChanged(false); // If email is the same as the settings, mark it as not changed
-                    }
-                }}
-                placeholder="Email"
-                keyboardType="email-address"
-                />
-
-
-
-                <Text style={styles.settingLabel}> Birthday: </Text>
-                <TextInput
-                  style={styles.input}
-                  value={settings.birthday || ''}
-                  onChangeText={(text) => setSettings({ ...settings, birthday: text })}
-                  placeholder="Birthday"
-                />
-                <Text style={styles.settingLabel}> Ethnicity: </Text>
-                <TextInput
-                  style={styles.input}
-                  value={settings.ethnicity || ''}
-                  onChangeText={(text) => setSettings({ ...settings, ethnicity: text })}
-                  placeholder="Ethnicity"
-                />
-                <Text style={styles.settingLabel}> Gender: </Text>
-                <TextInput
-                  style={styles.input}
-                  value={settings.gender || ''}
-                  onChangeText={(text) => setSettings({ ...settings, gender: text })}
-                  placeholder="Gender"
-                />
-                <Text style={styles.settingLabel}> Pronouns: </Text>
-                <TextInput
-                style={styles.input}
-                value={settings.pronouns || ''}  // Display pronouns string (if any)
-                onChangeText={(text) => setSettings({ ...settings, pronouns: text })}  // Update pronouns as a string
-                />
-                <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-                  <Text style={styles.buttonText}>Save Changes</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-                <>
-            <Text style={styles.settingLabel}> First Name: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}> {settings.firstName}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Last Name: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}> {settings.lastName}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Email: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}> {settings.email}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Birthday: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}>{settings.birthday}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Ethnicity: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}>{settings.ethnicity}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Gender: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}>{settings.gender}</Text>
-            </View>
-            <Text style={styles.settingLabel}> Pronouns: </Text>
-            <View style={styles.displayField}>
-                <Text style={styles.settingContent}>{settings.pronouns}</Text>
-            </View>
-                </>
-            )}
-            <Modal visible={modalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Update Credentials</Text>
-            <TextInput 
-              placeholder="New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-            <TouchableOpacity style={styles.modalButton} onPress={handleUpdateCredentials}>
-              <Text style={styles.text}>Save Changes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#CCCCCC' }]} onPress={() => setModalVisible(false)}>
-              <Text style={styles.text}>Cancel</Text>
-            </TouchableOpacity>
+            {/* Display either edit form or profile view */}
+            {isEditing ? renderEditForm() : renderProfile()}
+            
+            {/* Password update modal */}
+            {renderPasswordModal()}
+            
+            {/* Show account management buttons only in view mode */}
+            {!isEditing && renderAccountButtons()}
           </View>
-        </View>
-      </Modal>
-      
-      {!isEditing && (
-    <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Update Password</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteAccount} onPress={deleteAccount}>
-        <Text style={styles.deleteAccountText}>Delete Account</Text>
-        </TouchableOpacity>
-    </View>
-    )}
-
-      </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "white",
-
   },
   header: {
     flexDirection: 'row',
@@ -510,13 +614,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     width: '100%',
-    
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-
   saveButton: {
     backgroundColor: '#534E5B',
     paddingVertical: 15,
@@ -534,7 +632,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     textAlign: 'center',
   },
-
   input: {
     width: '100%',
     paddingVertical: 12,
@@ -544,13 +641,16 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderRadius: 30,
     backgroundColor: 'transparent',
-    color: '#000', // ensures text is visible on transparent bg
+    color: '#000',
     fontSize: 16,
   },
-
   settingContent: {
     fontSize: 16,
     marginVertical: 5,
+    color: '#534E5B',
+  },
+  dropdownSettingContent: {
+    fontSize: 16,
     color: '#534E5B',
   },
   settingLabel: {
@@ -571,8 +671,8 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: "column",
     justifyContent: "center",
-    alignItems: "center", // Optional, for aligning child content inside the container
-    alignSelf: "center", // <-- This centers the container itself in its parent
+    alignItems: "center",
+    alignSelf: "center",
     marginTop: 20,
     width: "50%",
   },
@@ -584,7 +684,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   deleteAccountText: {
-    color: "534E5B",
+    color: "#534E5B",
     fontWeight: "500",
   },
   modalContainer: {
@@ -617,6 +717,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 18,
     textAlign: "center",
+    color: "white",
   },
   displayField: {
     width: '100%',

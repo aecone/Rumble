@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, Response
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials
@@ -6,113 +6,110 @@ from routes.user_routes import user_routes
 from routes.match_routes import match_routes
 import logging
 import os
-import json
-import base64
+import time
 
-log = logging.getLogger('werkzeug')
-# log.setLevel(logging.ERROR)  # Suppresses logs but keeps errors
-
-app = Flask(__name__)
-CORS(app)  # Allow frontend to make requests
-
-# Load Firebase credentials from environment variable
-firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
-if firebase_credentials_path:
-    try:
-        firebase_admin.get_app()  # Check if already initialized
-    except ValueError:
-        cred = credentials.Certificate(firebase_credentials_path)
-        firebase_admin.initialize_app(cred)
-else:
-    raise ValueError("FIREBASE_CREDENTIALS environment variable is not set")
-
-# Register routes
-app.register_blueprint(user_routes, url_prefix="/api")
-app.register_blueprint(match_routes, url_prefix="/api")
-
-# Store logs in `/tmp/` because it's writable in Render
 LOG_FILE = "/tmp/app.log"
 
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-)
+def create_app(testing: bool = False):
+    app = Flask(__name__)
+    app.config['TESTING'] = testing
 
-logger = logging.getLogger("FlaskApp")
-logger.info(" Flask App Started - Logging Initialized")
+    # Allow any origin (full access)
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-@app.before_request
-def log_request():
-    logger.info(f"{request.method} {request.path} - IP: {request.remote_addr}")
+    # Firebase setup
+    firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS")
+    if firebase_credentials_path:
+        try:
+            firebase_admin.get_app()  # Check if already initialized
+        except ValueError:
+            cred = credentials.Certificate(firebase_credentials_path)
+            firebase_admin.initialize_app(cred)
+    else:
+        raise ValueError("FIREBASE_CREDENTIALS environment variable is not set")
 
-@app.after_request
-def log_response(response):
-    logger.info(f"{request.method} {request.path} - Status {response.status_code}")
-    return response
+    # Register routes
+    app.register_blueprint(user_routes, url_prefix="/api")
+    app.register_blueprint(match_routes, url_prefix="/api")
 
-@app.route("/")
-def home():
-    return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
+    # Logging setup
+    logging.basicConfig(
+        filename=LOG_FILE,
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
+    logger = logging.getLogger("FlaskApp")
+    logger.info("Flask App Started - Logging Initialized")
 
-@app.route("/logs")
-def get_logs():
-    try:
-        with open(LOG_FILE, "r") as file:
-            log_lines = file.readlines()
+    @app.before_request
+    def log_request():
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        request.real_ip = ip
+        logger.info(f"{request.method} {request.path}")
 
-        # Convert log lines into structured data
-        log_entries = []
-        for line in log_lines:
-            parts = line.strip().split(" - ")  # Split by " - " separator
-            if len(parts) >= 4:
-                timestamp, level, _, message = parts[:4]  # Extract log details
-                log_entries.append({"timestamp": timestamp, "level": level, "message": message})
+    @app.after_request
+    def log_response(response):
+        logger.info(f"{request.method} {request.path} - Status {response.status_code}")
+        return response
 
-        # **Reverse order (most recent logs at the top)**
-        log_entries.reverse()
+    @app.route("/")
+    def home():
+        return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
 
-        # Render logs as an HTML table (recent logs first)
-        return render_template_string("""
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Flask Logs</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-                    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); }
-                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-                    th { background-color: #007bff; color: white; }
-                    .info { color: #007bff; }
-                    .warning { color: #ffa500; }
-                    .error { color: #dc3545; }
-                </style>
-            </head>
-            <body>
-                <h2>Flask Logs (Recent First)</h2>
-                <table>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Level</th>
-                        <th>Message</th>
-                    </tr>
-                    {% for entry in log_entries %}
-                    <tr>
-                        <td>{{ entry.timestamp }}</td>
-                        <td class="{{ entry.level.lower() }}">{{ entry.level }}</td>
-                        <td>{{ entry.message }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </body>
-            </html>
-        """, log_entries=log_entries)
+    @app.route("/logs")
+    def get_logs():
+        try:
+            with open(LOG_FILE, "r") as file:
+                log_lines = file.readlines()
 
-    except Exception as e:
-        return f"<p>Error reading logs: {str(e)}</p>", 500
+            log_entries = []
+            for line in log_lines:
+                parts = line.strip().split(" - ")
+                if len(parts) == 5:
+                    timestamp, level, _, ip, message = parts
+                elif len(parts) == 4:
+                    timestamp, level, _, message = parts
+                    ip = 'N/A'
+                else:
+                    continue
 
+                method = message.split(" ")[0] if message.startswith(
+                    ("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS")) else ""
 
+                log_entries.append({
+                    "timestamp": timestamp,
+                    "level": level,
+                    "ip": ip,
+                    "method": method,
+                    "message": message
+                })
+
+            log_entries.reverse()
+            return render_template_string("... your full log viewer HTML here ...", log_entries=log_entries)
+
+        except Exception as e:
+            return f"<p>Error reading logs: {str(e)}</p>", 500
+
+    @app.route("/stream-logs")
+    def stream_logs():
+        def generate():
+            if not os.path.exists(LOG_FILE):
+                yield "data: No logs yet.\n\n"
+                return
+            with open(LOG_FILE, 'r') as f:
+                f.seek(0, os.SEEK_END)
+                while True:
+                    line = f.readline()
+                    if line:
+                        yield f"data: {line.strip()}\n\n"
+                    else:
+                        yield f": keep-alive\n\n"
+                        time.sleep(15)
+        return Response(generate(), mimetype="text/event-stream")
+
+    return app
+
+# 🔁 For running directly (e.g., python app.py)
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)
