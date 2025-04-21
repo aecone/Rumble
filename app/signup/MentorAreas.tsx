@@ -162,7 +162,7 @@ const MentorAreas = () => {
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!");
         useSignupStore.getState().reset(); // <-- CLEAR SIGNUP FORM DATA
-        router.push(Routes.Login);
+        router.push("/signup/SuccessProfileCreation");
 
       } else {
         Alert.alert(
