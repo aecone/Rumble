@@ -1,40 +1,57 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import React, { useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+} from "react-native";
+import React, { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useSignupStore } from "./utils/useSignupStore";
+import { normalizeToArray, toggleValueInArray } from './utils/signupHelpers';
 
 const predefinedHobbies = [
-  "Reading", "Gaming", "Hiking", "Cooking", "Music",
-  "Photography", "Dancing", "Traveling", "Tennis", "Coding",
-  "Movies", "Painting", "Football", "Soccer", "Pickleball",
-  "Writing", "Basketball", "F1", "TV", 
+  "Reading",
+  "Gaming",
+  "Hiking",
+  "Cooking",
+  "Music",
+  "Photography",
+  "Dancing",
+  "Traveling",
+  "Tennis",
+  "Coding",
+  "Movies",
+  "Painting",
+  "Football",
+  "Soccer",
+  "Pickleball",
+  "Writing",
+  "Basketball",
+  "F1",
+  "TV",
 ];
 
 const SignUpHobbies = () => {
-  const { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns } = useLocalSearchParams();
-  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
+  const { hobbies, setField } = useSignupStore();
+  const hobbiesArray = normalizeToArray(hobbies);
 
-  const toggleHobby = (hobby: string) => {
-    setSelectedHobbies(prevHobbies =>
-      prevHobbies.includes(hobby)
-        ? prevHobbies.filter(h => h !== hobby)  // Remove if selected
-        : [...prevHobbies, hobby]  // Add if not selected
-    );
-  };
+const toggleHobby = (hobby: string) => {
+  setField('hobbies', (prevHobbies: string[]) => toggleValueInArray(prevHobbies, hobby));
+};
+
 
   const proceed = () => {
-    router.push({
-      pathname: '/SignUpCareer',
-      params: { firstName, lastName, email, password, birthday, major, gradYear, ethnicity, gender, pronouns, hobbies: selectedHobbies }
-    });
+    router.push("/SignUpCareer");
   };
 
-  const isFormValid = selectedHobbies.length > 0;
+  const isFormValid = hobbiesArray.length > 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>Select your hobbies and interests</Text>
-  
+
         <View style={styles.listContainer}>
           <FlatList
             data={predefinedHobbies}
@@ -44,14 +61,18 @@ const SignUpHobbies = () => {
               <TouchableOpacity
                 style={[
                   styles.chip,
-                  selectedHobbies.includes(item) ? styles.selectedChip : styles.unselectedChip
+                  hobbiesArray.includes(item)
+                    ? styles.selectedChip
+                    : styles.unselectedChip,
                 ]}
                 onPress={() => toggleHobby(item)}
               >
                 <Text
                   style={[
                     styles.chipText,
-                    selectedHobbies.includes(item) ? styles.selectedChipText : styles.unselectedChipText
+                    hobbiesArray.includes(item)
+                      ? styles.selectedChipText
+                      : styles.unselectedChipText,
                   ]}
                 >
                   {item}
@@ -61,9 +82,12 @@ const SignUpHobbies = () => {
             contentContainerStyle={styles.chipContainer}
           />
         </View>
-  
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: isFormValid ? '#FFFFFF' : '#B0BEC5' }]}
+
+        <TouchableOpacity
+          style={[
+            styles.button,
+            { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
+          ]}
           onPress={proceed}
           disabled={!isFormValid}
         >
@@ -72,7 +96,6 @@ const SignUpHobbies = () => {
       </View>
     </View>
   );
-  
 };
 
 export default SignUpHobbies;
@@ -80,64 +103,64 @@ export default SignUpHobbies;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#534E5B',
+    backgroundColor: "#534E5B",
     paddingHorizontal: 20,
   },
   contentWrapper: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContainer: {
     marginVertical: 20,
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 30,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   chipContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   chip: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
     margin: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   selectedChip: {
-    backgroundColor: '#92C7C5', // Orange when selected
+    backgroundColor: "#92C7C5", // Orange when selected
   },
   unselectedChip: {
-    backgroundColor: '#E8EAF6', // Light gray when unselected
+    backgroundColor: "#E8EAF6", // Light gray when unselected
   },
   selectedChipText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   unselectedChipText: {
-    color: '#534E5B',
+    color: "#534E5B",
   },
   button: {
-    width: '100%',
+    width: "100%",
     padding: 15,
     borderRadius: 25,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   text: {
-    color: '#534E5B',
+    color: "#534E5B",
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   chipText: {
-    color: '#534E5B',
+    color: "#534E5B",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
