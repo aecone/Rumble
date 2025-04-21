@@ -9,12 +9,11 @@ import requests
 
 # Load Firebase credentials from environment variable
 if FIREBASE_CREDENTIALS:
-    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
-    firebase_credentials = json.loads(firebase_credentials_json)
+    firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS")
 
     # Ensure Firebase is initialized
     if not firebase_admin._apps:
-        cred = credentials.Certificate(firebase_credentials)
+        cred = credentials.Certificate(firebase_credentials_json)
         firebase_admin.initialize_app(cred)
 
 else:

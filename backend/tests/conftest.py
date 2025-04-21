@@ -1,4 +1,5 @@
 import sys, os, importlib, types, pytest
+import tests.mock_firebase as mock_firebase
 
 # Make sure the parent directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -23,6 +24,14 @@ firebase_service = importlib.import_module("services.firebase_service")
 match_routes = importlib.import_module("routes.match_routes")
 user_routes = importlib.import_module("routes.user_routes")
 auth_service = importlib.import_module("services.auth_service")
+
+@pytest.fixture
+def mock_firestore():
+    """
+    Provides the shared MockFirestoreClient instance
+    so tests can inspect and assert on its state.
+    """
+    return mock_firebase.mock_db
 
 @pytest.fixture(scope="function", autouse=True)
 def _patch_firebase(monkeypatch):

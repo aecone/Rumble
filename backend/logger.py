@@ -1,12 +1,12 @@
 import logging
 import pytz
-from datetime import datetime
+from datetime import datetime, UTC
 
 LOG_FILE = "/tmp/app.log"
 
 class NewYorkFormatter(logging.Formatter):
     def converter(self, timestamp):
-        dt_utc = datetime.utcfromtimestamp(timestamp)
+        dt_utc = datetime.fromtimestamp(timestamp, UTC)
         ny_tz = pytz.timezone('America/New_York')
         return dt_utc.replace(tzinfo=pytz.utc).astimezone(ny_tz)
 

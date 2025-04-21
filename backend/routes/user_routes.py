@@ -3,6 +3,9 @@ from services.firebase_service import get_user_profile, update_user_profile, upd
 from services.auth_service import verify_token
 from logger import logger  # Import the logger
 from firebase_admin import firestore
+from http import HTTPStatus
+from difflib import SequenceMatcher
+
 
 db = firestore.client()
 user_routes = Blueprint("user_routes", __name__)
@@ -18,9 +21,8 @@ def get_profile():
     profile = get_user_profile(user_id)
     
     if profile:
-        return jsonify(profile), 200
-    return jsonify({"error": "Profile not found"}), 404
-
+        return jsonify(profile), HTTPStatus.OK
+    return jsonify({"error": "Profile not found"}), HTTPStatus.NOT_FOUND
 
 @user_routes.route("/update_profile", methods=["PUT"])
 def edit_profile():
@@ -31,28 +33,18 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info("Received data: {data}")
-    print("Received data: {data}")
+    #logger.info(f"Received data: {data}")
+    print(f"Received data: {data}")
 
-    required_fields = [ "bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
-
+    required_fields = ["bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
-        return jsonify({"error": f"Missing required fields: {missing_fields}"}), 400
+        return jsonify({"error": f"Missing required fields: {missing_fields}"}), HTTPStatus.BAD_REQUEST
 
     profile_data = {field: data[field] for field in required_fields}
-
-    updated = update_user_profile(user_id, profile_data)
-
-    if updated:
-        updated_profile = get_user_profile(user_id)
-        #logger.info("Profile updated successfully: {updated_profile}")
-        print("Profile updated successfully: {updated_profile}")
-
-        return jsonify(updated_profile), 200
-
-    return jsonify({"error": "Profile update failed"}), 500
-
+    if update_user_profile(user_id, profile_data):
+        return jsonify(get_user_profile(user_id)), HTTPStatus.OK
+    return jsonify({"error": "Profile update failed"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @user_routes.route("/update_settings", methods=["PUT"])
 def edit_settings():
@@ -63,63 +55,70 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info("Received data: {data}")
-    print("Received data: {data}")
+    #logger.info(f"Received data: {data}")
+    print(f"Received data: {data}")
 
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
-
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
-        return jsonify({"error": f"Missing required fields: {missing_fields}"}), 400
+        return jsonify({"error": f"Missing required fields: {missing_fields}"}), HTTPStatus.BAD_REQUEST
 
     settings_data = {field: data[field] for field in required_fields}
-
-    updated = update_user_settings(user_id, settings_data)
-
-    if updated:
-        updated_settings = get_user_profile(user_id)
-        #logger.info("Profile updated successfully: {updated_settings}")
-        print("Profile updated successfully: {updated_settings}")
-
-        return jsonify(updated_settings), 200
-
-    return jsonify({"error": "Settings update failed"}), 500
-
+    if update_user_settings(user_id, settings_data):
+        return jsonify(get_user_profile(user_id)), HTTPStatus.OK
+    return jsonify({"error": "Settings update failed"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @user_routes.route("/delete_account", methods=["DELETE"])
 def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        #logger.warning("Error verifying token: {error}")
-        print("Error verifying token: {error}")
-
+        #logger.warning(f"Error verifying token: {error}")
+        print(f"Error verifying token: {error}")
         return error
 
-    user_id = decoded_token["uid"]  # Firebase UID
-
-    # Call the isolated function
-    result = delete_user_account(user_id)
-
+    result = delete_user_account(decoded_token["uid"])
     if "error" in result:
-        return jsonify(result), 500
-    return jsonify(result), 200
+        return jsonify(result), HTTPStatus.INTERNAL_SERVER_ERROR
+    return jsonify(result), HTTPStatus.OK
 
 @user_routes.route("/create_user", methods=["POST"])
 def create_user():
     """
     API endpoint to create a new user in Firebase Auth & Firestore.
+    - Validates email domain, duplicate emails, password rules, and required fields.
     - Stores profile information in Firestore.
-    - Initializes `liked_users` as an empty HashMap.
-    - Initializes `matched_users` as an empty List.
+    - Initializes `liked_users` as an empty map and `matched_users` as an empty list.
     """
     try:
         data = request.json or {}
-        email = data.get("email")
-        password = data.get("password")
+        email = data.get("email", "").strip().lower()
+        password = data.get("password", "").strip()
 
+        # Required fields check
         if not email or not password:
-            return jsonify({"error": "Email and password are required"}), 400
+            return jsonify({"error": "Email and password are required"}), HTTPStatus.BAD_REQUEST
+
+        # Password length/complexity check
+        if len(password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters"}), HTTPStatus.BAD_REQUEST
+
+        # Domain validation: exact match
+        allowed_domains = ["rutgers.edu", "scarletmail.rutgers.edu"]
+        domain = email.split("@")[-1]
+        if domain not in allowed_domains:
+            # Minor typo detection using sequence similarity
+            for ad in allowed_domains:
+                if SequenceMatcher(None, domain, ad).ratio() >= 0.9:
+                    return jsonify({"error": "Invalid email domain"}), HTTPStatus.BAD_REQUEST
+            # Completely invalid domain
+            return jsonify({"error": "Only @rutgers.edu or @scarletmail.rutgers.edu emails are allowed"}), HTTPStatus.BAD_REQUEST
+
+        # Duplicate Email Check
+        for doc in db.collection("users").stream():
+            existing = doc.to_dict().get("settings", {}).get("email", "").lower()
+            if existing == email:
+                return jsonify({"error": "Email already in use"}), HTTPStatus.BAD_REQUEST
 
         # Assemble Firestore document
         user_data = {
@@ -148,67 +147,33 @@ def create_user():
             "matched_users": [],
             "notification_token": None
         }
-        #logger.info("Writing user data to Firestore:")
-        print("Writing user data to Firestore:")
 
-        #logger.info(user_data)
-        print(user_data)
-
-
-        # Use your service to create the user
         result = create_user_in_firebase(email, password, user_data)
-
         if "error" in result:
-            return jsonify(result), 500
-
-        return jsonify(result), 201
+            return jsonify(result), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify(result), HTTPStatus.CREATED
 
     except Exception as e:
-        #logger.warning(f"Error processing request: {str(e)}")
-        print(f"Error processing request: {str(e)}")
-
-        return jsonify({"error": "Internal server error"}), 500
+        #logger.warning(f"Error processing request: {e}")
+        print(f"Error processing request: {e}")
+        return jsonify({"error": "Internal server error"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @user_routes.route("/set_notification_token", methods=["POST"])
 def set_notification_token():
     """
-    Stores or updates the Expo push notification token for the authenticated user.
-
-    Expects a valid Firebase ID token in the Authorization header (handled by verify_token()).
-    The request body must include:
-      - `token` (string): The Expo push token to associate with the user.
-
-    The user ID is derived from the Firebase decoded token.
-    The token is saved under the `notification_token` field in the user's Firestore document.
-
-    Returns:
-        201 Created: If the token was successfully saved.
-        400 Bad Request: If the token is missing from the request.
-        404 Not Found: If the user document does not exist in Firestore.
-        500 Internal Server Error: If an unexpected error occurs.
+    Stores or updates the notification token.
     """
     decoded_token, error = verify_token()
     if error:
         return error
-    try:
-        data = request.json or {}
-        user_id = data.get("userID")
-        token = data.get("token")
-        if not user_id or not token:
-            return jsonify({'error': 'user_id and token required'}), 400
-        
-        # Assemble Firestore document
-        user_data = db.collection('users').document(user_id)
-        if not user_data.get():
-            return jsonify({'fail': 'user not found'}), 404
-        user_data.update({"notification_token": token})
-        #logger.info("Writing user data to Firestore:")
-        print("Writing token to Firestore:")
+    data = request.json or {}
+    user_id = data.get("userID")
+    token = data.get("token")
+    if not user_id or not token:
+        return jsonify({'error': 'user_id and token required'}), HTTPStatus.BAD_REQUEST
 
-        return jsonify({'notice': 'success!'}), 201
-
-    except Exception as e:
-        #logger.warning(f"Error processing request: {str(e)}")
-        print(f"Error processing request: {str(e)}")
-
-        return jsonify({"error": "Internal server error"}), 500
+    user_ref = db.collection('users').document(user_id)
+    if not user_ref.get().exists:
+        return jsonify({'fail': 'user not found'}), HTTPStatus.NOT_FOUND
+    user_ref.update({"notification_token": token})
+    return jsonify({'notice': 'success!'}), HTTPStatus.CREATED
