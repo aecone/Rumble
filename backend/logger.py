@@ -6,12 +6,12 @@ LOG_FILE = "/tmp/app.log"
 
 class NewYorkFormatter(logging.Formatter):
     def converter(self, timestamp):
-        dt_utc = datetime.fromtimestamp(timestamp, timezone.utc)
-        ny_tz = pytz.timezone('America/New_York')
-        return dt_utc.replace(tzinfo=pytz.timezone.utc).astimezone(ny_tz)
+        dt_utc = datetime.fromtimestamp(timestamp, timezone.utc)  # Convert float to datetime in UTC
+        ny_tz = pytz.timezone('America/New_York')  # New York timezone
+        return dt_utc.astimezone(ny_tz)  # Convert UTC datetime to New York timezone
 
     def formatTime(self, record, datefmt=None):
-        dt = self.converter(record.created)
+        dt = self.converter(record.created)  # Convert the timestamp
         if datefmt:
             return dt.strftime(datefmt)
         else:
