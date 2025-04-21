@@ -102,9 +102,8 @@ const MenteeAreas = () => {
             }
 
             if (response.ok) {
-                router.push({
-                    pathname: "/SuccessProfileCreation",
-                });
+                Alert.alert("Success", "Account created successfully!");
+                router.push("/SuccessProfileCreation");
             } else {
                 Alert.alert("Error", data.error || `Sign up failed (${response.status}). Please try again.`);
             }
