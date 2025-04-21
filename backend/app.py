@@ -253,44 +253,45 @@ def get_logs():
                                 method = message.split(" ")[0];
                             }
 
+                            const newRow = document.createElement("tr");
+                            newRow.setAttribute("data-ip", ip);
+                            newRow.classList.add('new-log');
 
-                                const ipClass = ip === "N/A" ? "na-ip" : "";
-                                newRow.innerHTML = `
-                                    <td>${timestamp}</td>
-                                    <td class="${level.toLowerCase()}">${level}</td>
-                                    <td class="${ipClass}">${ip}</td>
-                                    <td>${method}</td>
-                                    <td>${message}</td>
-                                `;
+                            const ipClass = ip === "N/A" ? "na-ip" : "";
 
+                            newRow.innerHTML = `
+                                <td>${timestamp}</td>
+                                <td class="${level.toLowerCase()}">${level}</td>
+                                <td class="${ipClass}">${ip}</td>
+                                <td>${method}</td>
+                                <td>${message}</td>
+                            `;
 
+                            applyRowColor(newRow, ip);
 
-                                applyRowColor(newRow, ip);
+                            // Make the IP cell clickable
+                            const ipCell = newRow.cells[2];
+                            makeIpClickable(ipCell, ip);
 
-                                // Make the new IP cell clickable
-                                const ipCell = newRow.cells[2];
-                                makeIpClickable(ipCell, ip);
+                            if (tableBody.firstChild) {
+                                tableBody.insertBefore(newRow, tableBody.firstChild);
+                            } else {
+                                tableBody.appendChild(newRow);
+                            }
 
-                                if (tableBody.firstChild) {
-                                    tableBody.insertBefore(newRow, tableBody.firstChild);
-                                } else {
-                                    tableBody.appendChild(newRow);
-                                }
+                            setTimeout(() => {
+                                newRow.classList.remove('new-log');
+                            }, 1000);
 
-                                setTimeout(() => {
-                                    newRow.classList.remove('new-log');
-                                }, 1000);
+                            while (tableBody.rows.length > maxRows) {
+                                tableBody.deleteRow(tableBody.rows.length - 1);
+                            }
 
-                                while (tableBody.rows.length > maxRows) {
-                                    tableBody.deleteRow(tableBody.rows.length - 1);
-                                }
-
-                                // If filtering is active, re-apply it
-                                if (currentFilterIp) {
-                                    filterRowsByIp(currentFilterIp);
-                                }
+                            if (currentFilterIp) {
+                                filterRowsByIp(currentFilterIp);
                             }
                         };
+
 
                         eventSource.onerror = function(err) {
                             console.error("EventSource failed:", err);

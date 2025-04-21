@@ -6,7 +6,7 @@ LOG_FILE = "/tmp/app.log"
 
 class NewYorkFormatter(logging.Formatter):
     def converter(self, timestamp):
-        dt_utc = datetime.fromtimestamp(timestamp, tz=pytz.utc)
+        dt_utc = datetime.utcfromtimestamp(timestamp)
         ny_tz = pytz.timezone('America/New_York')
         return dt_utc.replace(tzinfo=pytz.utc).astimezone(ny_tz)
 
@@ -23,13 +23,14 @@ class RequestIPFilter(logging.Filter):
             from flask import request
             forwarded_for = request.headers.get('X-Forwarded-For', '')
             if forwarded_for:
-                # Take only the first IP
                 record.ip = forwarded_for.split(',')[0].strip()
             else:
                 record.ip = request.remote_addr or 'N/A'
         except RuntimeError:
             record.ip = 'N/A'
         return True
+
+# ✅ Custom flush handler for file
 class FlushFileHandler(logging.FileHandler):
     def emit(self, record):
         super().emit(record)
@@ -40,18 +41,25 @@ formatter = NewYorkFormatter(
     datefmt="%Y-%m-%d %I:%M:%S %p %Z"
 )
 
-handler = FlushFileHandler(LOG_FILE)
-handler.setFormatter(formatter)
+# File handler (for /logs endpoint)
+file_handler = FlushFileHandler(LOG_FILE)
+file_handler.setFormatter(formatter)
+
+# Stream handler (for Render + Better Stack)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
 
 logger = logging.getLogger("FlaskApp")
 logger.setLevel(logging.INFO)
-logger.addHandler(handler)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 werkzeug_logger = logging.getLogger("werkzeug")
 werkzeug_logger.setLevel(logging.INFO)
-werkzeug_logger.addHandler(handler)
+werkzeug_logger.addHandler(file_handler)
+werkzeug_logger.addHandler(stream_handler)
 
-# Add IP filter to both loggers
+# IP filter for both
 ip_filter = RequestIPFilter()
 logger.addFilter(ip_filter)
 werkzeug_logger.addFilter(ip_filter)
