@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   TextInput,
   SafeAreaView,
 } from 'react-native';
@@ -28,7 +27,7 @@ interface FilterOptions {
   [key: string]: any; // For any additional properties
 }
 
-const filtering = () => {
+const Filtering = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   
@@ -406,4 +405,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default filtering;
+export default Filtering;
