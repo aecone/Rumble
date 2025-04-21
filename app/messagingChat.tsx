@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList } from 'r
 import { useLocalSearchParams } from 'expo-router';
 import { auth } from '../FirebaseConfig';
 import { Image } from 'react-native'; 
+import { API_BASE_URL } from "../FirebaseConfig";
 
 
 export default function MessagingChat() {
@@ -18,7 +19,7 @@ export default function MessagingChat() {
     try {
       const token = await auth.currentUser?.getIdToken(true);
       const response = await fetch(
-        `http://127.0.0.1:5000/api/conversation?targetID=${matchId}`,
+        `${API_BASE_URL}/conversation?targetID=${matchId}`,
         {
           headers: token ? { Authorization: token } : undefined,
         }
@@ -53,7 +54,7 @@ export default function MessagingChat() {
       console.log("Sending message to:", matchId);
       console.log("Message content:", newMessage);
   
-      const response = await fetch(`http://127.0.0.1:5000/api/message`, {
+      const response = await fetch(`${API_BASE_URL}/message`, {
         method: "POST",
         headers: {
           ...(token && { Authorization: token }),

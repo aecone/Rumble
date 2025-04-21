@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import { API_BASE_URL } from "../FirebaseConfig";
 
 const predefinedMentorshipAreas = [
     "Career Advice", "Resume Review", "Interview Prep", "Networking", "Leadership",
@@ -77,7 +78,7 @@ const MentorAreas = () => {
             console.log("Sending data to server:", JSON.stringify(userData, null, 2));
 
             // Make the API call
-            const response = await fetch("http://127.0.0.1:5000/api/create_user", {
+            const response = await fetch(`${API_BASE_URL}/create_user`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

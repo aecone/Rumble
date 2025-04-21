@@ -11,6 +11,7 @@ import { Alert, Platform } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { useColorScheme } from '@/components/useColorScheme';
 import '@/firebase'; // make sure firebase is initialized here
+import { API_BASE_URL } from "../FirebaseConfig";
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -52,7 +53,7 @@ export default function RootLayout() {
       if (user) {
         const idToken = await user.getIdToken();
 
-        await fetch('http://127.0.0.1:5000/api/set_notification_token', {
+        await fetch(`${API_BASE_URL}/set_notification_token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

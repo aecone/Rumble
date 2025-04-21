@@ -403,7 +403,7 @@ export default function TabFourScreen() {
                     placeholder="Tell us about yourself..."
                   />
                 ) : (
-                  <Text style={styles.sectionText}>{userProfile.profile.bio || "No bio provided"}</Text>
+                  <Text style={styles.sectionText}>{userProfile.profile.bio || "Edit to add Bio"}</Text>
                 )}
               </View>
             </View>
