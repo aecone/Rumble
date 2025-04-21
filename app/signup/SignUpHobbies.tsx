@@ -38,10 +38,10 @@ const SignUpHobbies = () => {
   const hobbiesArray = normalizeToArray(hobbies);
 
   const toggleHobby = (hobby: string) => {
-    setField("hobbies", (prevHobbies: string[]) =>
-      toggleValueInArray(prevHobbies, hobby)
-    );
+    const updatedHobbies = toggleValueInArray(hobbiesArray, hobby);
+    setField("hobbies", updatedHobbies);
   };
+  
 
   const proceed = () => {
 

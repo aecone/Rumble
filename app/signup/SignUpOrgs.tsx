@@ -37,8 +37,10 @@ const SignUpOrgs = () => {
   const orgsArray = normalizeToArray(orgs);
 
   const toggleOrg = (org: string) => {
-    setField("orgs", (prevOrgs: string[]) => toggleValueInArray(prevOrgs, org));
+    const updatedOrgs = toggleValueInArray(normalizeToArray(orgs), org);
+    setField("orgs", updatedOrgs);
   };
+  
 
   const proceed = () => {
     router.push(Routes.MentorOrMentee);

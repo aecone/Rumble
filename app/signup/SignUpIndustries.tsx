@@ -39,9 +39,8 @@ const SignUpIndustries = () => {
   const industriesArray = normalizeToArray(interestedIndustries);
 
   const toggleIndustry = (industry: string) => {
-    setField("interestedIndustries", (prevIndustries: string[]) =>
-      toggleValueInArray(prevIndustries, industry)
-    );
+    const updatedIndustries = toggleValueInArray(normalizeToArray(interestedIndustries), industry);
+    setField("interestedIndustries", updatedIndustries);
   };
 
   const proceed = () => {
