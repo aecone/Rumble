@@ -36,6 +36,54 @@ export const Dimensions = {
   }
 };
 
+export const useWindowDimensions = () => ({
+  width: 375,
+  height: 667,
+});
+
+const createValue = (initial = 0) => ({
+  _value: initial,
+  setValue: jest.fn(),
+  interpolate: jest.fn(() => ({
+    __isInterpolated__: true,
+  })),
+});
+
+const createAnimatedValue = (initial = 0) => ({
+  _value: initial,
+  setValue: jest.fn(),
+  interpolate: jest.fn(() => ({
+    __interpolated: true,
+    toString: () => 'interpolated-value',
+  })),
+});
+
+export const Animated = {
+  Value: jest.fn((val) => createAnimatedValue(val)),
+  ValueXY: jest.fn(() => ({
+    x: createAnimatedValue(),
+    y: createAnimatedValue(),
+    setValue: jest.fn(),
+    setOffset: jest.fn(),
+    flattenOffset: jest.fn(),
+    extractOffset: jest.fn(),
+  })),
+  event: jest.fn(() => jest.fn()),
+  timing: jest.fn(() => ({
+    start: jest.fn((cb) => cb && cb()),
+  })),
+  spring: jest.fn(() => ({
+    start: jest.fn((cb) => cb && cb()),
+  })),
+  decay: jest.fn(() => ({
+    start: jest.fn((cb) => cb && cb()),
+  })),
+};
+
+
+
+
+
 
 export const Platform = {
   OS: 'ios',
