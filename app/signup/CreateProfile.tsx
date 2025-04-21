@@ -10,7 +10,7 @@ import { router } from "expo-router";
 import { auth } from "../../FirebaseConfig";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths } from "../utils/routes";
 
 const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
@@ -24,8 +24,16 @@ const checkEmailExists = async (email: string): Promise<boolean> => {
 
 export default function CreateProfile() {
   const { email, password, setField } = useSignupStore();
-  const setEmail = (text: string) => setField('email', text);
-  const setPassword = (text: string) => setField('password', text);
+  const setEmail = (text: string) => setField("email", text);
+  const validDomains = ["@rutgers.edu", "@scarletmail.rutgers.edu"];
+  const atIndex = email.indexOf("@");
+  
+  const isValidRutgersEmail = 
+    atIndex !== -1 &&
+    validDomains.some((domain) => email.toLowerCase().endsWith(domain)) &&
+    email.indexOf("@") === email.lastIndexOf("@"); // only one "@"
+  
+  const setPassword = (text: string) => setField("password", text);
   const proceed = async () => {
     try {
       const emailExists = await checkEmailExists(email); // Check if email exists
@@ -44,8 +52,7 @@ export default function CreateProfile() {
 
       if (
         !(
-          email.toLowerCase().endsWith("@rutgers.edu") ||
-          email.toLowerCase().endsWith("@scarletmail.rutgers.edu")
+          isValidRutgersEmail
         )
       ) {
         alert("Please use a valid Rutgers email address.");
@@ -53,8 +60,8 @@ export default function CreateProfile() {
       }
 
       // Navigate to the next page (Email/Password entry)
-      router.push(Routes.SignUpName);
-        } catch (error) {
+      router.push(signupStepPaths.SignUpName);
+    } catch (error) {
       console.error("Error checking email:", error);
       alert("An error occurred while checking the email. Please try again.");
     }

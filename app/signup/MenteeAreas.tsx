@@ -11,7 +11,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { API_BASE_URL } from "../../FirebaseConfig";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
 
 const predefinedMentorshipAreas = [
   "Career Advice",
@@ -162,7 +162,7 @@ const MenteeAreas = () => {
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!");
         useSignupStore.getState().reset(); // <-- CLEAR SIGNUP FORM DATA
-        router.push(Routes.Login);
+        router.push(signupStepPaths.Login);
       } else {
         Alert.alert(
           "Error",

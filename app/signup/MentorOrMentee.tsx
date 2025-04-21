@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
 
 const MentorOrMentee = () => {
   const { userType, setField } = useSignupStore(); // <-- Get userType from Zustand
@@ -18,9 +18,9 @@ const MentorOrMentee = () => {
     }
 
     if (userType === "mentor") {
-      router.push(Routes.MentorAreas);
+      router.push(signupStepPaths.MentorAreas);
     } else {
-      router.push(Routes.MenteeAreas);
+      router.push(signupStepPaths.MenteeAreas);
     }
   };
 

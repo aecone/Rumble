@@ -1,4 +1,6 @@
 
+import { signupStepPaths } from "./routes";
+
 // Always turn input into a clean array
 export const normalizeToArray = (value: any): string[] => {
     if (Array.isArray(value)) return value;
@@ -14,3 +16,19 @@ export const normalizeToArray = (value: any): string[] => {
       : [...arr, value];
   };
   
+
+export const signupStepOrder = [
+  signupStepPaths.SignUpName,
+  signupStepPaths.SignUpBirthday,
+  signupStepPaths.SignUpMajor,
+  signupStepPaths.SignUpGradYear,
+  signupStepPaths.SignUpEthnicity,
+  signupStepPaths.SignUpGenderPronouns,
+  signupStepPaths.SignUpHobbies,
+  signupStepPaths.SignUpCareer,
+  signupStepPaths.SignUpIndustries,
+  signupStepPaths.SignUpOrgs,
+  signupStepPaths.MentorOrMentee,
+  signupStepPaths.MenteeAreas,
+  signupStepPaths.MentorAreas,
+];

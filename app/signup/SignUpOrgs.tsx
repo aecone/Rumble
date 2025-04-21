@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
 
 const predefinedOrgs = [
   "Women in Product",
@@ -43,7 +43,7 @@ const SignUpOrgs = () => {
   
 
   const proceed = () => {
-    router.push(Routes.MentorOrMentee);
+    router.push(signupStepPaths.MentorOrMentee);
   };
 
   const isFormValid = orgs.length > 0;

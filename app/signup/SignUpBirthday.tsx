@@ -8,7 +8,7 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
 
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
@@ -68,7 +68,7 @@ const Birthday = () => {
 
   const proceed = () => {
     if (validateDate(birthday)) {
-      router.push(Routes.SignUpMajor);
+      router.push(signupStepPaths.SignUpMajor);
     }
   };
 

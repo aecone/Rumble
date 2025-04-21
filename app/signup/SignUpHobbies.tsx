@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
 
 const predefinedHobbies = [
   "Reading",
@@ -45,7 +45,7 @@ const SignUpHobbies = () => {
 
   const proceed = () => {
 
-        router.push(Routes.SignUpCareer);
+        router.push(signupStepPaths.SignUpCareer);
     
   };
 
