@@ -2,58 +2,60 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
-const SignUpEthnicity = () => {
-  const { ethnicity, setField } = useSignupStore();
+const SignUpGenderPronouns = () => {
+  const { gender, pronouns, setField } = useSignupStore();
 
-  const [open, setOpen] = useState(false);
+  const [genderOpen, setGenderOpen] = useState(false);
+  const [pronounsOpen, setPronounsOpen] = useState(false);
 
-  const ethnicityItems = [
-    { label: "Asian", value: "Asian" },
-    { label: "East Asian", value: "East Asian" },
-    { label: "South Asian", value: "South Asian" },
-    { label: "Southeast Asian", value: "Southeast Asian" },
-    { label: "Middle Eastern/Arab", value: "Middle Eastern/Arab" },
-    {
-      label: "American Indian/Alaskan Native",
-      value: "American Indian/Alaskan Native",
-    },
-    { label: "African American", value: "African American" },
-    {
-      label: "Native Hawaiian or Pacific Islander",
-      value: "Native Hawaiian or Pacific Islander",
-    },
-    { label: "Hispanic or Latino", value: "Hispanic or Latino" },
-    { label: "White", value: "White" },
-    { label: "Multiracial", value: "Multiracial" },
+  const genderItems = [
+    { label: "Woman", value: "Woman" },
+    { label: "Man", value: "Man" },
+    { label: "Non-binary", value: "Non-binary" },
+    { label: "Genderfluid", value: "Genderfluid" },
+    { label: "Prefer not to say", value: "Prefer not to say" },
+    { label: "Other", value: "Other" },
+  ];
+
+  const pronounsItems = [
+    { label: "He/Him", value: "He/Him" },
+    { label: "She/Her", value: "She/Her" },
+    { label: "They/Them", value: "They/Them" },
+    { label: "He/They", value: "He/They" },
+    { label: "She/They", value: "She/They" },
+    { label: "Ze/Hir", value: "Ze/Hir" },
+    { label: "Ze/Zir", value: "Ze/Zir" },
+    { label: "Xe/Xem", value: "Xe/Xem" },
     { label: "Prefer not to say", value: "Prefer not to say" },
     { label: "Other", value: "Other" },
   ];
 
   const proceed = () => {
-    router.push("/SignUpGenderPronouns");
+    router.push("/signup/SignUpHobbies");
   };
 
-  const isFormValid = ethnicity !== "";
+  // Check if both fields are filled
+  const isFormValid = gender !== "" && pronouns !== "";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please select your race/ethnicity</Text>
+      <Text style={styles.title}>Please select your gender & pronouns</Text>
 
-      {/* DropDown Picker */}
-      <View style={styles.pickerWrapper}>
+      {/* Gender Dropdown */}
+      <View style={[styles.pickerWrapper, { zIndex: 3 }]}>
         <DropDownPicker
-          open={open}
-          value={ethnicity}
-          items={ethnicityItems}
-          setOpen={setOpen}
+          open={genderOpen}
+          value={gender}
+          items={genderItems}
+          setOpen={setGenderOpen}
           setValue={(callback) => {
-            const selectedEthnicity =
-              typeof callback === "function" ? callback(ethnicity) : callback;
-            setField("ethnicity", selectedEthnicity);
+            const selectedGender =
+              typeof callback === "function" ? callback(gender) : callback;
+            setField("gender", selectedGender);
           }}
-          placeholder="Select Race/Ethnicity"
+          placeholder="Select Gender"
           style={styles.dropdownStyle}
           textStyle={styles.dropdownTextStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
@@ -64,6 +66,44 @@ const SignUpEthnicity = () => {
           maxHeight={300}
           autoScroll={true}
           showTickIcon={true}
+          onOpen={() => setPronounsOpen(false)}
+          tickIconStyle={{
+            width: 15,
+            height: 15,
+            backgroundColor: "#92C7C5",
+            borderRadius: 50,
+          }}
+          arrowIconStyle={{
+            backgroundColor: "#92C7C5",
+            borderRadius: 50,
+          }}
+        />
+      </View>
+
+      {/* Pronouns Dropdown */}
+      <View style={[styles.pickerWrapper, { zIndex: 2 }]}>
+        <DropDownPicker
+          open={pronounsOpen}
+          value={pronouns}
+          items={pronounsItems}
+          setOpen={setPronounsOpen}
+          setValue={(callback) => {
+            const selectedPronouns =
+              typeof callback === "function" ? callback(pronouns) : callback;
+            setField("pronouns", selectedPronouns);
+          }}
+          placeholder="Select Pronouns"
+          style={styles.dropdownStyle}
+          textStyle={styles.dropdownTextStyle}
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+          placeholderStyle={styles.placeholderStyle}
+          listItemContainerStyle={styles.listItemContainerStyle}
+          selectedItemContainerStyle={styles.selectedItemContainerStyle}
+          selectedItemLabelStyle={styles.selectedItemLabelStyle}
+          maxHeight={300}
+          autoScroll={true}
+          showTickIcon={true}
+          onOpen={() => setGenderOpen(false)}
           tickIconStyle={{
             width: 15,
             height: 15,
@@ -91,7 +131,7 @@ const SignUpEthnicity = () => {
   );
 };
 
-export default SignUpEthnicity;
+export default SignUpGenderPronouns;
 
 const styles = StyleSheet.create({
   container: {
@@ -115,7 +155,6 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 350,
     marginVertical: 10,
-    zIndex: 2, // Important for the dropdown to show above other elements
   },
   dropdownStyle: {
     backgroundColor: "#534E5B",

@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
-import { normalizeToArray, toggleValueInArray } from './utils/signupHelpers';
+import { useSignupStore } from "../utils/useSignupStore";
+import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 
 const predefinedOrgs = [
   "Women in Product",
@@ -35,13 +35,12 @@ const SignUpOrgs = () => {
   const { orgs, setField } = useSignupStore();
   const orgsArray = normalizeToArray(orgs);
 
-const toggleOrg = (org: string) => {
-  setField('orgs', (prevOrgs: string[]) => toggleValueInArray(prevOrgs, org));
-};
-
+  const toggleOrg = (org: string) => {
+    setField("orgs", (prevOrgs: string[]) => toggleValueInArray(prevOrgs, org));
+  };
 
   const proceed = () => {
-    router.push("/MentorOrMentee");
+    router.push("/signup/MentorOrMentee");
   };
 
   const isFormValid = orgs.length > 0;

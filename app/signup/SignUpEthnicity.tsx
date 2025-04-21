@@ -2,54 +2,58 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
-const SignUpCareer = () => {
-  const { careerPath, setField } = useSignupStore();
+const SignUpEthnicity = () => {
+  const { ethnicity, setField } = useSignupStore();
 
   const [open, setOpen] = useState(false);
 
-  const careerItems = [
-    { label: "UI/UX", value: "UI/UX" },
-    { label: "Medicine", value: "Medicine" },
-    { label: "Politician", value: "Politician" },
-    { label: "Law", value: "Law" },
-    { label: "Design", value: "Design" },
-    { label: "Research", value: "Research" },
-    { label: "Finance", value: "Finance" },
-    { label: "Data Science", value: "Data Science" },
-    { label: "Data Engineering", value: "Data Engineering" },
-    { label: "Software Engineering", value: "Software Engineering" },
-    { label: "Computer Engineering", value: "Computer Engineering" },
-    { label: "Biomedical Engineering", value: "Biomedical Engineering" },
-    { label: "Electrical Engineering", value: "Electrical Engineering" },
-    { label: "Marketing", value: "Marketing" },
+  const ethnicityItems = [
+    { label: "Asian", value: "Asian" },
+    { label: "East Asian", value: "East Asian" },
+    { label: "South Asian", value: "South Asian" },
+    { label: "Southeast Asian", value: "Southeast Asian" },
+    { label: "Middle Eastern/Arab", value: "Middle Eastern/Arab" },
+    {
+      label: "American Indian/Alaskan Native",
+      value: "American Indian/Alaskan Native",
+    },
+    { label: "African American", value: "African American" },
+    {
+      label: "Native Hawaiian or Pacific Islander",
+      value: "Native Hawaiian or Pacific Islander",
+    },
+    { label: "Hispanic or Latino", value: "Hispanic or Latino" },
+    { label: "White", value: "White" },
+    { label: "Multiracial", value: "Multiracial" },
+    { label: "Prefer not to say", value: "Prefer not to say" },
     { label: "Other", value: "Other" },
   ];
 
   const proceed = () => {
-    router.push("/SignUpIndustries");
+    router.push("/signup/SignUpGenderPronouns");
   };
 
-  const isFormValid = careerPath !== "";
+  const isFormValid = ethnicity !== "";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's your intended career</Text>
+      <Text style={styles.title}>Please select your race/ethnicity</Text>
 
       {/* DropDown Picker */}
       <View style={styles.pickerWrapper}>
         <DropDownPicker
           open={open}
-          value={careerPath}
-          items={careerItems}
+          value={ethnicity}
+          items={ethnicityItems}
           setOpen={setOpen}
           setValue={(callback) => {
-            const selectedCareer =
-              typeof callback === "function" ? callback(careerPath) : callback;
-            setField("careerPath", selectedCareer); // Notice: match your Firebase field name "careerPath"
+            const selectedEthnicity =
+              typeof callback === "function" ? callback(ethnicity) : callback;
+            setField("ethnicity", selectedEthnicity);
           }}
-          placeholder="Select career"
+          placeholder="Select Race/Ethnicity"
           style={styles.dropdownStyle}
           textStyle={styles.dropdownTextStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
@@ -87,7 +91,7 @@ const SignUpCareer = () => {
   );
 };
 
-export default SignUpCareer;
+export default SignUpEthnicity;
 
 const styles = StyleSheet.create({
   container: {
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#534E5B",
     paddingHorizontal: 20,
-    zIndex: 1,
+    zIndex: 1, // Important for the dropdown to show properly
   },
   title: {
     fontSize: 26,
@@ -111,7 +115,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 350,
     marginVertical: 10,
-    zIndex: 2,
+    zIndex: 2, // Important for the dropdown to show above other elements
   },
   dropdownStyle: {
     backgroundColor: "#534E5B",
@@ -142,10 +146,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "#444",
   },
   selectedItemContainerStyle: {
-    backgroundColor: "rgba(146, 199, 197, 0.2)",
+    backgroundColor: "rgba(146, 199, 197, 0.2)", // Light teal background for selected item
   },
   selectedItemLabelStyle: {
-    color: "#92C7C5",
+    color: "#92C7C5", // Teal text for selected item
     fontWeight: "bold",
   },
   button: {
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
     alignItems: "center",
-    zIndex: 0,
+    zIndex: 0, // Ensure button stays below dropdown
   },
   text: {
     color: "#534E5B",

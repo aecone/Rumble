@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
-import { normalizeToArray, toggleValueInArray } from './utils/signupHelpers';
+import { useSignupStore } from "../utils/useSignupStore";
+import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 
 const predefinedHobbies = [
   "Reading",
@@ -36,13 +36,14 @@ const SignUpHobbies = () => {
   const { hobbies, setField } = useSignupStore();
   const hobbiesArray = normalizeToArray(hobbies);
 
-const toggleHobby = (hobby: string) => {
-  setField('hobbies', (prevHobbies: string[]) => toggleValueInArray(prevHobbies, hobby));
-};
-
+  const toggleHobby = (hobby: string) => {
+    setField("hobbies", (prevHobbies: string[]) =>
+      toggleValueInArray(prevHobbies, hobby)
+    );
+  };
 
   const proceed = () => {
-    router.push("/SignUpCareer");
+    router.push("/signup/SignUpCareer");
   };
 
   const isFormValid = hobbiesArray.length > 0;

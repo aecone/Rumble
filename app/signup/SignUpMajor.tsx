@@ -2,45 +2,56 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
-const SignUpGradYear = () => {
-  const { gradYear, setField } = useSignupStore();
-
+const SignUpMajor = () => {
+  const { major, setField } = useSignupStore();
   const [open, setOpen] = useState(false);
 
-  const yearItems = [
-    { label: "2025", value: "2025" },
-    { label: "2026", value: "2026" },
-    { label: "2027", value: "2027" },
-    { label: "2028", value: "2028" },
-    { label: "2029", value: "2029" },
+  const majorItems = [
+    { label: "Computer Science", value: "Computer Science" },
+    { label: "Mechanical Engineering", value: "Mechanical Engineering" },
+    { label: "Electrical Engineering", value: "Electrical Engineering" },
+    { label: "Business Administration", value: "Business Administration" },
+    { label: "BAIT", value: "BAIT" },
+    { label: "Information Technology", value: "Information Technology" },
+    { label: "Biomedical Engineering", value: "Biomedical Engineering" },
+    { label: "Communications", value: "Communications" },
+    { label: "Civil Engineering", value: "Civil Engineering" },
+    { label: "Engineering (other)", value: "Engineering (other)" },
+    { label: "Psychology", value: "Psychology" },
+    { label: "Public Health", value: "Public Health" },
+    { label: "Biology", value: "Biology" },
+    { label: "English", value: "English" },
+    { label: "History", value: "History" },
+    { label: "Political Science", value: "Political Science" },
+    { label: "Arts", value: "Arts" },
     { label: "Other", value: "Other" },
   ];
 
   const proceed = () => {
-    router.push("/SignUpEthnicity");
+    router.push("/signup/SignUpGradYear");
   };
 
-  const isFormValid = gradYear !== "";
+  const isFormValid = major !== "";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's your anticipated graduation year?</Text>
+      <Text style={styles.title}>What's your major?</Text>
 
       {/* DropDown Picker */}
       <View style={styles.pickerWrapper}>
         <DropDownPicker
           open={open}
-          value={gradYear}
-          items={yearItems}
+          value={major}
+          items={majorItems}
           setOpen={setOpen}
           setValue={(callback) => {
-            const selectedYear =
-              typeof callback === "function" ? callback(gradYear) : callback;
-            setField("gradYear", selectedYear);
+            const selectedMajor =
+              typeof callback === "function" ? callback(major) : callback;
+            setField("major", selectedMajor);
           }}
-          placeholder="Select Graduation Year"
+          placeholder="Select Major"
           style={styles.dropdownStyle}
           textStyle={styles.dropdownTextStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
@@ -78,7 +89,7 @@ const SignUpGradYear = () => {
   );
 };
 
-export default SignUpGradYear;
+export default SignUpMajor;
 
 const styles = StyleSheet.create({
   container: {

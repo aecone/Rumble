@@ -2,60 +2,45 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
-const SignUpGenderPronouns = () => {
-  const { gender, pronouns, setField } = useSignupStore();
+const SignUpGradYear = () => {
+  const { gradYear, setField } = useSignupStore();
 
-  const [genderOpen, setGenderOpen] = useState(false);
-  const [pronounsOpen, setPronounsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const genderItems = [
-    { label: "Woman", value: "Woman" },
-    { label: "Man", value: "Man" },
-    { label: "Non-binary", value: "Non-binary" },
-    { label: "Genderfluid", value: "Genderfluid" },
-    { label: "Prefer not to say", value: "Prefer not to say" },
-    { label: "Other", value: "Other" },
-  ];
-
-  const pronounsItems = [
-    { label: "He/Him", value: "He/Him" },
-    { label: "She/Her", value: "She/Her" },
-    { label: "They/Them", value: "They/Them" },
-    { label: "He/They", value: "He/They" },
-    { label: "She/They", value: "She/They" },
-    { label: "Ze/Hir", value: "Ze/Hir" },
-    { label: "Ze/Zir", value: "Ze/Zir" },
-    { label: "Xe/Xem", value: "Xe/Xem" },
-    { label: "Prefer not to say", value: "Prefer not to say" },
+  const yearItems = [
+    { label: "2025", value: "2025" },
+    { label: "2026", value: "2026" },
+    { label: "2027", value: "2027" },
+    { label: "2028", value: "2028" },
+    { label: "2029", value: "2029" },
     { label: "Other", value: "Other" },
   ];
 
   const proceed = () => {
-    router.push("/SignUpHobbies");
+    router.push("/signup/SignUpEthnicity");
   };
 
-  // Check if both fields are filled
-  const isFormValid = gender !== "" && pronouns !== "";
+  const isFormValid = gradYear !== "";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please select your gender & pronouns</Text>
+      <Text style={styles.title}>What's your anticipated graduation year?</Text>
 
-      {/* Gender Dropdown */}
-      <View style={[styles.pickerWrapper, { zIndex: 3 }]}>
+      {/* DropDown Picker */}
+      <View style={styles.pickerWrapper}>
         <DropDownPicker
-          open={genderOpen}
-          value={gender}
-          items={genderItems}
-          setOpen={setGenderOpen}
+          open={open}
+          value={gradYear}
+          items={yearItems}
+          setOpen={setOpen}
           setValue={(callback) => {
-            const selectedGender =
-              typeof callback === "function" ? callback(gender) : callback;
-            setField("gender", selectedGender);
+            const selectedYear =
+              typeof callback === "function" ? callback(gradYear) : callback;
+            setField("gradYear", selectedYear);
           }}
-          placeholder="Select Gender"
+          placeholder="Select Graduation Year"
           style={styles.dropdownStyle}
           textStyle={styles.dropdownTextStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
@@ -66,44 +51,6 @@ const SignUpGenderPronouns = () => {
           maxHeight={300}
           autoScroll={true}
           showTickIcon={true}
-          onOpen={() => setPronounsOpen(false)}
-          tickIconStyle={{
-            width: 15,
-            height: 15,
-            backgroundColor: "#92C7C5",
-            borderRadius: 50,
-          }}
-          arrowIconStyle={{
-            backgroundColor: "#92C7C5",
-            borderRadius: 50,
-          }}
-        />
-      </View>
-
-      {/* Pronouns Dropdown */}
-      <View style={[styles.pickerWrapper, { zIndex: 2 }]}>
-        <DropDownPicker
-          open={pronounsOpen}
-          value={pronouns}
-          items={pronounsItems}
-          setOpen={setPronounsOpen}
-          setValue={(callback) => {
-            const selectedPronouns =
-              typeof callback === "function" ? callback(pronouns) : callback;
-            setField("pronouns", selectedPronouns);
-          }}
-          placeholder="Select Pronouns"
-          style={styles.dropdownStyle}
-          textStyle={styles.dropdownTextStyle}
-          dropDownContainerStyle={styles.dropDownContainerStyle}
-          placeholderStyle={styles.placeholderStyle}
-          listItemContainerStyle={styles.listItemContainerStyle}
-          selectedItemContainerStyle={styles.selectedItemContainerStyle}
-          selectedItemLabelStyle={styles.selectedItemLabelStyle}
-          maxHeight={300}
-          autoScroll={true}
-          showTickIcon={true}
-          onOpen={() => setGenderOpen(false)}
           tickIconStyle={{
             width: 15,
             height: 15,
@@ -131,7 +78,7 @@ const SignUpGenderPronouns = () => {
   );
 };
 
-export default SignUpGenderPronouns;
+export default SignUpGradYear;
 
 const styles = StyleSheet.create({
   container: {
@@ -155,6 +102,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 350,
     marginVertical: 10,
+    zIndex: 2, // Important for the dropdown to show above other elements
   },
   dropdownStyle: {
     backgroundColor: "#534E5B",

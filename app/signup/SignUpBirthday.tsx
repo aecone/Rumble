@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
@@ -67,7 +67,7 @@ const Birthday = () => {
 
   const proceed = () => {
     if (validateDate(birthday)) {
-      router.push("/SignUpMajor");
+      router.push("/signup/SignUpMajor");
     }
   };
 

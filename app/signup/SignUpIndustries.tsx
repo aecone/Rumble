@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
-import { normalizeToArray, toggleValueInArray } from './utils/signupHelpers';
+import { useSignupStore } from "../utils/useSignupStore";
+import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 
 const predefinedIndustries = [
   "Technology",
@@ -37,13 +37,14 @@ const SignUpIndustries = () => {
   const { interestedIndustries, setField } = useSignupStore();
   const industriesArray = normalizeToArray(interestedIndustries);
 
-const toggleIndustry = (industry: string) => {
-  setField('interestedIndustries', (prevIndustries: string[]) => toggleValueInArray(prevIndustries, industry));
-};
-
+  const toggleIndustry = (industry: string) => {
+    setField("interestedIndustries", (prevIndustries: string[]) =>
+      toggleValueInArray(prevIndustries, industry)
+    );
+  };
 
   const proceed = () => {
-    router.push("/SignUpOrgs");
+    router.push("/signup/SignUpOrgs");
   };
 
   const isFormValid = industriesArray.length > 0;

@@ -2,56 +2,54 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSignupStore } from "./utils/useSignupStore";
+import { useSignupStore } from "../utils/useSignupStore";
 
-const SignUpMajor = () => {
-  const { major, setField } = useSignupStore();
+const SignUpCareer = () => {
+  const { careerPath, setField } = useSignupStore();
+
   const [open, setOpen] = useState(false);
 
-  const majorItems = [
-    { label: "Computer Science", value: "Computer Science" },
-    { label: "Mechanical Engineering", value: "Mechanical Engineering" },
-    { label: "Electrical Engineering", value: "Electrical Engineering" },
-    { label: "Business Administration", value: "Business Administration" },
-    { label: "BAIT", value: "BAIT" },
-    { label: "Information Technology", value: "Information Technology" },
+  const careerItems = [
+    { label: "UI/UX", value: "UI/UX" },
+    { label: "Medicine", value: "Medicine" },
+    { label: "Politician", value: "Politician" },
+    { label: "Law", value: "Law" },
+    { label: "Design", value: "Design" },
+    { label: "Research", value: "Research" },
+    { label: "Finance", value: "Finance" },
+    { label: "Data Science", value: "Data Science" },
+    { label: "Data Engineering", value: "Data Engineering" },
+    { label: "Software Engineering", value: "Software Engineering" },
+    { label: "Computer Engineering", value: "Computer Engineering" },
     { label: "Biomedical Engineering", value: "Biomedical Engineering" },
-    { label: "Communications", value: "Communications" },
-    { label: "Civil Engineering", value: "Civil Engineering" },
-    { label: "Engineering (other)", value: "Engineering (other)" },
-    { label: "Psychology", value: "Psychology" },
-    { label: "Public Health", value: "Public Health" },
-    { label: "Biology", value: "Biology" },
-    { label: "English", value: "English" },
-    { label: "History", value: "History" },
-    { label: "Political Science", value: "Political Science" },
-    { label: "Arts", value: "Arts" },
+    { label: "Electrical Engineering", value: "Electrical Engineering" },
+    { label: "Marketing", value: "Marketing" },
     { label: "Other", value: "Other" },
   ];
 
   const proceed = () => {
-    router.push("/SignUpGradYear");
+    router.push("/signup/SignUpIndustries");
   };
 
-  const isFormValid = major !== "";
+  const isFormValid = careerPath !== "";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's your major?</Text>
+      <Text style={styles.title}>What's your intended career</Text>
 
       {/* DropDown Picker */}
       <View style={styles.pickerWrapper}>
         <DropDownPicker
           open={open}
-          value={major}
-          items={majorItems}
+          value={careerPath}
+          items={careerItems}
           setOpen={setOpen}
           setValue={(callback) => {
-            const selectedMajor =
-              typeof callback === "function" ? callback(major) : callback;
-            setField("major", selectedMajor);
+            const selectedCareer =
+              typeof callback === "function" ? callback(careerPath) : callback;
+            setField("careerPath", selectedCareer); // Notice: match your Firebase field name "careerPath"
           }}
-          placeholder="Select Major"
+          placeholder="Select career"
           style={styles.dropdownStyle}
           textStyle={styles.dropdownTextStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
@@ -89,7 +87,7 @@ const SignUpMajor = () => {
   );
 };
 
-export default SignUpMajor;
+export default SignUpCareer;
 
 const styles = StyleSheet.create({
   container: {
@@ -98,7 +96,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#534E5B",
     paddingHorizontal: 20,
-    zIndex: 1, // Important for the dropdown to show properly
+    zIndex: 1,
   },
   title: {
     fontSize: 26,
@@ -113,7 +111,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 350,
     marginVertical: 10,
-    zIndex: 2, // Important for the dropdown to show above other elements
+    zIndex: 2,
   },
   dropdownStyle: {
     backgroundColor: "#534E5B",
@@ -144,10 +142,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "#444",
   },
   selectedItemContainerStyle: {
-    backgroundColor: "rgba(146, 199, 197, 0.2)", // Light teal background for selected item
+    backgroundColor: "rgba(146, 199, 197, 0.2)",
   },
   selectedItemLabelStyle: {
-    color: "#92C7C5", // Teal text for selected item
+    color: "#92C7C5",
     fontWeight: "bold",
   },
   button: {
@@ -157,7 +155,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
     alignItems: "center",
-    zIndex: 0, // Ensure button stays below dropdown
+    zIndex: 0,
   },
   text: {
     color: "#534E5B",

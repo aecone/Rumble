@@ -8,9 +8,9 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { API_BASE_URL } from "../FirebaseConfig";
-import { useSignupStore } from "./utils/useSignupStore";
-import { normalizeToArray, toggleValueInArray } from './utils/signupHelpers';
+import { API_BASE_URL } from "../../FirebaseConfig";
+import { useSignupStore } from "../utils/useSignupStore";
+import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 
 const predefinedMentorshipAreas = [
   "Career Advice",
@@ -33,7 +33,7 @@ const predefinedMentorshipAreas = [
   "Skill Building",
 ];
 
-const MenteeAreas = () => {
+const MentorAreas = () => {
   // Retrieve user data passed from the previous screen
   const {
     firstName,
@@ -56,16 +56,15 @@ const MenteeAreas = () => {
     string[]
   >([]);
 
-  const toggleMentorshipArea = (area: string) => {
-    const newSelectedAreas = selectedMentorshipAreas.includes(area)
-      ? selectedMentorshipAreas.filter((a) => a !== area) // Remove if selected
-      : [...selectedMentorshipAreas, area]; // Add if not selected
+  const mentorshipAreasArray = normalizeToArray(selectedMentorshipAreas);
 
-    setSelectedMentorshipAreas(newSelectedAreas);
+  const toggleMentorshipArea = (area: string) => {
+    setSelectedMentorshipAreas((prevAreas) => toggleValueInArray(prevAreas, area));
   };
+  
 
   const handleSignUp = async () => {
-    if (selectedMentorshipAreas.length === 0) {
+    if (mentorshipAreasArray.length === 0) {
       Alert.alert("Error", "Please select at least one area of mentorship.");
       return;
     }
@@ -124,8 +123,8 @@ const MenteeAreas = () => {
           ? careerPath[0]
           : careerPath || "",
         interestedIndustries: industriesArray,
-        userType: "mentee",
-        mentorshipAreas: selectedMentorshipAreas,
+        userType: "mentor",
+        mentorshipAreas: mentorshipAreasArray,
       };
 
       // Log the data being sent
@@ -191,7 +190,7 @@ const MenteeAreas = () => {
             <TouchableOpacity
               style={[
                 styles.chip,
-                selectedMentorshipAreas.includes(item)
+                mentorshipAreasArray.includes(item)
                   ? styles.selectedChip
                   : styles.unselectedChip,
               ]}
@@ -200,7 +199,7 @@ const MenteeAreas = () => {
               <Text
                 style={[
                   styles.chipText,
-                  selectedMentorshipAreas.includes(item)
+                  mentorshipAreasArray.includes(item)
                     ? styles.selectedChipText
                     : styles.unselectedChipText,
                 ]}
@@ -218,11 +217,11 @@ const MenteeAreas = () => {
           styles.signupButton,
           {
             backgroundColor:
-              selectedMentorshipAreas.length > 0 ? "#FFFFFF" : "#B0BEC5",
+            mentorshipAreasArray.length > 0 ? "#FFFFFF" : "#B0BEC5",
           },
         ]}
         onPress={handleSignUp}
-        disabled={selectedMentorshipAreas.length === 0}
+        disabled={mentorshipAreasArray.length === 0}
       >
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
@@ -230,7 +229,7 @@ const MenteeAreas = () => {
   );
 };
 
-export default MenteeAreas;
+export default MentorAreas;
 
 const styles = StyleSheet.create({
   container: {
