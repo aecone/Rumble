@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { get, find, search, emojify } from 'node-emoji';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -646,12 +647,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingTop: 100,
+    paddingTop: 20,
   },
   card: {
     position: 'absolute',
     width: 400,
-    height: 700,
+    height: 720,
     borderRadius: 30,
     backgroundColor: '#F9F5F2',
     elevation: 4,
