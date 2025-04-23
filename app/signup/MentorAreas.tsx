@@ -5,9 +5,12 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  Platform,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import React, { useState } from "react";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { API_BASE_URL } from "../../FirebaseConfig";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
@@ -35,7 +38,6 @@ const predefinedMentorshipAreas = [
 ];
 
 const MentorAreas = () => {
-  // Retrieve user data passed from the previous screen
   const {
     firstName,
     lastName,
@@ -53,16 +55,12 @@ const MentorAreas = () => {
     orgs,
   } = useSignupStore();
 
-  const [selectedMentorshipAreas, setSelectedMentorshipAreas] = useState<
-    string[]
-  >([]);
-
+  const [selectedMentorshipAreas, setSelectedMentorshipAreas] = useState<string[]>([]);
   const mentorshipAreasArray = normalizeToArray(selectedMentorshipAreas);
 
   const toggleMentorshipArea = (area: string) => {
     setSelectedMentorshipAreas((prevAreas) => toggleValueInArray(prevAreas, area));
   };
-  
 
   const handleSignUp = async () => {
     if (mentorshipAreasArray.length === 0) {
@@ -81,30 +79,10 @@ const MentorAreas = () => {
 
       // Prepare data for API call
       const gradYearString = Array.isArray(gradYear) ? gradYear[0] : gradYear;
-      const gradYearNumber = gradYearString
-        ? parseInt(gradYearString, 10)
-        : null;
-      const hobbiesArray = Array.isArray(hobbies)
-        ? hobbies
-        : hobbies
-          ? String(hobbies)
-              .split(",")
-              .map((hobby) => hobby.trim())
-          : [];
-      const industriesArray = Array.isArray(interestedIndustries)
-        ? interestedIndustries
-        : interestedIndustries
-          ? String(interestedIndustries)
-              .split(",")
-              .map((industry) => industry.trim())
-          : [];
-      const orgsArray = Array.isArray(orgs)
-        ? orgs
-        : orgs
-          ? String(orgs)
-              .split(",")
-              .map((org) => org.trim())
-          : [];
+      const gradYearNumber = gradYearString ? parseInt(gradYearString, 10) : null;
+      const hobbiesArray = Array.isArray(hobbies) ? hobbies : hobbies ? String(hobbies).split(",").map((hobby) => hobby.trim()) : [];
+      const industriesArray = Array.isArray(interestedIndustries) ? interestedIndustries : interestedIndustries ? String(interestedIndustries).split(",").map((industry) => industry.trim()) : [];
+      const orgsArray = Array.isArray(orgs) ? orgs : orgs ? String(orgs).split(",").map((org) => org.trim()) : [];
 
       const userData = {
         email: emailString,
@@ -120,16 +98,11 @@ const MentorAreas = () => {
         gradYear: gradYearNumber,
         hobbies: hobbiesArray,
         orgs: orgsArray,
-        careerPath: Array.isArray(careerPath)
-          ? careerPath[0]
-          : careerPath || "",
+        careerPath: Array.isArray(careerPath) ? careerPath[0] : careerPath || "",
         interestedIndustries: industriesArray,
         userType: "mentor",
         mentorshipAreas: mentorshipAreasArray,
       };
-
-      // Log the data being sent
-      console.log("Sending data to server:", JSON.stringify(userData, null, 2));
 
       // Make the API call
       const response = await fetch(`${API_BASE_URL}/create_user`, {
@@ -140,20 +113,10 @@ const MentorAreas = () => {
         body: JSON.stringify(userData),
       });
 
-      // Log the full response
-      console.log("Response status:", response.status);
-      console.log(
-        "Response headers:",
-        JSON.stringify([...response.headers.entries()])
-      );
-
       const responseText = await response.text();
-      console.log("Response body:", responseText);
-
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log("Parsed response data:", data);
       } catch (e) {
         console.error("Failed to parse response as JSON:", responseText);
         data = { error: "Invalid server response" };
@@ -161,14 +124,10 @@ const MentorAreas = () => {
 
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!");
-        useSignupStore.getState().reset(); // <-- CLEAR SIGNUP FORM DATA
+        useSignupStore.getState().reset();
         router.push("/signup/SuccessProfileCreation");
-
       } else {
-        Alert.alert(
-          "Error",
-          data.error || `Sign up failed (${response.status}). Please try again.`
-        );
+        Alert.alert("Error", data.error || `Sign up failed (${response.status}). Please try again.`);
       }
     } catch (error) {
       console.error("Sign up error:", error);
@@ -178,55 +137,62 @@ const MentorAreas = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What areas would you like mentorship in?</Text>
-      <Text style={styles.subtitle}>
-        Please select your areas of mentorship
-      </Text>
-
-      <View style={styles.listContainer}>
-        <FlatList
-          data={predefinedMentorshipAreas}
-          numColumns={3}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.chip,
-                mentorshipAreasArray.includes(item)
-                  ? styles.selectedChip
-                  : styles.unselectedChip,
-              ]}
-              onPress={() => toggleMentorshipArea(item)}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  mentorshipAreasArray.includes(item)
-                    ? styles.selectedChipText
-                    : styles.unselectedChipText,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.chipContainer}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.signupButton,
-          {
-            backgroundColor:
-            mentorshipAreasArray.length > 0 ? "#FFFFFF" : "#B0BEC5",
-          },
-        ]}
-        onPress={handleSignUp}
-        disabled={mentorshipAreasArray.length === 0}
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
+        <View style={styles.contentWrapper}>
+          <Text style={styles.title}>What areas would you like to mentor in?</Text>
+          <Text style={styles.subtitle}>
+            Please select your areas of mentorship
+          </Text>
+
+          <View style={styles.listContainer}>
+            <FlatList
+              data={predefinedMentorshipAreas}
+              numColumns={2}
+              keyExtractor={(item: string) => item}
+              renderItem={({ item }: { item: string }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.chip,
+                    mentorshipAreasArray.includes(item)
+                      ? styles.selectedChip
+                      : styles.unselectedChip,
+                  ]}
+                  onPress={() => toggleMentorshipArea(item)}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      mentorshipAreasArray.includes(item)
+                        ? styles.selectedChipText
+                        : styles.unselectedChipText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.chipContainer}
+              scrollEnabled={false}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.signupButton,
+              {
+                backgroundColor: mentorshipAreasArray.length > 0 ? "#FFFFFF" : "#B0BEC5",
+              },
+            ]}
+            onPress={handleSignUp}
+            disabled={mentorshipAreasArray.length === 0}
+          >
+            <Text style={styles.buttonText}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -236,26 +202,53 @@ export default MentorAreas;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#534E5B",
-    padding: 80,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: Platform.select({
+      web: 20,
+      default: 20,
+    }),
+    paddingBottom: 20,
+  },
+  contentWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    minHeight: Platform.select({
+      web: 'auto',
+      default: Dimensions.get('window').height * 0.8,
+    }),
   },
   title: {
-    fontSize: 26,
+    fontSize: Platform.select({
+      web: 26,
+      default: 22,
+    }),
     fontWeight: "700",
     marginBottom: 10,
     color: "#FFFFFF",
     textAlign: "center",
+    marginTop: Platform.select({
+      web: 0,
+      default: 40,
+    }),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: Platform.select({
+      web: 16,
+      default: 14,
+    }),
     color: "#FFFFFF",
     marginBottom: 20,
     textAlign: "center",
   },
   listContainer: {
     marginVertical: 20,
+    maxHeight: Platform.select({
+      web: 'auto',
+      default: Dimensions.get('window').height * 0.6,
+    }),
   },
   chipContainer: {
     alignItems: "center",
@@ -263,17 +256,20 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: Platform.select({
+      web: 15,
+      default: 10,
+    }),
     borderRadius: 20,
     margin: 6,
     alignItems: "center",
     justifyContent: "center",
   },
   selectedChip: {
-    backgroundColor: "#92C7C5", // Teal when selected
+    backgroundColor: "#92C7C5",
   },
   unselectedChip: {
-    backgroundColor: "#E8EAF6", // Light gray when unselected
+    backgroundColor: "#E8EAF6",
   },
   selectedChipText: {
     color: "#FFFFFF",
@@ -287,15 +283,30 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     width: "100%",
     alignItems: "center",
+    marginTop: Platform.select({
+      web: 20,
+      default: 20,
+    }),
+    marginBottom: Platform.select({
+      web: 0,
+      default: 20,
+    }),
   },
   buttonText: {
     color: "#534E5B",
-    fontSize: 18,
+    fontSize: Platform.select({
+      web: 18,
+      default: 16,
+    }),
     fontWeight: "600",
   },
   chipText: {
     color: "#534E5B",
-    fontSize: 18,
+    fontSize: Platform.select({
+      web: 18,
+      default: 14,
+    }),
     fontWeight: "600",
+    textAlign: 'center',
   },
 });
