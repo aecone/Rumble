@@ -61,12 +61,11 @@ const Filtering = () => {
   ];
   
   const majors = [
-    '', 'Computer Science', 'Business', 'Engineering',
+    '', 'Computer Science', 'Business',
     'Biology', 'Economics', 'Political Science', 'Mathematics', 'English',
     'Mechanical Engineering', 'Electrical Engineering', 'Business Administration', 'BAIT',
     'Information Technology', 'Biomedical Engineering', 'Communications', 'Civil Engineering', 
-    'Engineering (other)', 'Psychology', 'Public Health', 'Biology', 'English', 'History',
-    'Political Science', 'Arts', 'Other'
+    'Engineering (other)', 'Psychology', 'Public Health', 'History', 'Arts', 'Film', 'Physics', 'Chemistry', 'Pharm', 'Other'
   ];
 
   const ethnicities = [
@@ -238,7 +237,7 @@ const Filtering = () => {
             setOpen={setOpenYear}
             setValue={setYearValue}
             setItems={setYearItems}
-            onChangeValue={(value) => {
+            onChangeValue={(value: any) => {
               setFilters({...filters, gradYear: value || ''});
             }}
             style={styles.dropdown}
@@ -260,7 +259,7 @@ const Filtering = () => {
             setOpen={setOpenMajor}
             setValue={setMajorValue}
             setItems={setMajorItems}
-            onChangeValue={(value) => {
+            onChangeValue={(value: any) => {
               setFilters({...filters, major: value || ''});
             }}
             style={styles.dropdown}
@@ -282,7 +281,7 @@ const Filtering = () => {
             setOpen={setOpenPath}
             setValue={setPathValue}
             setItems={setPathItems}
-            onChangeValue={(value) => {
+            onChangeValue={(value: any) => {
               setFilters({...filters, careerPath: value || ''});
             }}
             style={styles.dropdown}
