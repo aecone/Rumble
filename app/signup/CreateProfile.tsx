@@ -11,6 +11,7 @@ import { auth } from "../../FirebaseConfig";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { useSignupStore } from "../utils/useSignupStore";
 import { signupStepPaths } from "../utils/routes";
+import { BackButton } from "../components/BackButton";
 
 const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
@@ -69,6 +70,8 @@ export default function CreateProfile() {
 
   return (
     <SafeAreaView style={styles.container}>
+          <BackButton   textStyle={{ color: "black", fontSize: 18 }}/>
+      
       <Text style={styles.title}>Sign Up</Text>
       <Text style={styles.titleSubText}>Please sign up to continue.</Text>
       <TextInput

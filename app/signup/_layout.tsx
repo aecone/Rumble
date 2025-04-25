@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../utils/useAuthStore";
-import { signupStepOrder } from "../utils/signupHelpers";
+import { baseSignupStepOrder } from "../utils/signupHelpers";
 import { useRouter, usePathname, Slot } from "expo-router";
 import { BackHandler, Alert } from "react-native";
 
@@ -26,7 +26,7 @@ export default function SignupLayout() {
   useEffect(() => {
     const backAction = () => {
       if (pathname === "/signup/CreateProfile") {
-        return false; 
+        return false;
       }
       if (!pathname.startsWith("/signup")) {
         // If not in signup flow, allow normal back
@@ -63,4 +63,3 @@ export default function SignupLayout() {
 
   return <Slot />;
 }
-  

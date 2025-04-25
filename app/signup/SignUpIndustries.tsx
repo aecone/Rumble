@@ -10,6 +10,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
 const predefinedIndustries = [
   "Technology",
@@ -37,20 +40,20 @@ const predefinedIndustries = [
 const SignUpIndustries = () => {
   const { interestedIndustries, setField } = useSignupStore();
   const industriesArray = normalizeToArray(interestedIndustries);
+const { onNext } = useSignupNavigation();
 
   const toggleIndustry = (industry: string) => {
     const updatedIndustries = toggleValueInArray(normalizeToArray(interestedIndustries), industry);
     setField("interestedIndustries", updatedIndustries);
   };
 
-  const proceed = () => {
-    router.push(signupStepPaths.SignUpOrgs);
-  };
 
   const isFormValid = industriesArray.length > 0;
 
   return (
     <View style={styles.container}>
+              <BackButton />
+      
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>What industries are you interested in?</Text>
 
@@ -85,16 +88,8 @@ const SignUpIndustries = () => {
           />
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-          ]}
-          onPress={proceed}
-          disabled={!isFormValid}
-        >
-          <Text style={styles.text}>Next</Text>
-        </TouchableOpacity>
+      <NextButton next={signupStepPaths.SignUpOrgs} disabled={!isFormValid} />
+
       </View>
     </View>
   );

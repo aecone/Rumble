@@ -10,6 +10,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
 const predefinedHobbies = [
   "Reading",
@@ -36,6 +39,7 @@ const predefinedHobbies = [
 const SignUpHobbies = () => {
   const { hobbies, setField } = useSignupStore();
   const hobbiesArray = normalizeToArray(hobbies);
+const { onNext } = useSignupNavigation();
 
   const toggleHobby = (hobby: string) => {
     const updatedHobbies = toggleValueInArray(hobbiesArray, hobby);
@@ -43,16 +47,14 @@ const SignUpHobbies = () => {
   };
   
 
-  const proceed = () => {
 
-        router.push(signupStepPaths.SignUpCareer);
-    
-  };
 
   const isFormValid = hobbiesArray.length > 0;
 
   return (
     <View style={styles.container}>
+              <BackButton />
+      
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>Select your hobbies and interests</Text>
 
@@ -87,16 +89,8 @@ const SignUpHobbies = () => {
           />
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-          ]}
-          onPress={proceed}
-          disabled={!isFormValid}
-        >
-          <Text style={styles.text}>Next</Text>
-        </TouchableOpacity>
+      <NextButton next={signupStepPaths.SignUpCareer} disabled={!isFormValid} />
+
       </View>
     </View>
   );

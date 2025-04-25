@@ -16,8 +16,9 @@ export const normalizeToArray = (value: any): string[] => {
       : [...arr, value];
   };
   
+  
 
-export const signupStepOrder = [
+export const baseSignupStepOrder = [
   signupStepPaths.SignUpName,
   signupStepPaths.SignUpBirthday,
   signupStepPaths.SignUpMajor,
@@ -29,6 +30,18 @@ export const signupStepOrder = [
   signupStepPaths.SignUpIndustries,
   signupStepPaths.SignUpOrgs,
   signupStepPaths.MentorOrMentee,
-  signupStepPaths.MenteeAreas,
-  signupStepPaths.MentorAreas,
 ];
+export type SignupStepPath =
+  | (typeof baseSignupStepOrder)[number]
+  | typeof signupStepPaths.MentorAreas
+  | typeof signupStepPaths.MenteeAreas;
+
+export function getFullSignupStepOrder(userType: "mentor" | "mentee" | null): SignupStepPath[] {
+  if (userType === "mentor") {
+    return [...baseSignupStepOrder, signupStepPaths.MentorAreas];
+  } else if (userType === "mentee") {
+    return [...baseSignupStepOrder, signupStepPaths.MenteeAreas];
+  } else {
+    return baseSignupStepOrder;
+  }
+}

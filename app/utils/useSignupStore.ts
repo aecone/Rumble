@@ -15,7 +15,7 @@ interface SignupState {
   careerPath: string;
   interestedIndustries: string[];
   orgs: string[];
-  userType: string;
+  userType: "mentor" | "mentee" | null; 
   mentorshipAreas: string[];
 
   setField: (field: keyof SignupState, value: any) => void;
@@ -37,7 +37,7 @@ export const useSignupStore = create<SignupState>((set) => ({
   careerPath: '',
   interestedIndustries: [],
   orgs: [],
-  userType: '',
+  userType: null,
   mentorshipAreas: [],
   
   setField: (field, value) => set((state) => ({ ...state, [field]: value })),
@@ -57,7 +57,7 @@ export const useSignupStore = create<SignupState>((set) => ({
     careerPath: '',
     interestedIndustries: [],
     orgs: [],
-    userType: '',
+    userType: null,
     mentorshipAreas: [],
   }))
 }));

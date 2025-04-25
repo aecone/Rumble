@@ -9,6 +9,8 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
@@ -66,16 +68,12 @@ const Birthday = () => {
     return true;
   };
 
-  const proceed = () => {
-    if (validateDate(birthday)) {
-      router.push(signupStepPaths.SignUpMajor);
-    }
-  };
-
   const isFormValid = !error && birthday.length === 10;
 
   return (
     <View style={styles.container}>
+      <BackButton />
+      
       <Text style={styles.title}>What's Your Birthday?</Text>
 
       <TextInput
@@ -89,16 +87,8 @@ const Birthday = () => {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+      <NextButton next={signupStepPaths.SignUpMajor} disabled={!isFormValid} />
+
     </View>
   );
 };

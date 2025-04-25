@@ -10,7 +10,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
 import { signupStepPaths} from "../utils/routes";
-
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 const predefinedOrgs = [
   "Women in Product",
   "USACS",
@@ -50,6 +52,8 @@ const SignUpOrgs = () => {
 
   return (
     <View style={styles.container}>
+              <BackButton />
+      
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>What organizations are you a part of?</Text>
 

@@ -4,6 +4,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
 
 const SignUpCareer = () => {
   const { careerPath, setField } = useSignupStore();
@@ -36,6 +37,8 @@ const SignUpCareer = () => {
 
   return (
     <View style={styles.container}>
+             <BackButton />
+      
       <Text style={styles.title}>What's your intended career</Text>
 
       {/* DropDown Picker */}
