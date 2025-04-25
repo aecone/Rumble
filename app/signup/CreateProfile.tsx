@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { router } from "expo-router";
 import { auth } from "../../FirebaseConfig";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
@@ -28,7 +28,8 @@ export default function CreateProfile() {
   const setEmail = (text: string) => setField("email", text);
   const validDomains = ["@rutgers.edu", "@scarletmail.rutgers.edu"];
   const atIndex = email.indexOf("@");
-  
+  const passwordRef = useRef<TextInput>(null);
+
   const isValidRutgersEmail = 
     atIndex !== -1 &&
     validDomains.some((domain) => email.toLowerCase().endsWith(domain)) &&
@@ -75,18 +76,25 @@ export default function CreateProfile() {
       <Text style={styles.title}>Sign Up</Text>
       <Text style={styles.titleSubText}>Please sign up to continue.</Text>
       <TextInput
-        style={styles.textInput}
-        placeholder="email"
-        value={email}
-        onChangeText={setEmail}
-      />
+  style={styles.textInput}
+  placeholder="email"
+  value={email}
+  onChangeText={setEmail}
+  returnKeyType="next" // show "Next" on the keyboard
+  onSubmitEditing={() => passwordRef.current?.focus()} // focus password field
+/>
+
       <TextInput
-        style={styles.textInput}
-        placeholder="password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+  ref={passwordRef} // connect the ref
+  style={styles.textInput}
+  placeholder="password"
+  value={password}
+  onChangeText={setPassword}
+  secureTextEntry
+  returnKeyType="done" // show "Done" on the keyboard
+  onSubmitEditing={proceed} // 🔥 call proceed when Enter is hit
+/>
+
       <TouchableOpacity style={styles.button} onPress={proceed}>
         <Text style={styles.text}>Create</Text>
       </TouchableOpacity>
