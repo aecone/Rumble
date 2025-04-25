@@ -4,7 +4,7 @@ import base64
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  
-from logger import logger  # Import the logger
+
 import requests
 
 # Load Firebase credentials from environment variable

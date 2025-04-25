@@ -1,7 +1,6 @@
 from flask import Flask, Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
-from logger import logger  # Import the logger
 from firebase_admin import firestore
 from http import HTTPStatus
 from difflib import SequenceMatcher
