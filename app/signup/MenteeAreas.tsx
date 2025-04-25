@@ -142,9 +142,9 @@ const MenteeAreas = () => {
       <BackButton />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled" />
-      
-      <Text style={styles.title}>What areas would you like mentorship in?</Text>
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.title}>What areas would you like mentorship in?</Text>
       <Text style={styles.subtitle}>
         Please select your areas of mentorship
       </Text>
@@ -153,8 +153,8 @@ const MenteeAreas = () => {
         <FlatList
           data={predefinedMentorshipAreas}
           numColumns={3}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
+          keyExtractor={(item: string) => item}
+          renderItem={({ item }: { item: string }) => (
             <TouchableOpacity
               style={[
                 styles.chip,
@@ -191,57 +191,8 @@ const MenteeAreas = () => {
         onPress={handleSignUp}
         disabled={mentorshipAreasArray.length === 0}
       >
-        <View style={styles.contentWrapper}>
-          <Text style={styles.title}>What areas would you like mentorship in?</Text>
-          <Text style={styles.subtitle}>
-            Please select your areas of mentorship
-          </Text>
-
-          <View style={styles.listContainer}>
-            <FlatList
-              data={predefinedMentorshipAreas}
-              numColumns={2}
-              keyExtractor={(item: string) => item}
-              renderItem={({ item }: { item: string }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.chip,
-                    mentorshipAreasArray.includes(item)
-                      ? styles.selectedChip
-                      : styles.unselectedChip,
-                  ]}
-                  onPress={() => toggleMentorshipArea(item)}
-                >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      mentorshipAreasArray.includes(item)
-                        ? styles.selectedChipText
-                        : styles.unselectedChipText,
-                    ]}
-                  >
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={styles.chipContainer}
-              scrollEnabled={false}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.signupButton,
-              {
-                backgroundColor: mentorshipAreasArray.length > 0 ? "#FFFFFF" : "#B0BEC5",
-              },
-            ]}
-            onPress={handleSignUp}
-            disabled={mentorshipAreasArray.length === 0}
-          >
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
       </ScrollView>
     </View>
   );

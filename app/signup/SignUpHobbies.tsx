@@ -55,6 +55,7 @@ const SignUpHobbies = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton/>
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
