@@ -12,7 +12,10 @@ import React from "react";
 import { router } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
 const predefinedIndustries = [
   "Technology",
@@ -42,20 +45,19 @@ const { height } = Dimensions.get('window');
 const SignUpIndustries = () => {
   const { interestedIndustries, setField } = useSignupStore();
   const industriesArray = normalizeToArray(interestedIndustries);
+const { onNext } = useSignupNavigation();
 
   const toggleIndustry = (industry: string) => {
     const updatedIndustries = toggleValueInArray(industriesArray, industry);
     setField("interestedIndustries", updatedIndustries);
   };
 
-  const proceed = () => {
-    router.push(Routes.SignUpOrgs);
-  };
 
   const isFormValid = industriesArray.length > 0;
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
@@ -95,17 +97,9 @@ const SignUpIndustries = () => {
             />
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-            ]}
-            onPress={proceed}
-            disabled={!isFormValid}
-          >
-            <Text style={styles.buttonText}>Next</Text>
-          </TouchableOpacity>
-        </View>
+      <NextButton next={signupStepPaths.SignUpOrgs} disabled={!isFormValid} />
+
+      </View>
       </ScrollView>
     </View>
   );

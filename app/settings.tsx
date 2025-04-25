@@ -62,10 +62,19 @@ export default function Settings() {
   const [emailChanged, setEmailChanged] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
+
   // Check if email is valid Rutgers address and not already registered
   const checkEmail = async (email: string) => {
+    const validDomains = ["@rutgers.edu", "@scarletmail.rutgers.edu"];
+    const atIndex = email.indexOf("@");
+    
+    const isValidRutgersEmail = 
+      atIndex !== -1 &&
+      validDomains.some((domain) => email.toLowerCase().endsWith(domain)) &&
+      email.indexOf("@") === email.lastIndexOf("@"); // only one "@"
+    
     try {
-      if (!(email.toLowerCase().endsWith("@rutgers.edu") || email.toLowerCase().endsWith("@scarletmail.rutgers.edu"))) {
+      if (!isValidRutgersEmail) {
         alert("Please use a valid Rutgers email address.");
         return false;
       }

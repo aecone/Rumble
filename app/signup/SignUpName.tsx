@@ -5,50 +5,53 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+
+
+
 
 const SignUpName = () => {
   const { firstName, lastName, setField } = useSignupStore();
-
-  const proceed = () => {
-
-            router.push(Routes.SignUpBirthday);
-    
-  };
+const lastNameRef = useRef<TextInput>(null);
+const { onNext } = useSignupNavigation();
 
   // Check if both fields are filled
   const isFormValid = firstName.trim() !== "" && lastName.trim() !== "";
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>What's your name?</Text>
-      <TextInput
-        style={styles.textInput}
+      <View style={styles.container}>
+        <BackButton />
+        <Text style={styles.title}>What's your name?</Text>
+        <TextInput
+         style={styles.textInput}
         placeholder="First Name"
         value={firstName}
         onChangeText={(text) => setField("firstName", text)}
+        returnKeyType="next"
+        onSubmitEditing={() => lastNameRef.current?.focus()} // move to Last Name field
       />
 
       <TextInput
-        style={styles.textInput}
+       style={styles.textInput}
+        ref={lastNameRef}
         placeholder="Last Name"
         value={lastName}
         onChangeText={(text) => setField("lastName", text)}
+        returnKeyType="done"
+        onSubmitEditing={() => {
+          if (isFormValid) {
+            onNext(signupStepPaths.SignUpBirthday);
+          }
+        }}
       />
+      <NextButton next={signupStepPaths.SignUpBirthday} disabled={!isFormValid} />
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]} // Change button color based on validity
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
     </View>
   );
 };

@@ -5,12 +5,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { router } from "expo-router";
 import { auth } from "../../FirebaseConfig";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths } from "../utils/routes";
+import { BackButton } from "../components/BackButton";
 
 const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
@@ -24,8 +25,17 @@ const checkEmailExists = async (email: string): Promise<boolean> => {
 
 export default function CreateProfile() {
   const { email, password, setField } = useSignupStore();
-  const setEmail = (text: string) => setField('email', text);
-  const setPassword = (text: string) => setField('password', text);
+  const setEmail = (text: string) => setField("email", text);
+  const validDomains = ["@rutgers.edu", "@scarletmail.rutgers.edu"];
+  const atIndex = email.indexOf("@");
+  const passwordRef = useRef<TextInput>(null);
+
+  const isValidRutgersEmail = 
+    atIndex !== -1 &&
+    validDomains.some((domain) => email.toLowerCase().endsWith(domain)) &&
+    email.indexOf("@") === email.lastIndexOf("@"); // only one "@"
+  
+  const setPassword = (text: string) => setField("password", text);
   const proceed = async () => {
     try {
       const emailExists = await checkEmailExists(email); // Check if email exists
@@ -44,8 +54,7 @@ export default function CreateProfile() {
 
       if (
         !(
-          email.toLowerCase().endsWith("@rutgers.edu") ||
-          email.toLowerCase().endsWith("@scarletmail.rutgers.edu")
+          isValidRutgersEmail
         )
       ) {
         alert("Please use a valid Rutgers email address.");
@@ -53,8 +62,8 @@ export default function CreateProfile() {
       }
 
       // Navigate to the next page (Email/Password entry)
-      router.push(Routes.SignUpName);
-        } catch (error) {
+      router.push(signupStepPaths.SignUpName);
+    } catch (error) {
       console.error("Error checking email:", error);
       alert("An error occurred while checking the email. Please try again.");
     }
@@ -62,23 +71,30 @@ export default function CreateProfile() {
 
   return (
     <SafeAreaView style={styles.container}>
+          <BackButton   textStyle={{ color: "black", fontSize: 18 }}/>
+      
       <Text style={styles.title}>Sign Up</Text>
       <Text style={styles.titleSubText}>Please sign up to continue.</Text>
       <TextInput
-        style={styles.textInput}
-        placeholder="email"
-        placeholderTextColor="#757575"
-        value={email}
-        onChangeText={setEmail}
-      />
+  style={styles.textInput}
+  placeholder="email"
+  value={email}
+  onChangeText={setEmail}
+  returnKeyType="next" // show "Next" on the keyboard
+  onSubmitEditing={() => passwordRef.current?.focus()} // focus password field
+/>
+
       <TextInput
-        style={styles.textInput}
-        placeholder="password"
-        placeholderTextColor="#757575"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+  ref={passwordRef} // connect the ref
+  style={styles.textInput}
+  placeholder="password"
+  value={password}
+  onChangeText={setPassword}
+  secureTextEntry
+  returnKeyType="done" // show "Done" on the keyboard
+  onSubmitEditing={proceed} // 🔥 call proceed when Enter is hit
+/>
+
       <TouchableOpacity style={styles.button} onPress={proceed}>
         <Text style={styles.text}>Create</Text>
       </TouchableOpacity>
@@ -103,7 +119,7 @@ const styles = StyleSheet.create({
     height: 50, // Standard height for elegance and simplicity
     width: "90%", // Full width for a more expansive feel
     backgroundColor: "#EDEDED", // Pure white for contrast against the container
-    placeholderTextColor : "#9E9E9E",
+    placeholderTextColor: "#757575",
     borderColor: "#E8EAF6", // A very light indigo border for subtle contrast
     borderWidth: 2,
     borderRadius: 40, // Softly rounded corners for a modern, friendly touch

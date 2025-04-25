@@ -8,12 +8,15 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
-
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
   const [error, setError] = useState("");
-
+  const { onNext } = useSignupNavigation();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   // Auto-format with forward slashes
   const formatDate = (text: string) => {
     // Remove all non-digit characters
@@ -66,39 +69,45 @@ const Birthday = () => {
     return true;
   };
 
-  const proceed = () => {
-    if (validateDate(birthday)) {
-      router.push(Routes.SignUpMajor);
-    }
-  };
-
   const isFormValid = !error && birthday.length === 10;
 
   return (
     <View style={styles.container}>
+      <BackButton />
+      
       <Text style={styles.title}>What's Your Birthday?</Text>
 
       <TextInput
-        style={[styles.textInput, error ? styles.errorInput : null]}
-        placeholder="MM/DD/YYYY"
-        value={birthday}
-        onChangeText={formatDate}
-        keyboardType="number-pad"
-        maxLength={10}
-      />
+  style={[
+    styles.textInput,
+    attemptedSubmit && error ? styles.errorInput : null, // ✅ only show error border after try
+  ]}
+  placeholder="MM/DD/YYYY"
+  value={birthday}
+  onChangeText={(text) => {
+    formatDate(text);
+    if (attemptedSubmit) {
+      validateDate(text); // live re-validate if they already tried
+    }
+  }}
+  keyboardType="number-pad"
+  maxLength={10}
+  returnKeyType="done"
+  onSubmitEditing={() => {
+    setAttemptedSubmit(true);
+    if (isFormValid) {
+      onNext(signupStepPaths.SignUpMajor);
+    }
+  }}
+/>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+{attemptedSubmit && error ? (
+  <Text style={styles.errorText}>{error}</Text>
+) : null}
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+
+      <NextButton next={signupStepPaths.SignUpMajor} disabled={!isFormValid} />
+
     </View>
   );
 };

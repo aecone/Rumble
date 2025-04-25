@@ -14,8 +14,10 @@ import { router } from "expo-router";
 import { API_BASE_URL } from "../../FirebaseConfig";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
-
+import { signupStepPaths} from "../utils/routes";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 const predefinedMentorshipAreas = [
   "Career Advice",
   "Resume Review",
@@ -137,9 +139,57 @@ const MenteeAreas = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled" />
+      
+      <Text style={styles.title}>What areas would you like mentorship in?</Text>
+      <Text style={styles.subtitle}>
+        Please select your areas of mentorship
+      </Text>
+
+      <View style={styles.listContainer}>
+        <FlatList
+          data={predefinedMentorshipAreas}
+          numColumns={3}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.chip,
+                mentorshipAreasArray.includes(item)
+                  ? styles.selectedChip
+                  : styles.unselectedChip,
+              ]}
+              onPress={() => toggleMentorshipArea(item)}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  mentorshipAreasArray.includes(item)
+                    ? styles.selectedChipText
+                    : styles.unselectedChipText,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.chipContainer}
+        />
+      </View>
+
+      <TouchableOpacity
+        style={[
+          styles.signupButton,
+          {
+            backgroundColor:
+            mentorshipAreasArray.length > 0 ? "#FFFFFF" : "#B0BEC5",
+          },
+        ]}
+        onPress={handleSignUp}
+        disabled={mentorshipAreasArray.length === 0}
       >
         <View style={styles.contentWrapper}>
           <Text style={styles.title}>What areas would you like mentorship in?</Text>

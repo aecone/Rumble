@@ -14,8 +14,10 @@ import { router } from "expo-router";
 import { API_BASE_URL } from "../../FirebaseConfig";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
-
+import { signupStepPaths} from "../utils/routes";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 const predefinedMentorshipAreas = [
   "Career Advice",
   "Resume Review",
@@ -137,6 +139,7 @@ const MentorAreas = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton/>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"

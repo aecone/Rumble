@@ -12,8 +12,10 @@ import React from "react";
 import { router } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
 import { normalizeToArray, toggleValueInArray } from "../utils/signupHelpers";
-import { Routes } from "../utils/routes";
-
+import { signupStepPaths} from "../utils/routes";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 const predefinedOrgs = [
   "Women in Product",
   "USACS",
@@ -45,13 +47,14 @@ const SignUpOrgs = () => {
   };
 
   const proceed = () => {
-    router.push(Routes.MentorOrMentee);
+    router.push(signupStepPaths.MentorOrMentee);
   };
 
   const isFormValid = orgsArray.length > 0;
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
