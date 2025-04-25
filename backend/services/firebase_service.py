@@ -10,6 +10,9 @@ import requests
 # Load Firebase credentials from environment variable
 if FIREBASE_CREDENTIALS:
     firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS")
+    #DON'T TOUCH THESE TWO LINES. NEED FOR DEPLOYMENTTTTTT!!!!!!
+    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
+    firebase_credentials = json.loads(firebase_credentials_json)
 
     # Ensure Firebase is initialized
     if not firebase_admin._apps:
