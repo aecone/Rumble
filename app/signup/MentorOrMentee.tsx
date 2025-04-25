@@ -74,12 +74,11 @@ export default function MentorOrMentee() {
         </View>
 
       {/* Next Button */}
-      {nextPath && (
-        <NextButton
-          next={nextPath}
-          disabled={!userType}
-        />
-      )}
+      <NextButton
+  next={nextPath || signupStepPaths.MentorOrMentee} // fallback safe
+  disabled={!userType}
+/>
+
     </View>
   );
 }
