@@ -67,12 +67,14 @@ export default function CreateProfile() {
       <TextInput
         style={styles.textInput}
         placeholder="email"
+        placeholderTextColor="#757575"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
         style={styles.textInput}
         placeholder="password"
+        placeholderTextColor="#757575"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -101,6 +103,7 @@ const styles = StyleSheet.create({
     height: 50, // Standard height for elegance and simplicity
     width: "90%", // Full width for a more expansive feel
     backgroundColor: "#EDEDED", // Pure white for contrast against the container
+    placeholderTextColor : "#9E9E9E",
     borderColor: "#E8EAF6", // A very light indigo border for subtle contrast
     borderWidth: 2,
     borderRadius: 40, // Softly rounded corners for a modern, friendly touch

@@ -139,33 +139,32 @@ export default function SwipeTab() {
           const savedFilters = await AsyncStorage.getItem('userFilters');
           let parsedFilters: FilterOptions = {};
           
-          if (savedFilters) {
-            parsedFilters = JSON.parse(savedFilters) as FilterOptions;
-            console.log("Loaded saved filters:", parsedFilters);
-          }
-          
-          const currentUser = auth.currentUser;
-          if (currentUser) {
-            const token = await currentUser.getIdToken(true);
-            const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
-              method: "GET",
-              headers: {
-                Authorization: token,
-              },
-            });
-            
-            if (profileResponse.ok) {
-              const profileData = await profileResponse.json();
-              const currentUserType = profileData.profile?.userType || '';
+          // If no saved filters, start fresh
+          if (!savedFilters) {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              const token = await currentUser.getIdToken(true);
+              const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
+                method: "GET",
+                headers: {
+                  Authorization: token,
+                },
+              });
               
-              if (currentUserType === 'mentor') {
-                parsedFilters.userType = 'mentee';
-              } else if (currentUserType === 'mentee') {
-                parsedFilters.userType = 'mentor';
+              if (profileResponse.ok) {
+                const profileData = await profileResponse.json();
+                const currentUserType = profileData.profile?.userType || '';
+                
+                // Set default userType filter based on current user
+                if (currentUserType === 'mentor') {
+                  parsedFilters.userType = 'mentee';
+                } else if (currentUserType === 'mentee') {
+                  parsedFilters.userType = 'mentor';
+                }
               }
-              
-              await AsyncStorage.setItem('userFilters', JSON.stringify(parsedFilters));
             }
+          } else {
+            parsedFilters = JSON.parse(savedFilters) as FilterOptions;
           }
           
           setFilters(parsedFilters);

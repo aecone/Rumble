@@ -19,6 +19,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { onAuthStateChanged, updateEmail, updatePassword, fetchSignInMethodsForEmail } from "firebase/auth";
 import { router } from 'expo-router';
 import { API_BASE_URL } from "../FirebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Helper function to check if email already exists in Firebase
 const checkEmailExists = async (email: string) => {
@@ -277,6 +278,7 @@ export default function Settings() {
           onPress: async () => {
             setLoading(true);
             try {
+              await AsyncStorage.removeItem('userFilters');
               const token = await user.getIdToken(true);
               const response = await fetch(`${API_BASE_URL}/delete_account`, {
                 method: "DELETE",
@@ -503,10 +505,20 @@ export default function Settings() {
     </>
   );
 
+  const handleSignOut = async () => {
+    try {
+      // Clear filters before signing out
+      await AsyncStorage.removeItem('userFilters');
+      await auth.signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   // Render account management buttons
   const renderAccountButtons = () => (
     <View style={styles.buttonsContainer}>
-      <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
       
