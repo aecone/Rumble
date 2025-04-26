@@ -38,6 +38,6 @@ def register_routes(app):
         return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
 
 # For running directly (e.g., python app.py)
+app = create_app()
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True)
