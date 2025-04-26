@@ -5,6 +5,8 @@ from firebase_admin import credentials
 from routes.user_routes import user_routes
 from routes.match_routes import match_routes
 import os
+import logging
+logging.basicConfig(level=logging.INFO)
 
 def create_app(testing: bool = False):
     app = Flask(__name__)

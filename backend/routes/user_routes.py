@@ -32,7 +32,7 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info(f"Received data: {data}")
+    logger.info(f"Received data: {data}")
     print(f"Received data: {data}")
 
     required_fields = ["bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
@@ -54,7 +54,7 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info(f"Received data: {data}")
+    logger.info(f"Received data: {data}")
     print(f"Received data: {data}")
 
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
@@ -72,7 +72,7 @@ def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        #logger.warning(f"Error verifying token: {error}")
+        logger.warning(f"Error verifying token: {error}")
         print(f"Error verifying token: {error}")
         return error
 
@@ -153,7 +153,7 @@ def create_user():
         return jsonify(result), HTTPStatus.CREATED
 
     except Exception as e:
-        #logger.warning(f"Error processing request: {e}")
+        logger.warning(f"Error processing request: {e}")
         print(f"Error processing request: {e}")
         return jsonify({"error": "Internal server error"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
