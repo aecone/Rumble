@@ -1,26 +1,23 @@
 import os
-import json
-import base64
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  
 
 import requests
 
-# Load Firebase credentials from environment variable
-if FIREBASE_CREDENTIALS:
-    firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS")
-    #DON'T TOUCH THESE TWO LINES. NEED FOR DEPLOYMENTTTTTT!!!!!!
-    firebase_credentials_json = base64.b64decode(FIREBASE_CREDENTIALS).decode("utf-8")
-    firebase_credentials = json.loads(firebase_credentials_json)
+import json
+import base64
 
-    # Ensure Firebase is initialized
+firebase_credentials_b64 = os.getenv("FIREBASE_CREDENTIALS")
+if firebase_credentials_b64:
+    firebase_credentials_json = base64.b64decode(firebase_credentials_b64).decode("utf-8")
+    firebase_credentials_dict = json.loads(firebase_credentials_json)
+
     if not firebase_admin._apps:
-        cred = credentials.Certificate(firebase_credentials_json)
+        cred = credentials.Certificate(firebase_credentials_dict)
         firebase_admin.initialize_app(cred)
-
 else:
-    raise ValueError("FIREBASE_CREDENTIALS path is invalid or not set")
+    raise ValueError("FIREBASE_CREDENTIALS is not set properly")
 
 
 # Initialize Firestore client
