@@ -191,7 +191,7 @@ export default function SwipeTab() {
   const transformFiltersForAPI = (frontendFilters: FilterOptions) => {
     return {
       major: frontendFilters.major || "",
-      gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : undefined,
+      gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : null,
       ethnicity: frontendFilters.ethnicity || "",
       gender: frontendFilters.gender || "",
       hobbies: frontendFilters.hobbies || [],
