@@ -11,6 +11,8 @@ from services.firebase_service import (
 )
 from services.auth_service import verify_token
 from google.cloud.firestore_v1 import FieldFilter
+import logging
+logger = logging.getLogger(__name__)
 
 db = firestore.client()
 match_routes = Blueprint('match_routes', __name__)
