@@ -5,23 +5,24 @@ import { baseSignupStepOrder, SignupStepPath } from "../utils/signupHelpers"; //
 interface NextButtonProps {
     next: SignupStepPath;
     disabled?: boolean;
+    onPress?: () => void; 
   }
-export function NextButton({ next, disabled }: NextButtonProps) {
-  const { onNext } = useSignupNavigation();
-
-  return (
-    <TouchableOpacity
-      style={[
-        styles.nextButton,
-        { backgroundColor: disabled ? "#B0BEC5" : "#FFFFFF" },
-      ]}
-      onPress={() => onNext(next)}
-      disabled={disabled}
-    >
-      <Text style={styles.nextText}>Next</Text>
-    </TouchableOpacity>
-  );
-}
+  export function NextButton({ next, disabled, onPress }: NextButtonProps) {
+    const { onNext } = useSignupNavigation();
+  
+    return (
+      <TouchableOpacity
+        style={[
+          styles.nextButton,
+          { backgroundColor: disabled ? "#B0BEC5" : "#FFFFFF" },
+        ]}
+        onPress={onPress || (() => onNext(next))} // use prop OR fallback
+        disabled={disabled}
+      >
+        <Text style={styles.nextText}>Next</Text>
+      </TouchableOpacity>
+    );
+  }
 
 const styles = StyleSheet.create({
   nextButton: {
