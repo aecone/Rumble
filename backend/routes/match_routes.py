@@ -47,11 +47,12 @@ def suggested_users():
             'gradYear': data.get('gradYear', None),
             'hobbies': data.get('hobbies', []),
             'orgs': data.get('orgs', []),
-            'careerPath': data.get('careerPath', '').strip(),
+            'careerPath': data.get('careerPath', []),  # Fixed: treat as list
             'interestedIndustries': data.get('interestedIndustries', []),
             'userType': data.get('userType', '').strip(),
             'mentorshipAreas': data.get('mentorshipAreas', []),
         }
+
 
         # Retrieve all user docs
         docs = db.collection('users').stream()
