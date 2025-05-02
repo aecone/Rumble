@@ -4,8 +4,7 @@ from services.auth_service import verify_token
 from firebase_admin import firestore
 from http import HTTPStatus
 from difflib import SequenceMatcher
-import logging
-logger = logging.getLogger(__name__)
+
 
 db = firestore.client()
 user_routes = Blueprint("user_routes", __name__)
