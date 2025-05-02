@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 50,
     backgroundColor: '#FAFAFA',
   },
   header: {
@@ -718,6 +718,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    marginTop: 10,
     marginBottom: 30,
     position: 'relative',
   },
@@ -746,7 +747,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingTop: 20,
+    paddingTop: 50,
   },
   card: {
     position: 'absolute',
