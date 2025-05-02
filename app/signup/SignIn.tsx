@@ -1,3 +1,6 @@
+/*
+Sign in page, option to nagivate to SignUp
+*/
 import {
   Text,
   StyleSheet,
@@ -14,6 +17,7 @@ import {
 import { router } from "expo-router";
 import { useFonts } from "expo-font"; // Import the useFonts hook
 
+//Basis for signup
 const index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +44,7 @@ const index = () => {
     router.push("/signup/CreateProfile" as any);
   };
 
+  //Functionality for sign in
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sign In</Text>

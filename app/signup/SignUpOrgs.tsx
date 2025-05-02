@@ -1,3 +1,8 @@
+/*
+User input for organizations in signup sequence.
+Navigates to MentorOrMentee
+*/
+
 import {
   View,
   Text,
@@ -37,6 +42,7 @@ const predefinedOrgs = [
   "COGS",
 ];
 
+// Obj/function for formatting and valid input chip group
 const SignUpOrgs = () => {
   const { orgs, setField } = useSignupStore();
   const orgsArray = normalizeToArray(orgs);

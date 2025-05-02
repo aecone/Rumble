@@ -1,3 +1,8 @@
+/*
+User input for hobbies in signup sequence.
+Navigates to SignUpCareer
+*/
+
 import {
   View,
   Text,
@@ -41,6 +46,7 @@ const predefinedHobbies = [
 
 const { height } = Dimensions.get('window');
 
+// Obj/function for formatting and valid input chip group
 const SignUpHobbies = () => {
   const { hobbies, setField } = useSignupStore();
   const hobbiesArray = normalizeToArray(hobbies);

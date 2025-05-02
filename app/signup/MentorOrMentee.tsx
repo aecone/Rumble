@@ -1,3 +1,6 @@
+/*
+Choose either mentor or mentee role page in the signup sequence. Navigates to Mentor or Mentee Areas file
+*/
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useSignupStore } from "../utils/useSignupStore";
 import { signupStepPaths } from "../utils/routes";
@@ -6,6 +9,7 @@ import { NextButton } from "../components/NextButton";
 import { usePathname } from "expo-router";
 import { getFullSignupStepOrder, baseSignupStepOrder } from "../utils/signupHelpers";
 
+//Buttons to choose either mentor or mentee plus previous stored into
 export default function MentorOrMentee() {
   const { userType, setField } = useSignupStore();
   const pathname = usePathname();

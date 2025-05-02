@@ -1,3 +1,8 @@
+/*
+User input for major in signup sequence.
+Navigates to SignUpGradYear
+*/
+
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -8,6 +13,7 @@ import { useSignupNavigation } from "../hooks/useSignupNavigation";
 import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 
+// Obj/function for formatting and valid input drop down
 const SignUpMajor = () => {
   const { major, setField } = useSignupStore();
   const [open, setOpen] = useState(false);

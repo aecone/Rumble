@@ -1,8 +1,14 @@
+/*
+Success page for profile creation
+Navigates to sign in
+*/
+
 import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View } from 'react-native';
 import React from 'react';
 import { router, useNavigation } from 'expo-router';
 import { useFonts, Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 
+//Navigates back to sign in
 const AllSetScreen = () => {
 
 

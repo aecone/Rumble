@@ -1,3 +1,7 @@
+/*
+User input for career path in signup sequence.
+Navigates to SignUpIndustries
+*/
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -6,6 +10,7 @@ import { useSignupStore } from "../utils/useSignupStore";
 import { signupStepPaths} from "../utils/routes";
 import { BackButton } from "../components/BackButton";
 
+// Obj/function for formatting and valid input drop down
 const SignUpCareer = () => {
   const { careerPath, setField } = useSignupStore();
 

@@ -1,3 +1,7 @@
+/*
+User input for grad year in signup sequence.
+Navigates to SignUpEthnicity
+*/
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";

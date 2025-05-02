@@ -1,3 +1,8 @@
+/*
+User input for Industries in signup sequence.
+Navigates to SignUpOrgs
+*/
+
 import {
   View,
   Text,
@@ -42,6 +47,7 @@ const predefinedIndustries = [
 
 const { height } = Dimensions.get('window');
 
+// Obj/function for formatting and valid input chip group
 const SignUpIndustries = () => {
   const { interestedIndustries, setField } = useSignupStore();
   const industriesArray = normalizeToArray(interestedIndustries);

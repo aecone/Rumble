@@ -1,3 +1,8 @@
+/*
+User input for name in signup sequence.
+Navigates to SignUpBirthday
+*/
+
 import {
   View,
   Text,
@@ -15,7 +20,7 @@ import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
 
 
-
+// Obj/function for formatting and valid input drop down
 const SignUpName = () => {
   const { firstName, lastName, setField } = useSignupStore();
 const lastNameRef = useRef<TextInput>(null);

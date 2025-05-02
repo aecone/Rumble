@@ -1,3 +1,8 @@
+/*
+User input for gender and pronouns in signup sequence.
+Navigates to SignUpHobbies
+*/
+
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -8,6 +13,7 @@ import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
+// Obj/function for formatting and valid input drop down
 const SignUpGenderPronouns = () => {
   const { gender, pronouns, setField } = useSignupStore();
 

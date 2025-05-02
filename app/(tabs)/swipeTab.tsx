@@ -1,3 +1,6 @@
+/*
+Swiping functionality, including left and right gesture swiping and buttons. Includes navigation to filtering
+*/
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
@@ -46,6 +49,7 @@ type UserCard = {
   mentorshipAreas?: string[];
 };
 
+//Types of filters
 interface FilterOptions {
   gradYear?: string;
   major?: string;
@@ -61,7 +65,7 @@ interface FilterOptions {
 }
 
 
-
+// Export function for the swiping, incluidng dynamic pfp styles, swipe animation, and API calls to handle swipes
 export default function SwipeTab() {
   const { width: screenWidth } = useWindowDimensions();
   const [users, setUsers] = useState<UserCard[]>([]);
@@ -700,6 +704,7 @@ export default function SwipeTab() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

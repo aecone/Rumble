@@ -1,3 +1,10 @@
+/*
+Filtering functionality for user cards
+Navigatable from swipetab
+navigates back to swipetab
+*/
+
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -28,6 +35,7 @@ interface FilterOptions {
   [key: string]: any; // For any additional properties
 }
 
+// Export default function, providing array of user chosen filters to suggested users api endpoint
 const Filtering = () => {
   const router = useRouter();
   const params = useLocalSearchParams();

@@ -1,3 +1,8 @@
+/*
+User input for birthday in signup sequence.
+Navigates to SignUpMajor
+*/
+
 import {
   View,
   Text,
@@ -12,6 +17,8 @@ import { signupStepPaths } from "../utils/routes";
 import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { useSignupNavigation } from "../hooks/useSignupNavigation";
+
+//Birthday obj/function for formatting and valid input
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
   const [error, setError] = useState("");

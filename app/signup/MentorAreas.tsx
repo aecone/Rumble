@@ -1,3 +1,6 @@
+/*
+Mentor areas of mentorship page in the signup sequence
+*/
 import {
   View,
   Text,
@@ -39,6 +42,10 @@ const predefinedMentorshipAreas = [
   "Skill Building",
 ];
 
+/*
+Creates chipgroup for mentorship areas, sends all collected info up till now from previous
+sign up questions to create user API endpoint 
+*/
 const MentorAreas = () => {
   const {
     firstName,

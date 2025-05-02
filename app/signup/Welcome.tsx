@@ -1,8 +1,11 @@
+// Splash screen, navigates to signup or sign in
+
 import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View, Image } from 'react-native'
 import React from 'react'
 import { router, useNavigation } from 'expo-router'
 import { useFonts, Montserrat_400Regular } from '@expo-google-fonts/montserrat'
 
+//Display logo, sign up/in navigation
 const WelcomeScreen = () => {
   let [fontsLoaded] = useFonts({
     Montserrat_400Regular, 

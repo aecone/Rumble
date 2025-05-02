@@ -1,9 +1,13 @@
+/*
+Base file for sign up sequence
+*/
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../utils/useAuthStore";
 import { baseSignupStepOrder } from "../utils/signupHelpers";
 import { useRouter, usePathname, Slot } from "expo-router";
 import { BackHandler, Alert } from "react-native";
 
+//Storing sign up information 
 export default function SignupLayout() {
   const router = useRouter();
   const pathname = usePathname();
