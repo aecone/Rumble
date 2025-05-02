@@ -75,10 +75,10 @@ export default function SwipeTab() {
 
   const dynamicStyles = StyleSheet.create({
     profileImage: {
-      width: 300,
+      width: screenWidth * 0.6,
       //maxWidth: screenWidth * 0.35,
       //maxHeight: screenWidth * 0.35,
-      height: 300,
+      height: screenWidth * 0.6,
       borderRadius: screenWidth * 0.325,
       padding: screenWidth * 0.04,
     },
@@ -745,8 +745,8 @@ const styles = StyleSheet.create({
   },
   card: {
     position: 'absolute',
-    width: 400,
-    height: 720,
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_HEIGHT * 0.75,
     borderRadius: 30,
     backgroundColor: '#F9F5F2',
     elevation: 4,
