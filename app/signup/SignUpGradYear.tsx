@@ -12,6 +12,7 @@ import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
+// Obj/function for formatting and valid input drop down
 const SignUpGradYear = () => {
   const { gradYear, setField } = useSignupStore();
 const { onNext } = useSignupNavigation();

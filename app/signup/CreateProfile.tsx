@@ -1,3 +1,9 @@
+
+/*
+Mentee areas of mentorship page in the signup sequence.
+Allows for valid email password input
+Navigates to SignUpName
+*/
 import {
   Text,
   StyleSheet,
@@ -23,6 +29,7 @@ const checkEmailExists = async (email: string): Promise<boolean> => {
   }
 };
 
+//Stores alid email and password info
 export default function CreateProfile() {
   const { email, password, setField } = useSignupStore();
   const setEmail = (text: string) => setField("email", text);
