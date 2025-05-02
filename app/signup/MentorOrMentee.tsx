@@ -4,14 +4,19 @@ import { signupStepPaths } from "../utils/routes";
 import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { usePathname } from "expo-router";
-import { getFullSignupStepOrder, baseSignupStepOrder } from "../utils/signupHelpers";
+import {
+  getFullSignupStepOrder,
+  baseSignupStepOrder,
+} from "../utils/signupHelpers";
 
 export default function MentorOrMentee() {
   const { userType, setField } = useSignupStore();
   const pathname = usePathname();
 
   // ⚡ Correct signupStepOrder
-  const signupStepOrder = userType ? getFullSignupStepOrder(userType) : baseSignupStepOrder;
+  const signupStepOrder = userType
+    ? getFullSignupStepOrder(userType)
+    : baseSignupStepOrder;
 
   const selectRole = (role: "mentor" | "mentee") => {
     setField("userType", role);
@@ -19,38 +24,43 @@ export default function MentorOrMentee() {
 
   const idx = signupStepOrder.findIndex((p) => p === pathname);
 
-  const nextPath = idx >= 0 && idx + 1 < signupStepOrder.length
-    ? signupStepOrder[idx + 1]
-    : null;
+  const nextPath =
+    idx >= 0 && idx + 1 < signupStepOrder.length
+      ? signupStepOrder[idx + 1]
+      : null;
 
   return (
     <View style={styles.container}>
       <BackButton />
 
-        <Text style={styles.title}>Would you like to be a mentor or a mentee?</Text>
+      <Text style={styles.title}>
+        Would you like to be a mentor or a mentee?
+      </Text>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            userType === "mentor"
+              ? styles.selectedButton
+              : styles.unselectedButton,
+          ]}
+          onPress={() => selectRole("mentor")}
+        >
+          <Text
             style={[
-              styles.button,
+              styles.text,
               userType === "mentor"
-                ? styles.selectedButton
-                : styles.unselectedButton,
+                ? styles.selectedText
+                : styles.unselectedText,
             ]}
-            onPress={() => selectRole("mentor")}
           >
-            <Text
-              style={[
-                styles.text,
-                userType === "mentor"
-                  ? styles.selectedText
-                  : styles.unselectedText,
-              ]}
-            >
-              Mentor
-            </Text>
-          </TouchableOpacity>
-
+            Mentor
+          </Text>
+        </TouchableOpacity>
+        
+          </View>
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[
               styles.button,
@@ -75,15 +85,12 @@ export default function MentorOrMentee() {
 
       {/* Next Button */}
       <NextButton
-  next={nextPath || signupStepPaths.MentorOrMentee} // fallback safe
-  disabled={!userType}
-/>
-
+        next={nextPath || signupStepPaths.MentorOrMentee} // fallback safe
+        disabled={!userType}
+      />
     </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
