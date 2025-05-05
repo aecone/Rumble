@@ -3,25 +3,16 @@
 import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View, Image } from 'react-native'
 import React from 'react'
 import { router, useNavigation } from 'expo-router'
-import { useFonts, Montserrat_400Regular } from '@expo-google-fonts/montserrat'
 
 //Display logo, sign up/in navigation
 const WelcomeScreen = () => {
-  let [fontsLoaded] = useFonts({
-    Montserrat_400Regular, 
-  });
 
   const navigation = useNavigation();
-
 
   React.useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const handleSignIn = () => router.push('/signup/SignIn');
   const handleSignUp = () => router.push('/signup/CreateProfile');
@@ -79,7 +70,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: 'Montserrat_400Regular', 
     color: '#FFFFFF',
     fontWeight: 'normal', 
   },
@@ -102,7 +92,6 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   signInButtonText: {
-    fontFamily: 'Montserrat_400Regular', 
     fontSize: 18,
     color: '#FFFFFF',
     fontWeight: 'normal', 
@@ -111,7 +100,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   signUpButtonText: {
-    fontFamily: 'Montserrat_400Regular', 
     fontSize: 18,
     color: '#534E5B',
     fontWeight: 'normal', 
