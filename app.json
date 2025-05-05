@@ -15,14 +15,13 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.swipe.rumble"
+      "bundleIdentifier": "com.anonymous.rumble"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.rumble"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -41,9 +40,8 @@
         "origin": false
       },
       "eas": {
-        "projectId": "138e6ad1-0714-4355-ba6b-3d0560386183"
+        "projectId": "b59db35e-2a85-4633-a58c-6620716fab78"
       }
-    },
-    "owner": "lkjhlkjh"
+    }
   }
 }

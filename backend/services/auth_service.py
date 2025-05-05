@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from firebase_admin import auth
-import logging
-logger = logging.getLogger(__name__)
+
 
 def verify_token():
     """Verifies Firebase ID token from Authorization header."""
