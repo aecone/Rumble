@@ -4,8 +4,8 @@ from services.auth_service import verify_token
 from firebase_admin import firestore
 from http import HTTPStatus
 from difflib import SequenceMatcher
-import logging
 from services.firebase_service import db
+import logging
 
 logger = logging.getLogger(__name__)
 

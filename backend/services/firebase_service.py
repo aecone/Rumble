@@ -2,12 +2,12 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  
-
 import requests
-
 import json
 import base64
+import logging
 
+logger = logging.getLogger(__name__)
 firebase_credentials_b64 = os.getenv("FIREBASE_CREDENTIALS")
 if firebase_credentials_b64:
     firebase_credentials_json = base64.b64decode(firebase_credentials_b64).decode("utf-8")
