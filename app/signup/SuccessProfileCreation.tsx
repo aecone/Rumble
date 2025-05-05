@@ -6,17 +6,9 @@ Navigates to sign in
 import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View } from 'react-native';
 import React from 'react';
 import { router, useNavigation } from 'expo-router';
-import { useFonts, Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 
 //Navigates back to sign in
 const AllSetScreen = () => {
-
-
-  let [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-  });
   
   const navigation = useNavigation();
   
@@ -24,9 +16,6 @@ const AllSetScreen = () => {
   React.useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const handleLogin = () => {
     router.push('/signup/SignIn');
@@ -66,7 +55,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontFamily: 'Montserrat_700Bold',
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 38, // Better text spacing
@@ -90,7 +78,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   buttonText: {
-    fontFamily: 'Montserrat_600SemiBold',
     fontSize: 18,
     color: '#534E5B',
     letterSpacing: 0.5, 
