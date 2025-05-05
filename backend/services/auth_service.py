@@ -8,7 +8,7 @@ def verify_token():
     auth_header = request.headers.get("Authorization")
     if not auth_header:
         logger.warning("Missing Authorization header")  # Debugging log
-        print("Missing Authorization header")  # Debugging log
+          # Debugging log
 
         return None, (jsonify({"error": "Missing Authorization header"}), 403)
 
@@ -23,6 +23,6 @@ def verify_token():
         return None, (jsonify({"error": "Revoked token"}), 403)
     except Exception as e:
         logger.warning(f"Token verification failed: {e}")  # Debugging log
-        print(f"Token verification failed: {e}")  # Debugging log
+          # Debugging log
 
         return None, (jsonify({"error": "Failed to verify token"}), 403)

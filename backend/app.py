@@ -37,7 +37,7 @@ def register_routes(app):
 
     @app.route("/")
     def home():
-        return "Hi! Nothing much here. Just default route. U better be authorized to access the API routes or else!! :< .", 200
+        return "Welcome to the API root. Please ensure proper authorization to access protected routes.", 200
 
 # For running directly (e.g., python app.py)
 app = create_app()

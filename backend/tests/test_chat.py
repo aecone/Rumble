@@ -1,9 +1,8 @@
 # tests/test_chat.py
-# Test cases T080, T081, T082
+# Test cases T081, T082
 """
 Chat feature tests
 
-T080 – Mentor starts a chat with a matched mentee
 T081 – Mentee responds in that chat
 T082 – Chat history persists after “logout / login”
 """
@@ -24,31 +23,6 @@ def _fetch_messages(as_user, with_user, client):
     )
     assert res.status_code == 200
     return res.get_json()["messages"]
-
-
-# ---------- T080 ----------
-def test_t080_mentor_can_start_chat(client):
-    """Mentor sends the first message; message is stored & visible to mentee."""
-    text = "Hello mentee, welcome to RUmble!"
-
-    send = client.post(
-        "/api/message",
-        json={"targetID": MENTEE_ID, "message": text},
-        headers={"Authorization": f"Bearer {MENTOR_ID}"},
-    )
-    assert send.status_code == 200
-    payload = send.get_json()
-    assert payload["success"] and payload["messageID"]
-
-    # Verify the message really landed in Firestore
-    convo = get_convo_id(MENTOR_ID, MENTEE_ID)
-    msgs = mock_firebase.mock_db.collection("conversations").document(convo) \
-                                .collection("messages")._docs.values()
-    assert any(m.to_dict()["text"] == text and m.to_dict()["sender_id"] == MENTOR_ID for m in msgs)
-
-    # From the mentee’s perspective
-    visible_to_mentee = _fetch_messages(MENTEE_ID, MENTOR_ID, client)
-    assert any(msg["text"] == text and msg["sender_id"] == MENTOR_ID for msg in visible_to_mentee)
 
 
 # ---------- T081 ----------

@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
+from services.firebase_service import db
+
 from services.firebase_service import (
     get_convo_id,
     get_user_profile,
@@ -10,11 +12,10 @@ from services.firebase_service import (
     create_user_in_firebase
 )
 from services.auth_service import verify_token
-from google.cloud.firestore_v1 import FieldFilter
 import logging
 logger = logging.getLogger(__name__)
 
-db = firestore.client()
+
 match_routes = Blueprint('match_routes', __name__)
 
 @match_routes.route('/suggested_users', methods=['POST'])
@@ -120,7 +121,7 @@ def suggested_users():
 
 @match_routes.route('/swipe', methods=['POST'])
 def swipe():
-    # … your existing code …
+    
     try:
         decoded_token, error = verify_token()
         if error:
@@ -176,7 +177,7 @@ def swipe():
 
 @match_routes.route("/matches", methods=["GET"])
 def get_matches():
-    # … unchanged …
+    
     decoded_token, error = verify_token()
     if error:
         return error
@@ -247,7 +248,7 @@ def get_conversation():
 
 @match_routes.route('/message', methods=['POST'])
 def send_message():
-    # … your existing code …
+    
     try:
         decoded_token, error = verify_token()
         if error:

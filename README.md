@@ -39,10 +39,11 @@ npx install-expo-modules@latest && npx expo start && npm install firebase -g fir
 
 ```
 
+These steps are for testing on a local backend (we have ours on the cloud)
 You'll need Python installed. If you don't have it, install Python (3.13 from Microsoft Store).
 
 Create a Virtual Environment (venv)
-Navigate to your project folder and run: python -m venv venv
+Navigate to the backend folder and run: python -m venv venv
 
 The steps below must be repeated every time you start coding:
 
