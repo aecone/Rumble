@@ -1,13 +1,14 @@
 from flask import Flask, Blueprint, request, jsonify
 from services.firebase_service import get_user_profile, update_user_profile, update_user_settings, delete_user_account, create_user_in_firebase
 from services.auth_service import verify_token
-from logger import logger  # Import the logger
 from firebase_admin import firestore
 from http import HTTPStatus
 from difflib import SequenceMatcher
+from services.firebase_service import db
+import logging
 
+logger = logging.getLogger(__name__)
 
-db = firestore.client()
 user_routes = Blueprint("user_routes", __name__)
 
 @user_routes.route("/profile", methods=["GET"])
@@ -19,7 +20,7 @@ def get_profile():
 
     user_id = decoded_token["uid"]
     profile = get_user_profile(user_id)
-    
+
     if profile:
         return jsonify(profile), HTTPStatus.OK
     return jsonify({"error": "Profile not found"}), HTTPStatus.NOT_FOUND
@@ -33,8 +34,8 @@ def edit_profile():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info(f"Received data: {data}")
-    print(f"Received data: {data}")
+    logger.info(f"Received data: {data}")
+    
 
     required_fields = ["bio", "profilePictureUrl", "major", "gradYear", "hobbies", "orgs", "careerPath", "interestedIndustries", "userType", "mentorshipAreas"]
     missing_fields = [field for field in required_fields if field not in data]
@@ -55,8 +56,8 @@ def edit_settings():
 
     user_id = decoded_token["uid"]
     data = request.json
-    #logger.info(f"Received data: {data}")
-    print(f"Received data: {data}")
+    logger.info(f"Received data: {data}")
+    
 
     required_fields = ["firstName", "lastName", "email", "birthday", "ethnicity", "gender", "pronouns"]
     missing_fields = [field for field in required_fields if field not in data]
@@ -73,8 +74,8 @@ def delete_account():
     """API endpoint to delete a user's account."""
     decoded_token, error = verify_token()
     if error:
-        #logger.warning(f"Error verifying token: {error}")
-        print(f"Error verifying token: {error}")
+        logger.warning(f"Error verifying token: {error}")
+        
         return error
 
     result = delete_user_account(decoded_token["uid"])
@@ -154,8 +155,8 @@ def create_user():
         return jsonify(result), HTTPStatus.CREATED
 
     except Exception as e:
-        #logger.warning(f"Error processing request: {e}")
-        print(f"Error processing request: {e}")
+        logger.warning(f"Error processing request: {e}")
+        
         return jsonify({"error": "Internal server error"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @user_routes.route("/set_notification_token", methods=["POST"])

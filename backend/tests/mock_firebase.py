@@ -29,9 +29,12 @@ class MockFirestoreDocument:
         self.set(data, merge=True)
 
     def collection(self, name):
-        if name not in self._data:
-            self._data[name] = MockFirestoreCollection()
-        return self._data[name]
+        if not hasattr(self, "_subcollections"):
+            self._subcollections = {}
+        if name not in self._subcollections:
+            self._subcollections[name] = MockFirestoreCollection()
+        return self._subcollections[name]
+
 
     @property
     def id(self):

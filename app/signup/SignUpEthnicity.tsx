@@ -1,10 +1,17 @@
+/*
+User input for ethnicity in signup sequence.
+Navigates to SignUpGenderPronouns
+*/
+
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
 
+// Obj/function for formatting and valid input drop down
 const SignUpEthnicity = () => {
   const { ethnicity, setField } = useSignupStore();
 
@@ -34,7 +41,7 @@ const SignUpEthnicity = () => {
 
   const proceed = () => {
 
-        router.push(Routes.SignUpGenderPronouns);
+        router.push(signupStepPaths.SignUpGenderPronouns);
     
   };
 
@@ -42,6 +49,8 @@ const SignUpEthnicity = () => {
 
   return (
     <View style={styles.container}>
+             <BackButton />
+      
       <Text style={styles.title}>Please select your race/ethnicity</Text>
 
       {/* DropDown Picker */}

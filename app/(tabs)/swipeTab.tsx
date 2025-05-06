@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+/*
+Swiping functionality, including left and right gesture swiping and buttons. Includes navigation to filtering
+*/
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { get, find, search, emojify } from 'node-emoji';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -45,6 +49,7 @@ type UserCard = {
   mentorshipAreas?: string[];
 };
 
+//Types of filters
 interface FilterOptions {
   gradYear?: string;
   major?: string;
@@ -60,7 +65,7 @@ interface FilterOptions {
 }
 
 
-
+// Export function for the swiping, incluidng dynamic pfp styles, swipe animation, and API calls to handle swipes
 export default function SwipeTab() {
   const { width: screenWidth } = useWindowDimensions();
   const [users, setUsers] = useState<UserCard[]>([]);
@@ -68,12 +73,16 @@ export default function SwipeTab() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [matchedUser, setMatchedUser] = useState<UserCard | null>(null);
+  const popupAnimation = useRef(new Animated.Value(0)).current;
+
   const dynamicStyles = StyleSheet.create({
     profileImage: {
-      width: 300,
+      width: screenWidth * 0.6,
       //maxWidth: screenWidth * 0.35,
       //maxHeight: screenWidth * 0.35,
-      height: 300,
+      height: screenWidth * 0.6,
       borderRadius: screenWidth * 0.325,
       padding: screenWidth * 0.04,
     },
@@ -126,7 +135,6 @@ export default function SwipeTab() {
     extrapolate: 'clamp',
   });
 
-  // Keep original functionality but update the UI rendering
   useFocusEffect(
     React.useCallback(() => {
       const loadSavedFilters = async () => {
@@ -135,33 +143,32 @@ export default function SwipeTab() {
           const savedFilters = await AsyncStorage.getItem('userFilters');
           let parsedFilters: FilterOptions = {};
           
-          if (savedFilters) {
-            parsedFilters = JSON.parse(savedFilters) as FilterOptions;
-            console.log("Loaded saved filters:", parsedFilters);
-          }
-          
-          const currentUser = auth.currentUser;
-          if (currentUser) {
-            const token = await currentUser.getIdToken(true);
-            const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
-              method: "GET",
-              headers: {
-                Authorization: token,
-              },
-            });
-            
-            if (profileResponse.ok) {
-              const profileData = await profileResponse.json();
-              const currentUserType = profileData.profile?.userType || '';
+          // If no saved filters, start fresh
+          if (!savedFilters) {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              const token = await currentUser.getIdToken(true);
+              const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
+                method: "GET",
+                headers: {
+                  Authorization: token,
+                },
+              });
               
-              if (currentUserType === 'mentor') {
-                parsedFilters.userType = 'mentee';
-              } else if (currentUserType === 'mentee') {
-                parsedFilters.userType = 'mentor';
+              if (profileResponse.ok) {
+                const profileData = await profileResponse.json();
+                const currentUserType = profileData.profile?.userType || '';
+                
+                // Set default userType filter based on current user
+                if (currentUserType === 'mentor') {
+                  parsedFilters.userType = 'mentee';
+                } else if (currentUserType === 'mentee') {
+                  parsedFilters.userType = 'mentor';
+                }
               }
-              
-              await AsyncStorage.setItem('userFilters', JSON.stringify(parsedFilters));
             }
+          } else {
+            parsedFilters = JSON.parse(savedFilters) as FilterOptions;
           }
           
           setFilters(parsedFilters);
@@ -188,7 +195,7 @@ export default function SwipeTab() {
   const transformFiltersForAPI = (frontendFilters: FilterOptions) => {
     return {
       major: frontendFilters.major || "",
-      gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : undefined,
+      gradYear: frontendFilters.gradYear ? parseInt(frontendFilters.gradYear) : null,
       ethnicity: frontendFilters.ethnicity || "",
       gender: frontendFilters.gender || "",
       hobbies: frontendFilters.hobbies || [],
@@ -273,18 +280,50 @@ export default function SwipeTab() {
     }).start(() => onSwipeComplete('right'));
   };
 
+  const showCustomMatchPopup = (matchedUser: UserCard) => {
+    setMatchedUser(matchedUser);
+    setShowMatchPopup(true);
+    Animated.spring(popupAnimation, {
+      toValue: 1,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  const hideMatchPopup = () => {
+    Animated.timing(popupAnimation, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowMatchPopup(false);
+      setMatchedUser(null);
+    });
+  };
+  
+  const navigateToMatches = () => {
+    hideMatchPopup();
+    // Navigate to the matches tab
+    router.push('/matchesTab');
+  };
+
   const onSwipeComplete = async (direction: string) => {
     const item = users[0];
     console.log(`Swiped ${direction} on item:`, item?.id);
+    
+    // Update UI immediately
+    setUsers(users.slice(1));
+    position.setValue({ x: 0, y: 0 });
     
     if (direction === 'right' && item) {
       const currentUser = auth.currentUser;
       if (!currentUser) return;
   
       try {
+        // First, make the swipe API call
         const token = await currentUser.getIdToken(true);
-  
-        const response = await fetch(`${API_BASE_URL}/swipe`, {
+        await fetch(`${API_BASE_URL}/swipe`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -294,24 +333,23 @@ export default function SwipeTab() {
             swipedID: item.id,
           }),
         });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-          if (data.match) {
-            Alert.alert("🎉 It's a Match!", `You matched with ${item.firstName}`);
+        
+        // Regardless of the response, check if we're matched now
+        const matchesResponse = await fetch(`${API_BASE_URL}/matches`, {
+          headers: { Authorization: token },
+        });
+        
+        if (matchesResponse.ok) {
+          const matchesData = await matchesResponse.json();
+          if (matchesData.matches.some((match: any) => match.id === item.id)) {
+            // Use custom popup instead of Alert
+            showCustomMatchPopup(item);
           }
-        } else {
-          Alert.alert('Error', data.error || 'Swipe failed');
         }
       } catch (error) {
         console.error('Swipe error:', error);
-        Alert.alert('Error', 'Swipe failed.');
       }
     }
-    
-    setUsers(users.slice(1));
-    position.setValue({ x: 0, y: 0 });
   };
 
   const resetPosition = () => {
@@ -527,6 +565,8 @@ export default function SwipeTab() {
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
+
+          
         );
       }
 
@@ -600,16 +640,76 @@ export default function SwipeTab() {
             </TouchableOpacity>
           </View>
         )}
+        {showMatchPopup && matchedUser && (
+          <View style={styles.popupOverlay}>
+            <Animated.View 
+              style={[
+                styles.matchPopup, 
+                {
+                  transform: [
+                    { scale: popupAnimation },
+                    { translateY: popupAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [300, 0]
+                    })}
+                  ],
+                  opacity: popupAnimation
+                }
+              ]}
+            >
+              <View style={styles.popupContent}>
+                <Text style={styles.matchTitle}> It's a Connection! </Text>
+                
+                <View style={styles.matchProfileSection}>
+                  {matchedUser.profilePictureUrl ? (
+                    <Image
+                      source={{ uri: matchedUser.profilePictureUrl }}
+                      style={styles.matchProfileImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.matchProfilePlaceholder}>
+                      <Text style={styles.matchPlaceholderText}>
+                        {matchedUser.firstName.charAt(0)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                
+                <Text style={styles.matchMessage}>
+                  You and {matchedUser.firstName} have matched! Connect with them now.
+                </Text>
+                
+                <View style={styles.popupButtons}>
+                  <TouchableOpacity 
+                    style={styles.laterButton}
+                    onPress={hideMatchPopup}
+                  >
+                    <Text style={styles.laterButtonText}>Later</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.chatButton}
+                    onPress={navigateToMatches}
+                  >
+                    <Text style={styles.chatButtonText}>Go to Matches</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Animated.View>
+          </View>
+        )}
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 50,
     backgroundColor: '#FAFAFA',
   },
   header: {
@@ -618,6 +718,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    marginTop: 10,
     marginBottom: 30,
     position: 'relative',
   },
@@ -646,20 +747,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingTop: 60,
+    paddingTop: 50,
   },
   card: {
     position: 'absolute',
-    width: 400,
-    height: 750,
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_HEIGHT * 0.75,
     borderRadius: 30,
     backgroundColor: '#F9F5F2',
-    elevation: 5,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.7,
     shadowRadius: 10,
-    padding: 0,
+    paddingBottom: -50,
     overflow: 'hidden',
   },
   scrollView: {
@@ -802,7 +903,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '80%',
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: -30,
   },
   skipButton: {
     backgroundColor: '#4A474C',
@@ -875,5 +976,105 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 18,
     color: '#888',
+  },
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  matchPopup: {
+    backgroundColor: 'white',
+    width: '85%',
+    borderRadius: 25,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  popupContent: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  matchTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  matchProfileSection: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  matchProfileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#C0DEDD',
+  },
+  matchProfilePlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#4A474C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#C0DEDD',
+  },
+  matchPlaceholderText: {
+    color: 'white',
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  matchMessage: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 25,
+    paddingHorizontal: 10,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  laterButton: {
+    backgroundColor: '#EDEDED',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginRight: 10,
+    flex: 1,
+    alignItems: 'center',
+  },
+  laterButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  chatButton: {
+    backgroundColor: '#4A474C',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginLeft: 10,
+    flex: 1.5,
+    alignItems: 'center',
+  },
+  chatButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

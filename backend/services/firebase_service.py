@@ -1,23 +1,23 @@
 import os
-import json
-import base64
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from config import FIREBASE_CREDENTIALS  
-from logger import logger  # Import the logger
 import requests
+import json
+import base64
+import logging
 
-# Load Firebase credentials from environment variable
-if FIREBASE_CREDENTIALS:
-    firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS")
+logger = logging.getLogger(__name__)
+firebase_credentials_b64 = os.getenv("FIREBASE_CREDENTIALS")
+if firebase_credentials_b64:
+    firebase_credentials_json = base64.b64decode(firebase_credentials_b64).decode("utf-8")
+    firebase_credentials_dict = json.loads(firebase_credentials_json)
 
-    # Ensure Firebase is initialized
     if not firebase_admin._apps:
-        cred = credentials.Certificate(firebase_credentials_json)
+        cred = credentials.Certificate(firebase_credentials_dict)
         firebase_admin.initialize_app(cred)
-
 else:
-    raise ValueError("FIREBASE_CREDENTIALS path is invalid or not set")
+    raise ValueError("FIREBASE_CREDENTIALS is not set properly")
 
 
 # Initialize Firestore client
@@ -76,7 +76,7 @@ def update_user_settings(user_id, settings_data):
 
 def delete_user_account(user_id):
     try:
-        #logger.info(f"Attempting to delete user: {user_id}")  # Debugging
+        logger.info(f"Attempting to delete user: {user_id}")  # Debugging
         print(f"Attempting to delete user: {user_id}")  # Debugging
 
 
@@ -84,30 +84,30 @@ def delete_user_account(user_id):
         user_ref = db.collection("users").document(user_id)  # Ensure correct indentation
         if user_ref.get().exists:
             user_ref.delete()
-            #logger.info(f"Deleted Firestore user document: {user_id}")
+            logger.info(f"Deleted Firestore user document: {user_id}")
             print(f"Deleted Firestore user document: {user_id}")
 
         else:
-            #logger.warning(f"User {user_id} not found in Firestore")
+            logger.warning(f"User {user_id} not found in Firestore")
             print(f"User {user_id} not found in Firestore")
 
 
         # Delete user from Firebase Authentication
         auth.delete_user(user_id)
-        #logger.info(f"Deleted Firebase Auth user: {user_id}")
+        logger.info(f"Deleted Firebase Auth user: {user_id}")
 
         print(f"Deleted Firebase Auth user: {user_id}")
 
         return {"message": "Account successfully deleted"}
 
     except auth.UserNotFoundError:
-        #logger.warning(f"User {user_id} not found in Firebase Auth")
+        logger.warning(f"User {user_id} not found in Firebase Auth")
         print(f"User {user_id} not found in Firebase Auth")
 
         return {"error": "User not found"}, 404
 
     except Exception as e:
-        #logger.warning(f"Error deleting user {user_id}: {str(e)}")
+        logger.warning(f"Error deleting user {user_id}: {str(e)}")
         print(f"Error deleting user {user_id}: {str(e)}")
         
         return {"error": "Failed to delete account"}, 500
@@ -136,7 +136,7 @@ def create_user_in_firebase(email, password, user_data):
         return {"message": "User created successfully", "user_id": user_id}
 
     except Exception as e:
-        #logger.warning(f"Error creating user: {str(e)}")
+        logger.warning(f"Error creating user: {str(e)}")
         print(f"Error creating user: {str(e)}")
 
         return {"error": "Failed to create user"}
@@ -161,7 +161,7 @@ def delete_all_users():
             # Delete in batches
             if len(users_to_delete) >= batch_size:
                 auth.delete_users(users_to_delete)
-                #logger.info(f"Deleted {len(users_to_delete)} users")
+                logger.info(f"Deleted {len(users_to_delete)} users")
                 print(f"Deleted {len(users_to_delete)} users")
 
                 users_to_delete = []
@@ -172,11 +172,11 @@ def delete_all_users():
     # Delete remaining users
     if users_to_delete:
         auth.delete_users(users_to_delete)
-        #logger.info(f"Deleted {len(users_to_delete)} users")
+        logger.info(f"Deleted {len(users_to_delete)} users")
         print(f"Deleted {len(users_to_delete)} users")
 
 
-    #logger.info("All users deleted successfully.")
+    logger.info("All users deleted successfully.")
     print("All users deleted successfully.")
 
 

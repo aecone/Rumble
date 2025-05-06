@@ -1,103 +1,66 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack, router } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
-import 'react-native-reanimated';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import { Alert, Platform } from 'react-native';
-import { getAuth } from 'firebase/auth';
-import { useColorScheme } from '@/components/useColorScheme';
-import '@/firebase'; // make sure firebase is initialized here
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Slot, Stack, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useRef, useState } from "react";
+import "react-native-reanimated";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import { Alert, Platform, View, ActivityIndicator } from "react-native";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useColorScheme } from "@/components/useColorScheme";
+import "@/firebase"; // your firebase init
 import { API_BASE_URL } from "../FirebaseConfig";
-
-export { ErrorBoundary } from 'expo-router';
-
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-};
+import { AuthGate } from "./utils/AuthGate"; 
+import { useAuthStore } from "./utils/useAuthStore"; 
 
 SplashScreen.preventAutoHideAsync();
 
+export { ErrorBoundary } from "expo-router";
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
+
+
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const { setAuthUser, setChecked } = useAuthStore(); 
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
+      console.log("Auth state changed:", user ? "logged in" : "logged out");
+      setAuthUser(user);
+      setChecked(true);
+    });
+    return unsubscribe;
+  }, []);
+  const [fontsLoaded, fontsError] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
 
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
+  useEffect(() => {
+    if (fontsError) throw fontsError;
+  }, [fontsError]);
 
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [fontsLoaded]);
 
-  useEffect(() => {
-    let mounted = true;
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
-    // Register device and send token to Flask
-    registerForPushNotificationsAsync().then(async token => {
-      if (!token || !mounted) return;
-
-      console.log('Expo Push Token:', token);
-
-      const user = getAuth().currentUser;
-      if (user) {
-        const idToken = await user.getIdToken();
-
-        await fetch(`${API_BASE_URL}/set_notification_token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({ token }),
-        });
-      }
-    });
-
-    // Foreground notifications
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      Alert.alert('📬 Notification', notification.request.content.body || 'You received a message!');
-    });
-
-    // Tap/Interaction notifications
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data;
-
-      if (data?.screen && data?.matchId && data?.matchName) {
-        console.log('Navigating to:', data.screen, 'with', data.matchId, data.matchName);
-    
-        router.push({
-          pathname: data.screen,
-          params: {
-            matchId: data.matchId,
-            matchName: data.matchName
-          }
-        });
-      }
-    });
-
-    return () => {
-      mounted = false;
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-    };
-  }, []);
-
-  if (!loaded) return null;
   return <RootLayoutNav />;
 }
 
@@ -105,39 +68,65 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <AuthGate>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="signup" options={{ headerShown: false }} />  {/* 👈 ADD THIS */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+        </Stack>
+      </AuthGate>
     </ThemeProvider>
   );
 }
 
-async function registerForPushNotificationsAsync() {
-  if (Platform.OS === 'web') {
-    console.log("Push notifications are not supported on web.");
-    return;
-  }
-  if (!Device.isDevice) {
-    Alert.alert('Must use physical device for Push Notifications');
-    return;
-  }
+function useRegisterForPushNotifications() {
+  useEffect(() => {
+    let mounted = true;
+    const register = async () => {
+      if (Platform.OS === "web") return;
+      if (!Device.isDevice) {
+        Alert.alert("Must use physical device for push notifications");
+        return;
+      }
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
 
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
+      if (finalStatus !== "granted") {
+        Alert.alert("Notification permissions not granted");
+        return;
+      }
 
-  if (finalStatus !== 'granted') {
-    Alert.alert('Notification permissions not granted');
-    return;
-  }
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log("Expo Push Token:", token);
 
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
-  return token;
+      if (mounted) {
+        const user = getAuth().currentUser;
+        if (user) {
+          const idToken = await user.getIdToken();
+          await fetch(`${API_BASE_URL}/set_notification_token`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ token }),
+          });
+        }
+      }
+    };
+
+    register();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 }

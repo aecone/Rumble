@@ -1,15 +1,25 @@
+/*
+User input for gender and pronouns in signup sequence.
+Navigates to SignUpHobbies
+*/
+
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
+// Obj/function for formatting and valid input drop down
 const SignUpGenderPronouns = () => {
   const { gender, pronouns, setField } = useSignupStore();
 
   const [genderOpen, setGenderOpen] = useState(false);
   const [pronounsOpen, setPronounsOpen] = useState(false);
+const { onNext } = useSignupNavigation();
 
   const genderItems = [
     { label: "Woman", value: "Woman" },
@@ -33,17 +43,15 @@ const SignUpGenderPronouns = () => {
     { label: "Other", value: "Other" },
   ];
 
-  const proceed = () => {
 
-            router.push(Routes.SignUpHobbies);
-    
-  };
 
   // Check if both fields are filled
   const isFormValid = gender !== "" && pronouns !== "";
 
   return (
     <View style={styles.container}>
+             <BackButton />
+      
       <Text style={styles.title}>Please select your gender & pronouns</Text>
 
       {/* Gender Dropdown */}
@@ -120,16 +128,8 @@ const SignUpGenderPronouns = () => {
         />
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+      <NextButton next={signupStepPaths.SignUpHobbies} disabled={!isFormValid} />
+
     </View>
   );
 };

@@ -1,3 +1,10 @@
+/*
+Filtering functionality for user cards
+Navigatable from swipetab
+navigates back to swipetab
+*/
+
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -11,6 +18,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 // Define filter interface
 interface FilterOptions {
@@ -27,6 +35,7 @@ interface FilterOptions {
   [key: string]: any; // For any additional properties
 }
 
+// Export default function, providing array of user chosen filters to suggested users api endpoint
 const Filtering = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -60,12 +69,11 @@ const Filtering = () => {
   ];
   
   const majors = [
-    '', 'Computer Science', 'Business', 'Engineering', 'Psychology', 
+    '', 'Computer Science', 'Business',
     'Biology', 'Economics', 'Political Science', 'Mathematics', 'English',
     'Mechanical Engineering', 'Electrical Engineering', 'Business Administration', 'BAIT',
     'Information Technology', 'Biomedical Engineering', 'Communications', 'Civil Engineering', 
-    'Engineering (other)', 'Psychology', 'Public Health', 'Biology', 'English', 'History',
-    'Political Science', 'Arts', 'Other'
+    'Engineering (other)', 'Psychology', 'Public Health', 'History', 'Arts', 'Film', 'Physics', 'Chemistry', 'Pharm', 'Other'
   ];
 
   const ethnicities = [
@@ -119,6 +127,26 @@ const Filtering = () => {
   const userTypes = [
     "mentor", "mentee"
   ];
+
+  const [openYear, setOpenYear] = useState(false);
+  const [yearValue, setYearValue] = useState(filters.gradYear || null);
+  const [yearItems, setYearItems] = useState(
+    gradYears.map(year => ({ label: year || "Any Year", value: year }))
+  );
+
+  const [openMajor, setOpenMajor] = useState(false);
+  const [majorValue, setMajorValue] = useState(filters.major || null);
+  const [majorItems, setMajorItems] = useState(
+    majors.map(major => ({ label: major || "Any Major", value: major }))
+  );
+
+  const [openPath, setOpenPath] = useState(false);
+  const [pathValue, setPathValue] = useState(filters.careerPath || null);
+  const [pathItems, setPathItems] = useState(
+    careerPath.map(path => ({ label: path || "Any Path", value: path }))
+  );
+
+  
 
 
   const handleMultiSelect = (category: string, item: string) => {
@@ -209,50 +237,68 @@ const Filtering = () => {
       <ScrollView style={styles.scrollView}>
         {/* Single Graduation Year */}
         <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>Graduation Year</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={filters.gradYear}
-              onValueChange={(itemValue) => setFilters({...filters, gradYear: itemValue})}
-              style={styles.picker}
-            >
-              {gradYears.map((year, index) => (
-                <Picker.Item key={index} label={year || "Any Year"} value={year} />
-              ))}
-            </Picker>
-          </View>
+          <Text style={styles.sectionTitle}>Grad Year</Text>
+          <DropDownPicker
+            open={openYear}
+            value={yearValue}
+            items={yearItems}
+            setOpen={setOpenYear}
+            setValue={setYearValue}
+            setItems={setYearItems}
+            onChangeValue={(value: any) => {
+              setFilters({...filters, gradYear: value || ''});
+            }}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholder="Select grad year"
+            zIndex={3000}
+            zIndexInverse={1000}
+            listMode="MODAL"
+          />
         </View>
 
         {/* Major */}
         <View style={styles.filterSection}>
           <Text style={styles.sectionTitle}>Major</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={filters.major}
-              onValueChange={(itemValue) => setFilters({...filters, major: itemValue})}
-              style={styles.picker}
-            >
-              {majors.map((major, index) => (
-                <Picker.Item key={index} label={major || "Any Major"} value={major} />
-              ))}
-            </Picker>
-          </View>
+          <DropDownPicker
+            open={openMajor}
+            value={majorValue}
+            items={majorItems}
+            setOpen={setOpenMajor}
+            setValue={setMajorValue}
+            setItems={setMajorItems}
+            onChangeValue={(value: any) => {
+              setFilters({...filters, major: value || ''});
+            }}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholder="Select major"
+            zIndex={3000}
+            zIndexInverse={1000}
+            listMode="MODAL"
+          />
         </View>
 
         {/* Career Path - Changed from multi-select to dropdown */}
         <View style={styles.filterSection}>
           <Text style={styles.sectionTitle}>Career Path</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={filters.careerPath}
-              onValueChange={(itemValue) => setFilters({...filters, careerPath: itemValue})}
-              style={styles.picker}
-            >
-              {careerPath.map((path, index) => (
-                <Picker.Item key={index} label={path || "Any Career Path"} value={path} />
-              ))}
-            </Picker>
-          </View>
+          <DropDownPicker
+            open={openPath}
+            value={pathValue}
+            items={pathItems}
+            setOpen={setOpenPath}
+            setValue={setPathValue}
+            setItems={setPathItems}
+            onChangeValue={(value: any) => {
+              setFilters({...filters, careerPath: value || ''});
+            }}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholder="Select career path"
+            zIndex={3000}
+            zIndexInverse={1000}
+            listMode="MODAL"
+          />
         </View>
 
 
@@ -290,6 +336,20 @@ const Filtering = () => {
 };
 
 const styles = StyleSheet.create({
+  dropdown: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 45,
+    backgroundColor: '#FFF',
+    minHeight: 50,
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    backgroundColor: '#FFF',
+    marginTop: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',

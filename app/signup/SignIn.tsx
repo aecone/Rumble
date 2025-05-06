@@ -1,3 +1,6 @@
+/*
+Sign in page, option to nagivate to SignUp
+*/
 import {
   Text,
   StyleSheet,
@@ -14,17 +17,11 @@ import {
 import { router } from "expo-router";
 import { useFonts } from "expo-font"; // Import the useFonts hook
 
+//Basis for signup
 const index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  let [fontsLoaded] = useFonts({
-    "Montserrat-Regular": require("../../assets/fonts/Montserrat-Regular.ttf"),
-  });
 
-  // Early return for loading state
-  if (!fontsLoaded) {
-    return null; // Or a loading spinner
-  }
   const signIn = async () => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
@@ -40,6 +37,7 @@ const index = () => {
     router.push("/signup/CreateProfile" as any);
   };
 
+  //Functionality for sign in
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
@@ -77,7 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF", // A softer white for a modern, minimalist background
-    fontFamily: "Montserrat-Regular", // Using Montserrat for a clean, modern look
   },
   title: {
     fontSize: 28, // A bit larger for a more striking appearance

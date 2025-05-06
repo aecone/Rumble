@@ -1,10 +1,16 @@
+/*
+User input for career path in signup sequence.
+Navigates to SignUpIndustries
+*/
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
 
+// Obj/function for formatting and valid input drop down
 const SignUpCareer = () => {
   const { careerPath, setField } = useSignupStore();
 
@@ -29,13 +35,15 @@ const SignUpCareer = () => {
   ];
 
   const proceed = () => {
-    router.push(Routes.SignUpIndustries);
+    router.push(signupStepPaths.SignUpIndustries);
   };
 
   const isFormValid = careerPath !== "";
 
   return (
     <View style={styles.container}>
+             <BackButton />
+      
       <Text style={styles.title}>What's your intended career</Text>
 
       {/* DropDown Picker */}

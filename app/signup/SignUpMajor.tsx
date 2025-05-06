@@ -1,14 +1,23 @@
+/*
+User input for major in signup sequence.
+Navigates to SignUpGradYear
+*/
+
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
 
+// Obj/function for formatting and valid input drop down
 const SignUpMajor = () => {
   const { major, setField } = useSignupStore();
   const [open, setOpen] = useState(false);
-
+const { onNext } = useSignupNavigation();
   const majorItems = [
     { label: "Computer Science", value: "Computer Science" },
     { label: "Mechanical Engineering", value: "Mechanical Engineering" },
@@ -30,16 +39,11 @@ const SignUpMajor = () => {
     { label: "Other", value: "Other" },
   ];
 
-  const proceed = () => {
-
-        router.push(Routes.SignUpGradYear);
-    
-  };
-
   const isFormValid = major !== "";
 
   return (
     <View style={styles.container}>
+        <BackButton />
       <Text style={styles.title}>What's your major?</Text>
 
       {/* DropDown Picker */}
@@ -75,19 +79,13 @@ const SignUpMajor = () => {
             backgroundColor: "#92C7C5",
             borderRadius: 50,
           }}
+          
         />
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+     
+            <NextButton next={signupStepPaths.SignUpGradYear} disabled={!isFormValid} />
+      
     </View>
   );
 };

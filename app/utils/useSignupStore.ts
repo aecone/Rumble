@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface SignupState {
   firstName: string;
@@ -15,50 +16,56 @@ interface SignupState {
   careerPath: string;
   interestedIndustries: string[];
   orgs: string[];
-  userType: string;
+  userType: "mentor" | "mentee" | null; 
   mentorshipAreas: string[];
 
   setField: (field: keyof SignupState, value: any) => void;
   reset: () => void;
 }
 
-export const useSignupStore = create<SignupState>((set) => ({
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: '',
-  birthday: '',
-  major: '',
-  gradYear: '',
-  ethnicity: '',
-  gender: '',
-  pronouns: '',
-  hobbies: [],
-  careerPath: '',
-  interestedIndustries: [],
-  orgs: [],
-  userType: '',
-  mentorshipAreas: [],
-  
-  setField: (field, value) => set((state) => ({ ...state, [field]: value })),
-  
-  reset: () => set(() => ({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    birthday: '',
-    major: '',
-    gradYear: '',
-    ethnicity: '',
-    gender: '',
-    pronouns: '',
-    hobbies: [],
-    careerPath: '',
-    interestedIndustries: [],
-    orgs: [],
-    userType: '',
-    mentorshipAreas: [],
-  }))
-}));
+export const useSignupStore = create<SignupState>()(
+  persist(
+    (set) => ({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      birthday: '',
+      major: '',
+      gradYear: '',
+      ethnicity: '',
+      gender: '',
+      pronouns: '',
+      hobbies: [],
+      careerPath: '',
+      interestedIndustries: [],
+      orgs: [],
+      userType: null,
+      mentorshipAreas: [],
 
+      setField: (field, value) => set((state) => ({ ...state, [field]: value })),
+
+      reset: () => set(() => ({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        birthday: '',
+        major: '',
+        gradYear: '',
+        ethnicity: '',
+        gender: '',
+        pronouns: '',
+        hobbies: [],
+        careerPath: '',
+        interestedIndustries: [],
+        orgs: [],
+        userType: null,
+        mentorshipAreas: [],
+      })),
+    }),
+    {
+      name: "signup-storage", //localStorage key name
+    }
+  )
+);

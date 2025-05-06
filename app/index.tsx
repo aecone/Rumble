@@ -2,11 +2,13 @@ import { View, Image, ActivityIndicator, StyleSheet, Platform } from 'react-nati
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SplashScreenComponent() {
   useEffect(() => {
     const prepare = async () => {
       try {
+        await AsyncStorage.removeItem('userFilters');
         await new Promise(resolve => setTimeout(resolve, 2000)); 
       } finally {
         await SplashScreen.hideAsync();

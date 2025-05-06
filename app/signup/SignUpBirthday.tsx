@@ -1,3 +1,8 @@
+/*
+User input for birthday in signup sequence.
+Navigates to SignUpMajor
+*/
+
 import {
   View,
   Text,
@@ -8,12 +13,17 @@ import {
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths } from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
+//Birthday obj/function for formatting and valid input
 const Birthday = () => {
   const { birthday, setField } = useSignupStore();
   const [error, setError] = useState("");
-
+  const { onNext } = useSignupNavigation();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   // Auto-format with forward slashes
   const formatDate = (text: string) => {
     // Remove all non-digit characters
@@ -66,39 +76,54 @@ const Birthday = () => {
     return true;
   };
 
-  const proceed = () => {
-    if (validateDate(birthday)) {
-      router.push(Routes.SignUpMajor);
-    }
-  };
-
   const isFormValid = !error && birthday.length === 10;
+  const fullLength = birthday.length === 10;
 
   return (
     <View style={styles.container}>
+      <BackButton />
+
       <Text style={styles.title}>What's Your Birthday?</Text>
 
       <TextInput
-        style={[styles.textInput, error ? styles.errorInput : null]}
+        style={[
+          styles.textInput,
+          attemptedSubmit && error ? styles.errorInput : null, // only show error border after try
+        ]}
         placeholder="MM/DD/YYYY"
         value={birthday}
-        onChangeText={formatDate}
+        onChangeText={(text) => {
+          formatDate(text);
+          if (text.length === 10) {
+            validateDate(text); // only validate once full input is typed
+          }
+        }}
         keyboardType="number-pad"
         maxLength={10}
+        returnKeyType="done"
+        onSubmitEditing={() => {
+          setAttemptedSubmit(true);
+          if (isFormValid) {
+            onNext(signupStepPaths.SignUpMajor);
+          }
+        }}
       />
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {attemptedSubmit && error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : null}
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+<NextButton
+  next={signupStepPaths.SignUpMajor}
+  disabled={!fullLength}
+  onPress={() => {
+    setAttemptedSubmit(true);
+    if (validateDate(birthday)) {
+      onNext(signupStepPaths.SignUpMajor);
+    }
+  }}
+/>
+
     </View>
   );
 };

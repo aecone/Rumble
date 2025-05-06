@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
+from services.firebase_service import db
+
 from services.firebase_service import (
     get_convo_id,
     get_user_profile,
@@ -10,9 +12,10 @@ from services.firebase_service import (
     create_user_in_firebase
 )
 from services.auth_service import verify_token
-from google.cloud.firestore_v1 import FieldFilter
+import logging
+logger = logging.getLogger(__name__)
 
-db = firestore.client()
+
 match_routes = Blueprint('match_routes', __name__)
 
 @match_routes.route('/suggested_users', methods=['POST'])
@@ -47,11 +50,12 @@ def suggested_users():
             'gradYear': data.get('gradYear', None),
             'hobbies': data.get('hobbies', []),
             'orgs': data.get('orgs', []),
-            'careerPath': data.get('careerPath', '').strip(),
+            'careerPath': data.get('careerPath', []),  # Fixed: treat as list
             'interestedIndustries': data.get('interestedIndustries', []),
             'userType': data.get('userType', '').strip(),
             'mentorshipAreas': data.get('mentorshipAreas', []),
         }
+
 
         # Retrieve all user docs
         docs = db.collection('users').stream()
@@ -117,7 +121,7 @@ def suggested_users():
 
 @match_routes.route('/swipe', methods=['POST'])
 def swipe():
-    # … your existing code …
+    
     try:
         decoded_token, error = verify_token()
         if error:
@@ -173,7 +177,7 @@ def swipe():
 
 @match_routes.route("/matches", methods=["GET"])
 def get_matches():
-    # … unchanged …
+    
     decoded_token, error = verify_token()
     if error:
         return error
@@ -244,7 +248,7 @@ def get_conversation():
 
 @match_routes.route('/message', methods=['POST'])
 def send_message():
-    # … your existing code …
+    
     try:
         decoded_token, error = verify_token()
         if error:
@@ -297,6 +301,65 @@ def send_message():
                 })
 
         return jsonify({'success': True, 'messageID': msg_doc.id})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@match_routes.route('/delete_match', methods=['POST'])
+def delete_match():
+    """
+    POST /delete_match
+    Body: { "targetID": "<other_user_id>" }
+    Unmatches the two users, deletes their conversation and all messages,
+    and cleans up their like maps.
+    """
+    try:
+        decoded_token, error = verify_token()
+        if error:
+            return error
+
+        user_id = decoded_token['uid']
+        data = request.get_json(silent=True) or {}
+        target_id = data.get('targetID')
+        if not target_id:
+            return jsonify({"error": "Missing 'targetID'"}), 400
+        if user_id == target_id:
+            return jsonify({"error": "Cannot unmatch yourself"}), 400
+
+        # Fetch both profiles to confirm they are matched
+        user_profile = get_user_profile(user_id) or {}
+        target_profile = get_user_profile(target_id) or {}
+        if target_id not in user_profile.get('matched_users', []):
+            return jsonify({"error": "You are not matched with this user"}), 404
+
+        # 1) Remove from matched_users arrays
+        user_ref   = db.collection('users').document(user_id)
+        target_ref = db.collection('users').document(target_id)
+        user_ref.update({
+            'matched_users': firestore.ArrayRemove([target_id])
+        })
+        target_ref.update({
+            'matched_users': firestore.ArrayRemove([user_id])
+        })
+
+        # 2) Remove likes entries (delete the map keys)
+        user_ref.update({ f'liked_users.{target_id}': firestore.DELETE_FIELD })
+        target_ref.update({ f'liked_users.{user_id}': firestore.DELETE_FIELD })
+
+        # 3) Delete conversation + all messages
+        convo_id = get_convo_id(user_id, target_id)
+        convo_ref = db.collection('conversations').document(convo_id)
+
+        # delete all messages in the subcollection
+        msgs = convo_ref.collection('messages').stream()
+        for msg in msgs:
+            msg.reference.delete()
+
+        # delete the conversation document itself
+        convo_ref.delete()
+
+        return jsonify({"success": True}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

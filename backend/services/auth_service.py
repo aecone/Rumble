@@ -1,13 +1,15 @@
 from flask import request, jsonify
 from firebase_admin import auth
-from logger import logger  # Import the logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 def verify_token():
     """Verifies Firebase ID token from Authorization header."""
     auth_header = request.headers.get("Authorization")
     if not auth_header:
-        #logger.warning("Missing Authorization header")  # Debugging log
-        print("Missing Authorization header")  # Debugging log
+        logger.warning("Missing Authorization header")  # Debugging log
+          # Debugging log
 
         return None, (jsonify({"error": "Missing Authorization header"}), 403)
 
@@ -21,7 +23,7 @@ def verify_token():
     except auth.RevokedIdTokenError:
         return None, (jsonify({"error": "Revoked token"}), 403)
     except Exception as e:
-        #logger.warning(f"Token verification failed: {e}")  # Debugging log
-        print(f"Token verification failed: {e}")  # Debugging log
+        logger.warning(f"Token verification failed: {e}")  # Debugging log
+          # Debugging log
 
         return None, (jsonify({"error": "Failed to verify token"}), 403)

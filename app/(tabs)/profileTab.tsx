@@ -24,11 +24,23 @@ import { getAuth, updateEmail, updatePassword } from 'firebase/auth';
 import { API_BASE_URL } from "../../FirebaseConfig";
 
 export default function TabFourScreen() {
-  // Check if user is authenticated
-  getAuth().onAuthStateChanged((user) => {
-    // If user is not authenticated, redirect to login page (temp solution, use global state later)
-    if (!user) router.replace('/');
-  });
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authUser, setAuthUser] = useState<null | {}>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
+      setAuthUser(user);
+      setAuthChecked(true);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (authChecked && !authUser) {
+      router.replace("/");
+    }
+  }, [authChecked, authUser]);
+
   
   // Define types for profile 
   type Profile = {

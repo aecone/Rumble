@@ -1,12 +1,21 @@
+/*
+User input for grad year in signup sequence.
+Navigates to SignUpEthnicity
+*/
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSignupStore } from "../utils/useSignupStore";
-import { Routes } from "../utils/routes";
+import { signupStepPaths} from "../utils/routes";
+import { BackButton } from "../components/BackButton";
+import { NextButton } from "../components/NextButton";
+import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
+// Obj/function for formatting and valid input drop down
 const SignUpGradYear = () => {
   const { gradYear, setField } = useSignupStore();
+const { onNext } = useSignupNavigation();
 
   const [open, setOpen] = useState(false);
 
@@ -19,14 +28,14 @@ const SignUpGradYear = () => {
     { label: "Other", value: "Other" },
   ];
 
-  const proceed = () => {
-    router.push(Routes.SignUpEthnicity);
-  };
+
 
   const isFormValid = gradYear !== "";
 
   return (
     <View style={styles.container}>
+              <BackButton />
+      
       <Text style={styles.title}>What's your anticipated graduation year?</Text>
 
       {/* DropDown Picker */}
@@ -65,16 +74,8 @@ const SignUpGradYear = () => {
         />
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isFormValid ? "#FFFFFF" : "#B0BEC5" },
-        ]}
-        onPress={proceed}
-        disabled={!isFormValid}
-      >
-        <Text style={styles.text}>Next</Text>
-      </TouchableOpacity>
+      <NextButton next={signupStepPaths.SignUpEthnicity} disabled={!isFormValid} />
+
     </View>
   );
 };
