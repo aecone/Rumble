@@ -20,7 +20,7 @@ const EditHobbies = () => {
   useEffect(() => {
     fetchProfile();
   }, []);
-  
+  // Fetch profile data when component mounts, setting specific hobbies
   const fetchProfile = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL) return;
@@ -52,7 +52,7 @@ const EditHobbies = () => {
       setLoading(false);
     }
   };
-  
+  // Toggle hobbies selection
   const toggleHobbies = (area: string) => {
     setselectedHobbies(prevHobbies =>
         prevHobbies.includes(area)
@@ -60,7 +60,7 @@ const EditHobbies = () => {
         : [...prevHobbies, area]  // Add if not selected
     );
   };
-
+  // Save hobbies to the backend
   const saveHobbies = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL || !userProfile) return;
@@ -84,7 +84,6 @@ const EditHobbies = () => {
         },
         body: JSON.stringify(updatedProfile),
       });
-  
       if (response.ok) {
         Alert.alert("Success", "Hobbies updated successfully!");
         router.back();
@@ -117,7 +116,6 @@ const EditHobbies = () => {
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>Edit Your Hobbies/Interests</Text>
         <Text style={styles.subtitle}>Tap to select or deselect Hobobies/Interests</Text>
-
         <View style={styles.listContainer}>
           <FlatList
             data={predefinedHobbies}
@@ -144,7 +142,6 @@ const EditHobbies = () => {
             contentContainerStyle={styles.chipContainer}
           />
         </View>
-
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: isFormValid ? '#534E5B' : '#B0BEC5' }]}
           onPress={saveHobbies}

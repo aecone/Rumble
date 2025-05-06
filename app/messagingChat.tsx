@@ -27,12 +27,11 @@ export default function MessagingChat() {
   
       if (response.ok) {
         const data = await response.json();
-  
         // Sort messages by timestamp in ascending order
         const sortedMessages = data.messages.sort(
           (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
-  
+
         setMessages(sortedMessages); // Set the sorted messages
       } else {
         console.error("Failed to fetch messages:", await response.json());
@@ -129,19 +128,19 @@ export default function MessagingChat() {
           placeholder="Type a message..."
           value={newMessage}
           onChangeText={setNewMessage}
-        />
-<TouchableOpacity
-  style={styles.sendButton}
-  onPress={sendMessage}
-  disabled={loading}
-  activeOpacity={0.7} // optional for better visual feedback
->
-  <Image
-    source={require('../assets/images/send.png')} // Make sure this path is correct
-    style={styles.sendIcon}
-    resizeMode="contain" // Helps avoid stretching
-  />
-</TouchableOpacity>
+      />
+      <TouchableOpacity
+        style={styles.sendButton}
+        onPress={sendMessage}
+        disabled={loading}
+        activeOpacity={0.7} // optional for better visual feedback
+      >
+      <Image
+        source={require('../assets/images/send.png')} // Make sure this path is correct
+        style={styles.sendIcon}
+        resizeMode="contain" // Helps avoid stretching
+      />
+      </TouchableOpacity>
       </View>
     </View>
   );

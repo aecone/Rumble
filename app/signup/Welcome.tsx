@@ -8,12 +8,12 @@ import { router, useNavigation } from 'expo-router'
 const WelcomeScreen = () => {
 
   const navigation = useNavigation();
-
+  // Hide the header for this screen
   React.useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-
+  // Navigate to Sign In or Sign Up
   const handleSignIn = () => router.push('/signup/SignIn');
   const handleSignUp = () => router.push('/signup/CreateProfile');
 

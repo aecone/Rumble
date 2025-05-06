@@ -15,7 +15,7 @@ const SignUpCareer = () => {
   const { careerPath, setField } = useSignupStore();
 
   const [open, setOpen] = useState(false);
-
+  
   const careerItems = [
     { label: "UI/UX", value: "UI/UX" },
     { label: "Medicine", value: "Medicine" },

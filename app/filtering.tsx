@@ -82,9 +82,6 @@ const Filtering = () => {
     'Multiracial'
   ];
 
-  const genders = ['', 'Male', 'Female', 'Non-binary', 'Genderfluid,', 'Other'];
-
-
   const industries = [
     'Technology', 'Finance', 'Healthcare', 'Education', 'Entertainment',
     'Consulting', 'Marketing', 'Engineering', 'Research', 'Non-profit',
@@ -122,10 +119,6 @@ const Filtering = () => {
     'Finance', 'Data Science', 'Data Engineering', 'Software Engineering',
     'Computer Engineering', 'Biomedical Engineering', 'Electrical Engineering',
     'Marketing'
-  ];
-
-  const userTypes = [
-    "mentor", "mentee"
   ];
 
   const [openYear, setOpenYear] = useState(false);

@@ -17,7 +17,6 @@ import { NextButton } from "../components/NextButton";
 const SignUpMajor = () => {
   const { major, setField } = useSignupStore();
   const [open, setOpen] = useState(false);
-const { onNext } = useSignupNavigation();
   const majorItems = [
     { label: "Computer Science", value: "Computer Science" },
     { label: "Mechanical Engineering", value: "Mechanical Engineering" },
@@ -79,13 +78,9 @@ const { onNext } = useSignupNavigation();
             backgroundColor: "#92C7C5",
             borderRadius: 50,
           }}
-          
         />
       </View>
-
-     
-            <NextButton next={signupStepPaths.SignUpGradYear} disabled={!isFormValid} />
-      
+      <NextButton next={signupStepPaths.SignUpGradYear} disabled={!isFormValid} />
     </View>
   );
 };

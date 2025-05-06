@@ -18,8 +18,6 @@ import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
-
-
 // Obj/function for formatting and valid input drop down
 const SignUpName = () => {
   const { firstName, lastName, setField } = useSignupStore();
