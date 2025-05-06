@@ -36,6 +36,7 @@ const { onNext } = useSignupNavigation();
         <TextInput
          style={styles.textInput}
         placeholder="First Name"
+        placeholderTextColor="#FFFFFF"
         value={firstName}
         onChangeText={(text) => setField("firstName", text)}
         returnKeyType="next"
@@ -46,6 +47,7 @@ const { onNext } = useSignupNavigation();
        style={styles.textInput}
         ref={lastNameRef}
         placeholder="Last Name"
+        placeholderTextColor="#FFFFFF"
         value={lastName}
         onChangeText={(text) => setField("lastName", text)}
         returnKeyType="done"
