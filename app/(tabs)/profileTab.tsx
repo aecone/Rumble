@@ -187,7 +187,7 @@ export default function TabFourScreen() {
       if (user) fetchProfile();
     }, [user, refresh])
   );
-
+  // Fetch user profile from the backend
   const fetchProfile = async () => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
@@ -214,7 +214,7 @@ export default function TabFourScreen() {
       setLoading(false);
     }
   };
-  
+  //Update user profile
   const updateProfile = async () => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);
@@ -240,7 +240,7 @@ export default function TabFourScreen() {
     }
     setLoading(false);
   };
-
+  //update user settings
   const updateSettings = async () => {
     if (!user) return;
     try {
@@ -265,7 +265,7 @@ export default function TabFourScreen() {
   };
 
   const [pendingImageUpdate, setPendingImageUpdate] = useState(false);
-
+  // Upload image to Firebase Storage
   const uploadImage = async (uri: string) => {
     if (!user || !API_BASE_URL) return;
     setLoading(true);

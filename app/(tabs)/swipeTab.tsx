@@ -76,7 +76,7 @@ export default function SwipeTab() {
   const [showMatchPopup, setShowMatchPopup] = useState(false);
   const [matchedUser, setMatchedUser] = useState<UserCard | null>(null);
   const popupAnimation = useRef(new Animated.Value(0)).current;
-
+  // Dynamic styles for profile image
   const dynamicStyles = StyleSheet.create({
     profileImage: {
       width: screenWidth * 0.6,
@@ -191,7 +191,7 @@ export default function SwipeTab() {
       params: { currentFilters: JSON.stringify(filters) }
     });
   };
-
+  // Function to transform frontend filters to API format
   const transformFiltersForAPI = (frontendFilters: FilterOptions) => {
     return {
       major: frontendFilters.major || "",
@@ -208,7 +208,7 @@ export default function SwipeTab() {
       userType: frontendFilters.userType || "",
     };
   };
-
+  // Function to fetch suggested users based on filters
   const fetchSuggestedUsers = async (newFilters: FilterOptions = {}) => {
     try {
       const currentUser = auth.currentUser;
@@ -249,7 +249,7 @@ export default function SwipeTab() {
     [{ nativeEvent: { translationX: position.x, translationY: position.y } }],
     { useNativeDriver: false }
   );
-
+  // Handler for gesture state changes
   const onHandlerStateChange = (event: PanGestureHandlerStateChangeEvent) => {
     if (event.nativeEvent.oldState === 4) {
       const swipe = event.nativeEvent.translationX;
@@ -263,7 +263,7 @@ export default function SwipeTab() {
       }
     }
   };
-
+  // Swipe left
   const swipeLeft = () => {
     Animated.timing(position, {
       toValue: { x: -SCREEN_WIDTH * 1.5, y: 0 },
@@ -271,7 +271,7 @@ export default function SwipeTab() {
       useNativeDriver: false,
     }).start(() => onSwipeComplete('left'));
   };
-
+  // Swipe right
   const swipeRight = () => {
     Animated.timing(position, {
       toValue: { x: SCREEN_WIDTH * 1.5, y: 0 },
@@ -279,7 +279,7 @@ export default function SwipeTab() {
       useNativeDriver: false,
     }).start(() => onSwipeComplete('right'));
   };
-
+  // Function to show custom match popup
   const showCustomMatchPopup = (matchedUser: UserCard) => {
     setMatchedUser(matchedUser);
     setShowMatchPopup(true);
@@ -290,7 +290,7 @@ export default function SwipeTab() {
       useNativeDriver: true,
     }).start();
   };
-  
+  // Function to hide custom match popup
   const hideMatchPopup = () => {
     Animated.timing(popupAnimation, {
       toValue: 0,
@@ -301,7 +301,7 @@ export default function SwipeTab() {
       setMatchedUser(null);
     });
   };
-  
+  // Function to navigate to matches tab when match occurs
   const navigateToMatches = () => {
     hideMatchPopup();
     // Navigate to the matches tab
