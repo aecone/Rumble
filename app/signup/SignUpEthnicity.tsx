@@ -40,17 +40,14 @@ const SignUpEthnicity = () => {
   ];
 
   const proceed = () => {
-
-        router.push(signupStepPaths.SignUpGenderPronouns);
-    
+    router.push(signupStepPaths.SignUpGenderPronouns);
   };
 
   const isFormValid = ethnicity !== "";
 
   return (
     <View style={styles.container}>
-             <BackButton />
-      
+      <BackButton />
       <Text style={styles.title}>Please select your race/ethnicity</Text>
 
       {/* DropDown Picker */}

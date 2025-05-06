@@ -20,7 +20,6 @@ export default function SplashScreenComponent() {
 
   return (
     <View style={styles.container}>
-      
       <Image 
         source={require('../assets/images/splash-screen-icon.png')}
         style={styles.image}

@@ -19,7 +19,7 @@ const EditIndustries = () => {
   useEffect(() => {
     fetchProfile();
   }, []);
-  
+  // Fetch profile data when component mounts, setting specific industries
   const fetchProfile = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL) return;
@@ -51,7 +51,7 @@ const EditIndustries = () => {
       setLoading(false);
     }
   };
-  
+  // Toggle industry selection
   const toggleIndustries = (area: string) => {
     setSelectedIndustries(prevIndustry =>
       prevIndustry.includes(area)

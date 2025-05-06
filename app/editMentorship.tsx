@@ -19,7 +19,7 @@ const EditMentorship = () => {
   useEffect(() => {
     fetchProfile();
   }, []);
-  
+  // Fetch profile data when component mounts, setting specific mentorship areas
   const fetchProfile = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL) return;
@@ -51,7 +51,7 @@ const EditMentorship = () => {
       setLoading(false);
     }
   };
-  
+  // Toggle mentorship area selection
   const toggleMentorshipArea = (area: string) => {
     setSelectedMentorship(prevMentorship =>
         prevMentorship.includes(area)
@@ -59,7 +59,7 @@ const EditMentorship = () => {
         : [...prevMentorship, area]  // Add if not selected
     );
   };
-
+  // Save mentorship areas to the backend
   const saveMentorship = async () => {
     const user = auth.currentUser;
     if (!user || !API_BASE_URL || !userProfile) return;
@@ -116,34 +116,32 @@ const EditMentorship = () => {
       <View style={styles.contentWrapper}>
         <Text style={styles.title}>Edit Your Interested Mentorship Areas</Text>
         <Text style={styles.subtitle}>Tap to select or deselect Mentorship Areas</Text>
-
         <View style={styles.listContainer}>
           <FlatList
             data={predefinedMentorshipAreas}
             numColumns={3}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
+            keyExtractor={(item: string) => item}
+            renderItem={({ item }: { item: string }) => (
               <TouchableOpacity
-                style={[
-                  styles.chip,
-                  selectedMentorship.includes(item) ? styles.selectedChip : styles.unselectedChip
-                ]}
-                onPress={() => toggleMentorshipArea(item)}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    selectedMentorship.includes(item) ? styles.selectedChipText : styles.unselectedChipText
-                  ]}
-                >
-                  {item}
-                </Text>
+          style={[
+            styles.chip,
+            selectedMentorship.includes(item) ? styles.selectedChip : styles.unselectedChip
+          ]}
+          onPress={() => toggleMentorshipArea(item)}
+          >
+          <Text
+            style={[
+              styles.chipText,
+              selectedMentorship.includes(item) ? styles.selectedChipText : styles.unselectedChipText
+            ]}
+          >
+            {item}
+          </Text>
               </TouchableOpacity>
             )}
             contentContainerStyle={styles.chipContainer}
           />
         </View>
-
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: isFormValid ? '#534E5B' : '#B0BEC5' }]}
           onPress={saveMentorship}

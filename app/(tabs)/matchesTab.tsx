@@ -111,7 +111,7 @@ export default function MatchesTab() {
       ) : matches.length > 0 ? (
         <FlatList
           data={matches}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item: Match) => item.id}
           renderItem={renderMatchItem}
           contentContainerStyle={styles.listContainer}
         />

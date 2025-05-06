@@ -13,14 +13,13 @@ import { BackButton } from "../components/BackButton";
 import { NextButton } from "../components/NextButton";
 import { useSignupNavigation } from "../hooks/useSignupNavigation";
 
-// Obj/function for formatting and valid input drop down
+// Obj function for formatting and valid input drop down
 const SignUpGenderPronouns = () => {
   const { gender, pronouns, setField } = useSignupStore();
 
   const [genderOpen, setGenderOpen] = useState(false);
   const [pronounsOpen, setPronounsOpen] = useState(false);
-const { onNext } = useSignupNavigation();
-
+  
   const genderItems = [
     { label: "Woman", value: "Woman" },
     { label: "Man", value: "Man" },
@@ -50,8 +49,7 @@ const { onNext } = useSignupNavigation();
 
   return (
     <View style={styles.container}>
-             <BackButton />
-      
+        <BackButton />
       <Text style={styles.title}>Please select your gender & pronouns</Text>
 
       {/* Gender Dropdown */}
@@ -127,9 +125,7 @@ const { onNext } = useSignupNavigation();
           }}
         />
       </View>
-
       <NextButton next={signupStepPaths.SignUpHobbies} disabled={!isFormValid} />
-
     </View>
   );
 };

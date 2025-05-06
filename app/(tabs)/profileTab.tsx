@@ -240,7 +240,7 @@ export default function TabFourScreen() {
     }
     setLoading(false);
   };
-  //update user settings
+  // Update user settings
   const updateSettings = async () => {
     if (!user) return;
     try {

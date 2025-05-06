@@ -351,7 +351,7 @@ export default function SwipeTab() {
       }
     }
   };
-
+  // Function to reset the position of the card
   const resetPosition = () => {
     Animated.spring(position, {
       toValue: { x: 0, y: 0 },
